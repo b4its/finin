@@ -175,6 +175,19 @@ export interface RentSpec {
 	invest_instrument: string;
 }
 
+export interface VehicleLeaseSpec {
+	vehicle_price: number;
+	down_payment_pct: number;
+	interest_rate_annual: number;
+	tenor_months: number;
+	depreciation_annual: number;
+}
+
+export interface VehicleCashSpec {
+	used_vehicle_price: number;
+	invest_instrument: string;
+}
+
 export interface Decision {
 	type: string;
 	loan?: LoanSpec;
@@ -184,4 +197,6 @@ export interface Decision {
 	emergency?: EmergencySpec;
 	kpr?: KprSpec;
 	rent?: RentSpec;
+	vehicle_lease?: VehicleLeaseSpec;
+	vehicle_cash?: VehicleCashSpec;
 }

@@ -20,6 +20,12 @@
 			title: 'Beli Rumah KPR vs Sewa & Investasi',
 			icon: '🏠',
 			twins: 'G & H'
+		},
+		{
+			type: 'vehicle_lease_vs_cash',
+			title: 'Kredit Kendaraan vs Bekas Tunai',
+			icon: '🚗',
+			twins: 'I & J'
 		}
 	];
 
@@ -71,6 +77,21 @@
 				rent: {
 					rent_monthly: 2_500_000,
 					invest_instrument: 'bond'
+				}
+			};
+		if (type === 'vehicle_lease_vs_cash')
+			return {
+				type,
+				vehicle_lease: {
+					vehicle_price: 30_000_000,
+					down_payment_pct: 0.2,
+					interest_rate_annual: 0.12,
+					tenor_months: 36,
+					depreciation_annual: 0.15
+				},
+				vehicle_cash: {
+					used_vehicle_price: 12_000_000,
+					invest_instrument: 'stock'
 				}
 			};
 		return { type, emergency: { target_months: 6, invest_monthly: 1_000_000 } };
@@ -333,6 +354,75 @@
 				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
 					Dana DP tetap berada di tabungan/investasi, dan selisih antara cicilan KPR dengan biaya
 					sewa diinvestasikan secara disiplin tiap bulan.
+				</p>
+			</div>
+		</div>
+	{/if}
+
+	{#if selected.includes('vehicle_lease_vs_cash')}
+		{@const d = decisionOf('vehicle_lease_vs_cash')!}
+		{@const lease = d.vehicle_lease!}
+		{@const cash = d.vehicle_cash!}
+		<div class="card space-y-4 p-4">
+			<p class="text-sm font-semibold">🚗 Kredit Kendaraan (Leasing OJK) vs Bekas Tunai</p>
+			<div>
+				<p class="mb-3 text-sm font-semibold text-orange-400">
+					Skenario I — Si Pengkredit Leasing (Unit Baru)
+				</p>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+					<CurrencyInput bind:value={lease.vehicle_price} label="Harga Kendaraan Baru" />
+					<PercentInput bind:value={lease.down_payment_pct} label="Uang Muka (DP)" step={5} />
+				</div>
+				<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+					<PercentInput
+						bind:value={lease.interest_rate_annual}
+						label="Suku Bunga Leasing / Tahun"
+						step={1}
+						help="Sesuai leasing OJK (10–18%/tahun)."
+					/>
+					<label class="block">
+						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]"
+							>Tenor (bulan)</span
+						>
+						<input
+							class="input num"
+							type="number"
+							min="12"
+							max="60"
+							value={lease.tenor_months}
+							oninput={(e) =>
+								(lease.tenor_months = parseInt((e.target as HTMLInputElement).value) || 36)}
+						/>
+					</label>
+					<PercentInput
+						bind:value={lease.depreciation_annual}
+						label="Penyusutan Nilai / Tahun"
+						step={1}
+						help="Depresiasi motor/mobil ~10–15%/thn."
+					/>
+				</div>
+			</div>
+
+			<div class="border-t border-[var(--color-line)] pt-4">
+				<p class="mb-3 text-sm font-semibold text-cyan-400">
+					Skenario J — Si Pembeli Bekas & Investor
+				</p>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+					<CurrencyInput bind:value={cash.used_vehicle_price} label="Harga Beli Bekas Tunai" />
+					<label class="block">
+						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]"
+							>Instrumen Investasi Selisih Cicilan</span
+						>
+						<select class="input" bind:value={cash.invest_instrument}>
+							{#each instruments as ins}
+								<option value={ins.value}>{ins.label}</option>
+							{/each}
+						</select>
+					</label>
+				</div>
+				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
+					Membeli kendaraan bekas layak pakai secara tunai (bebas cicilan utang bulanan), dan
+					selisih cicilan bulanan diinvestasikan secara disiplin tiap tanggal gajian.
 				</p>
 			</div>
 		</div>

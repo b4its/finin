@@ -160,6 +160,7 @@
 									<th class="p-2 font-semibold">Dana Darurat Min</th>
 									<th class="p-2 font-semibold">DSR Rata-rata</th>
 									<th class="p-2 font-semibold">Status OJK / SLIK</th>
+									<th class="p-2 font-semibold">Rapor Kesehatan</th>
 								</tr>
 							</thead>
 							<tbody class="divide-y divide-[var(--color-line)] print:divide-black/10">
@@ -168,6 +169,8 @@
 									{@const s10 = t.yearly_series.find((p) => p.year === 10)}
 									{@const s20 = t.yearly_series.find((p) => p.year === 20)}
 									{@const isBest = t.code === bestTwin?.code}
+									{@const avgDsr = Number(t.summary?.avg_dsr ?? 0)}
+									{@const minEf = Number(t.summary?.min_emergency_months ?? 0)}
 									<tr class={isBest ? 'bg-blue-500/5 font-semibold print:bg-gray-50' : ''}>
 										<td class="p-2">
 											<span class="inline-block w-4 font-bold" style="color:{t.color}"
@@ -197,6 +200,17 @@
 												<span class="text-amber-400 print:text-amber-700">DSR &gt; 30%</span>
 											{:else}
 												<span class="text-emerald-400 print:text-green-700">Patuh OJK</span>
+											{/if}
+										</td>
+										<td class="p-2 text-[10px] font-bold">
+											{#if avgDsr <= 0.15 && minEf >= 6}
+												<span class="text-emerald-400 print:text-green-700">Grade A (Prima)</span>
+											{:else if avgDsr <= 0.3 && minEf >= 3}
+												<span class="text-cyan-400 print:text-blue-700">Grade B (Stabil)</span>
+											{:else if avgDsr <= 0.4 && minEf >= 1}
+												<span class="text-amber-400 print:text-amber-700">Grade C (Rentan)</span>
+											{:else}
+												<span class="text-rose-400 print:text-red-700">Grade D (Kritis)</span>
 											{/if}
 										</td>
 									</tr>

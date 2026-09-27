@@ -11,6 +11,8 @@
 	import ReportModal from '$lib/components/multiverse/ReportModal.svelte';
 	import PitchModal from '$lib/components/multiverse/PitchModal.svelte';
 	import MilestoneTracker from '$lib/components/multiverse/MilestoneTracker.svelte';
+	import FinancialHealthScorecard from '$lib/components/multiverse/FinancialHealthScorecard.svelte';
+	import ScenarioSandbox from '$lib/components/multiverse/ScenarioSandbox.svelte';
 	import Disclaimer from '$lib/components/ui/Disclaimer.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
@@ -199,7 +201,9 @@
 				<NetWorthChart twins={result.twins} bind:selectedYear={year} bind:real />
 				<CompareView twins={result.twins} {year} />
 				<MilestoneTracker twins={result.twins} />
+				<FinancialHealthScorecard twins={result.twins} />
 				<StressTestPanel twins={result.twins} bind:active={activeShock} />
+				<ScenarioSandbox />
 			</div>
 
 			<div class="space-y-4">

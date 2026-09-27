@@ -14,6 +14,8 @@ const ICONS: Record<string, string> = {
 	'trending-up': '▲', // Si Agresif (investasi)
 	home: '⌂', // KPR
 	key: '⚿', // Sewa
+	car: '🚘', // Si Pengkredit Leasing
+	bike: '🏍', // Si Pembeli Bekas
 	circle: '●'
 };
 
@@ -32,7 +34,9 @@ export function twinIconLabel(name: string): string {
 		shield: 'dana darurat',
 		'trending-up': 'investasi',
 		home: 'rumah',
-		key: 'sewa'
+		key: 'sewa',
+		car: 'kredit kendaraan leasing',
+		bike: 'beli kendaraan bekas tunai'
 	};
 	return labels[name] ?? 'twin';
 }
