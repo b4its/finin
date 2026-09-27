@@ -268,6 +268,21 @@ export interface CareerFreelanceSpec {
 	bpjs_mandiri_monthly: number;
 }
 
+export interface RentalPropertySpec {
+	property_price: number;
+	down_payment_pct: number;
+	kpr_interest_rate_annual: number;
+	kpr_tenor_years: number;
+	gross_rental_yield_annual: number;
+	occupancy_rate: number;
+	operational_cost_pct: number;
+	property_appreciation_annual: number;
+}
+
+export interface DividendInvestSpec {
+	invest_instrument: string;
+}
+
 export interface Decision {
 	type: string;
 	loan?: LoanSpec;
@@ -289,4 +304,6 @@ export interface Decision {
 	haji_reguler?: HajiRegulerSpec;
 	career_corporate?: CareerCorporateSpec;
 	career_freelance?: CareerFreelanceSpec;
+	rental_property?: RentalPropertySpec;
+	dividend_invest?: DividendInvestSpec;
 }

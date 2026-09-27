@@ -56,6 +56,12 @@
 			title: 'Karier: Korporat vs Freelancer',
 			icon: '💼',
 			twins: 'S & T'
+		},
+		{
+			type: 'rental_property_vs_dividend',
+			title: 'Properti Sewa (Kos) vs Saham Dividen',
+			icon: '🏬',
+			twins: 'U & V'
 		}
 	];
 
@@ -196,6 +202,23 @@
 					revenue_multiplier: 1.4,
 					emergency_target_months: 9,
 					bpjs_mandiri_monthly: 350_000
+				}
+			};
+		if (type === 'rental_property_vs_dividend')
+			return {
+				type,
+				rental_property: {
+					property_price: 500_000_000,
+					down_payment_pct: 0.2,
+					kpr_interest_rate_annual: 0.085,
+					kpr_tenor_years: 15,
+					gross_rental_yield_annual: 0.08,
+					occupancy_rate: 0.85,
+					operational_cost_pct: 0.15,
+					property_appreciation_annual: 0.04
+				},
+				dividend_invest: {
+					invest_instrument: 'stock'
 				}
 			};
 		return { type, emergency: { target_months: 6, invest_monthly: 1_000_000 } };
@@ -856,6 +879,91 @@
 				</div>
 				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
 					Pekerja lepas memikul iuran asuransi mandiri dan ketidakpastian arus kas musiman. Pajak dihitung dengan Norma Penghitungan Penghasilan Neto (NPPN 50%) sesuai PMK No. 168/2023.
+				</p>
+			</div>
+		</div>
+	{/if}
+
+	{#if selected.includes('rental_property_vs_dividend')}
+		{@const d = decisionOf('rental_property_vs_dividend')!}
+		{@const prop = d.rental_property!}
+		{@const div = d.dividend_invest!}
+		<div class="card space-y-4 p-4">
+			<p class="text-sm font-semibold">🏬 Investasi Properti Sewa (KPR Kos/Ruko) vs Portofolio Saham Dividen (IDX High Dividend 20)</p>
+			<div>
+				<p class="mb-3 text-sm font-semibold text-purple-400">
+					Skenario U — Si Juragan Properti Sewa (Leverage KPR & Passive Rental Income)
+				</p>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+					<CurrencyInput bind:value={prop.property_price} label="Harga Properti Sewa (Kos/Ruko)" />
+					<PercentInput
+						bind:value={prop.down_payment_pct}
+						label="Uang Muka (DP)"
+						step={5}
+						min={10}
+						max={50}
+					/>
+					<PercentInput
+						bind:value={prop.kpr_interest_rate_annual}
+						label="Suku Bunga KPR / Tahun"
+						step={0.5}
+						min={4}
+						max={15}
+					/>
+				</div>
+				<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+					<label class="block">
+						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]">Tenor KPR (tahun)</span>
+						<input
+							class="input num"
+							type="number"
+							min="5"
+							max="25"
+							value={prop.kpr_tenor_years}
+							oninput={(e) =>
+								(prop.kpr_tenor_years = parseInt((e.target as HTMLInputElement).value) || 15)}
+						/>
+					</label>
+					<PercentInput
+						bind:value={prop.gross_rental_yield_annual}
+						label="Rental Yield Kotor / Tahun"
+						step={0.5}
+						min={3}
+						max={15}
+						help="Rerata sewa kos/ruko di RI: 7–10% nilai properti."
+					/>
+					<PercentInput
+						bind:value={prop.occupancy_rate}
+						label="Tingkat Okupansi Terisi"
+						step={5}
+						min={50}
+						max={100}
+						help="Asumsi tingkat keterisian kamar kos (rerata 80–90%)."
+					/>
+				</div>
+				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
+					Pendapatan sewa dipotong otomatis PPh Final Sewa 10% (PP No. 34/2016), beban operasional kos 15%, dan PBB P2 tahunan.
+				</p>
+			</div>
+
+			<div class="border-t border-[var(--color-line)] pt-4">
+				<p class="mb-3 text-sm font-semibold text-emerald-400">
+					Skenario V — Si Investor Dividen Pasar Modal (Bebas Utang & Likuiditas T+2)
+				</p>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+					<label class="block">
+						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]"
+							>Instrumen Pasar Modal Pembanding</span
+						>
+						<select class="input" bind:value={div.invest_instrument}>
+							{#each instruments as ins}
+								<option value={ins.value}>{ins.label}</option>
+							{/each}
+						</select>
+					</label>
+				</div>
+				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
+					Menghindari kerepotan operasional fisik properti (penyewa menunggak, renovasi atap bocor). Uang DP ditahan utuh dan setara cicilan KPR dialihkan penuh ke portofolio saham dividen (bebas PPh dividen UU HPP / PMK 18/2021).
 				</p>
 			</div>
 		</div>

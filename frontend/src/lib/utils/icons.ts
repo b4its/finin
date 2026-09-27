@@ -24,6 +24,8 @@ const ICONS: Record<string, string> = {
 	moon: '🌙', // Si Haji Reguler & Sukuk Syariah
 	building: '🏢', // Si Pegawai Korporat
 	laptop: '💻', // Si Freelancer & Solopreneur
+	'building-2': '🏬', // Si Juragan Properti Sewa
+	'chart-line': '📈', // Si Investor Dividen Pasar Modal
 	circle: '●'
 };
 
@@ -52,7 +54,9 @@ export function twinIconLabel(name: string): string {
 		kaaba: 'haji furoda khusus',
 		moon: 'haji reguler dan investasi syariah',
 		building: 'pegawai korporat tetap',
-		laptop: 'freelancer dan solopreneur'
+		laptop: 'freelancer dan solopreneur',
+		'building-2': 'juragan properti sewa komersial',
+		'chart-line': 'investor dividen pasar modal'
 	};
 	return labels[name] ?? 'twin';
 }

@@ -17,6 +17,7 @@
 	import TaxAndBPJSBreakdown from '$lib/components/multiverse/TaxAndBPJSBreakdown.svelte';
 	import ZakatAndFinalTaxCalculator from '$lib/components/multiverse/ZakatAndFinalTaxCalculator.svelte';
 	import PensionAndFireCalculator from '$lib/components/multiverse/PensionAndFireCalculator.svelte';
+	import SandwichGenerationCalculator from '$lib/components/multiverse/SandwichGenerationCalculator.svelte';
 	import ScenarioSandbox from '$lib/components/multiverse/ScenarioSandbox.svelte';
 	import ShareModal from '$lib/components/multiverse/ShareModal.svelte';
 	import Disclaimer from '$lib/components/ui/Disclaimer.svelte';
@@ -220,6 +221,7 @@
 				<PurchasingPowerHorizon twins={result.twins} />
 				<ZakatAndFinalTaxCalculator twins={result.twins} profile={sim.input.profile} />
 				<PensionAndFireCalculator twins={result.twins} profile={sim.input.profile} />
+				<SandwichGenerationCalculator profile={sim.input.profile} twins={result.twins} />
 				<TaxAndBPJSBreakdown initialGross={sim.input.profile.income_monthly || 10000000} />
 				<StressTestPanel twins={result.twins} bind:active={activeShock} />
 				<ScenarioSandbox />
