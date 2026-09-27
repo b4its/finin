@@ -188,6 +188,19 @@ export interface VehicleCashSpec {
 	invest_instrument: string;
 }
 
+export interface WeddingGrandSpec {
+	reception_cost: number;
+	savings_used: number;
+	loan_amount: number;
+	interest_rate_annual: number;
+	tenor_months: number;
+}
+
+export interface WeddingIntimateSpec {
+	intimate_cost: number;
+	invest_instrument: string;
+}
+
 export interface Decision {
 	type: string;
 	loan?: LoanSpec;
@@ -199,4 +212,6 @@ export interface Decision {
 	rent?: RentSpec;
 	vehicle_lease?: VehicleLeaseSpec;
 	vehicle_cash?: VehicleCashSpec;
+	wedding_grand?: WeddingGrandSpec;
+	wedding_intimate?: WeddingIntimateSpec;
 }

@@ -26,6 +26,12 @@
 			title: 'Kredit Kendaraan vs Bekas Tunai',
 			icon: '🚗',
 			twins: 'I & J'
+		},
+		{
+			type: 'wedding_grand_vs_intimate',
+			title: 'Pesta Nikah Mewah vs Intim & Modal Keluarga',
+			icon: '💍',
+			twins: 'K & L'
 		}
 	];
 
@@ -91,6 +97,21 @@
 				},
 				vehicle_cash: {
 					used_vehicle_price: 12_000_000,
+					invest_instrument: 'stock'
+				}
+			};
+		if (type === 'wedding_grand_vs_intimate')
+			return {
+				type,
+				wedding_grand: {
+					reception_cost: 150_000_000,
+					savings_used: 50_000_000,
+					loan_amount: 100_000_000,
+					interest_rate_annual: 0.12,
+					tenor_months: 36
+				},
+				wedding_intimate: {
+					intimate_cost: 25_000_000,
 					invest_instrument: 'stock'
 				}
 			};
@@ -423,6 +444,70 @@
 				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
 					Membeli kendaraan bekas layak pakai secara tunai (bebas cicilan utang bulanan), dan
 					selisih cicilan bulanan diinvestasikan secara disiplin tiap tanggal gajian.
+				</p>
+			</div>
+		</div>
+	{/if}
+
+	{#if selected.includes('wedding_grand_vs_intimate')}
+		{@const d = decisionOf('wedding_grand_vs_intimate')!}
+		{@const grand = d.wedding_grand!}
+		{@const intimate = d.wedding_intimate!}
+		<div class="card space-y-4 p-4">
+			<p class="text-sm font-semibold">💍 Pesta Pernikahan Mewah (KTA) vs Nikah Intim & Modal Keluarga</p>
+			<div>
+				<p class="mb-3 text-sm font-semibold text-rose-400">
+					Skenario K — Si Pesta Akbar (Resepsi Besar & Utang KTA)
+				</p>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+					<CurrencyInput bind:value={grand.reception_cost} label="Total Biaya Resepsi Mewah" />
+					<CurrencyInput bind:value={grand.savings_used} label="Porsi Tabungan Sendiri" />
+					<CurrencyInput bind:value={grand.loan_amount} label="Porsi Pinjaman KTA Bank" />
+				</div>
+				<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+					<label class="block">
+						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]"
+							>Tenor KTA (bulan)</span
+						>
+						<input
+							class="input num"
+							type="number"
+							min="6"
+							max="60"
+							value={grand.tenor_months}
+							oninput={(e) =>
+								(grand.tenor_months = parseInt((e.target as HTMLInputElement).value) || 36)}
+						/>
+					</label>
+					<PercentInput
+						bind:value={grand.interest_rate_annual}
+						label="Suku Bunga KTA Bank / Tahun"
+						step={1}
+						help="Suku bunga komersial bank ~10–18%/tahun."
+					/>
+				</div>
+			</div>
+
+			<div class="border-t border-[var(--color-line)] pt-4">
+				<p class="mb-3 text-sm font-semibold text-teal-400">
+					Skenario L — Si Intim & Modal Keluarga
+				</p>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+					<CurrencyInput bind:value={intimate.intimate_cost} label="Biaya Nikah Intim / KUA (Tunai)" />
+					<label class="block">
+						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]"
+							>Instrumen Investasi Selisih Cicilan</span
+						>
+						<select class="input" bind:value={intimate.invest_instrument}>
+							{#each instruments as ins}
+								<option value={ins.value}>{ins.label}</option>
+							{/each}
+						</select>
+					</label>
+				</div>
+				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
+					Pernikahan sakral intim/KUA secara tunai tanpa utang KTA baru. Sisa tabungan dan selisih cicilan
+					bulanan KTA diinvestasikan penuh ke portofolio modal rumah tangga.
 				</p>
 			</div>
 		</div>

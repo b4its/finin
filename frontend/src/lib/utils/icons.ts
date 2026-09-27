@@ -16,6 +16,8 @@ const ICONS: Record<string, string> = {
 	key: '⚿', // Sewa
 	car: '🚘', // Si Pengkredit Leasing
 	bike: '🏍', // Si Pembeli Bekas
+	party: '🎉', // Si Pesta Akbar
+	gem: '💎', // Si Intim & Modal Keluarga
 	circle: '●'
 };
 
@@ -36,7 +38,9 @@ export function twinIconLabel(name: string): string {
 		home: 'rumah',
 		key: 'sewa',
 		car: 'kredit kendaraan leasing',
-		bike: 'beli kendaraan bekas tunai'
+		bike: 'beli kendaraan bekas tunai',
+		party: 'pesta resepsi pernikahan akbar',
+		gem: 'nikah intim dan modal keluarga'
 	};
 	return labels[name] ?? 'twin';
 }
