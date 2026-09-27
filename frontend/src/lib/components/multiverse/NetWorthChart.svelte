@@ -1,6 +1,7 @@
 <script lang="ts">
-	import type { Twin } from '$lib/api/types';
-	import { rupiahBrief } from '$lib/utils/format';
+import type { Twin } from '$lib/api/types';
+import { rupiahBrief } from '$lib/utils/format';
+import { twinIcon } from '$lib/utils/icons';
 
 	let {
 		twins,
@@ -189,7 +190,7 @@
 						stroke-dasharray={dashMap[t.dash] ?? 'none'}
 					/>
 				</svg>
-				<span class="font-medium">{t.label}</span>
+				<span class="font-medium">{twinIcon(t.icon)} {t.label}</span>
 				<span class="num text-[var(--color-ink-dim)]">{rupiahBrief(valueAt(t, selectedYear))}</span>
 			</button>
 		{/each}

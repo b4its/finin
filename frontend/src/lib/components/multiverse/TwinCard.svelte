@@ -3,6 +3,7 @@
 	import Tooltip from '$lib/components/ui/Tooltip.svelte';
 	import type { Twin } from '$lib/api/types';
 	import { rupiahBrief, months, percent } from '$lib/utils/format';
+	import { twinIcon, twinIconLabel } from '$lib/utils/icons';
 
 	let {
 		twin,
@@ -35,13 +36,26 @@
 >
 	<div class="flex items-start justify-between gap-2">
 		<div class="flex items-center gap-2">
-			<span class="inline-block h-3 w-3 rounded-full" style="background:{twin.color}"></span>
+			<span
+				class="inline-flex h-6 w-6 items-center justify-center rounded-full text-sm"
+				style="background:{twin.color}22; color:{twin.color}"
+				aria-hidden="true">{twinIcon(twin.icon)}</span
+			>
 			<div>
 				<div class="text-sm font-bold">{twin.label}</div>
-				<div class="text-xs text-[var(--color-ink-dim)]">Twin {twin.code}</div>
+				<div class="text-xs text-[var(--color-ink-dim)]">
+					Twin {twin.code} · {twinIconLabel(twin.icon)}
+				</div>
 			</div>
 		</div>
-		{#if isBest}<Badge level="ok">Terbaik</Badge>{/if}
+		<div class="flex flex-col items-end gap-1">
+			{#if isBest}<Badge level="ok">Terbaik</Badge>{/if}
+			{#if twin.deleted_by_hard_rule}
+				<Tooltip text="Dikeluarkan dari rekomendasi karena melanggar aturan keras (macet atau DSR > 30% lebih dari 6 bulan).">
+					<Badge level="red">Aturan keras</Badge>
+				</Tooltip>
+			{/if}
+		</div>
 	</div>
 
 	<div class="mt-3 grid grid-cols-2 gap-3">

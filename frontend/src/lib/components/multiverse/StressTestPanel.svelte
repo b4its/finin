@@ -3,14 +3,15 @@
 	import type { Twin } from '$lib/api/types';
 	import { rupiahBrief } from '$lib/utils/format';
 
-	let { twins }: { twins: Twin[] } = $props();
+	let {
+		twins,
+		active = $bindable<string | null>(null)
+	}: { twins: Twin[]; active?: string | null } = $props();
 
 	const SHOCKS = [
 		{ code: 'income_loss_3m', label: 'Kehilangan penghasilan 3 bulan', icon: '📉' },
 		{ code: 'emergency_cost_2x', label: 'Biaya darurat 2× pengeluaran (tahun ke-2)', icon: '🚑' }
 	];
-
-	let active = $state<string | null>(null);
 
 	function resultFor(t: Twin, shock: string) {
 		return t.stress.find((s) => s.shock === shock);

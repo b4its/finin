@@ -25,6 +25,8 @@
 	let detailTwin = $state<Twin | null>(null);
 	let detailOpen = $state(false);
 	let preset = $state<string | null>(null);
+	let activeShock = $state<string | null>(null);
+	let focusedTwin = $state<string | null>(null);
 
 	onMount(async () => {
 		if (!sim.result || sim.result.id !== simId) {
@@ -113,11 +115,16 @@
 
 		<div class="grid grid-cols-1 gap-5 lg:grid-cols-3">
 			<div class="space-y-5 lg:col-span-2">
-				<BranchTree twins={result.twins} selectedYear={year} />
-				<TimeScrubber bind:year narration={sim.textForTwin(result.twins[1]?.code ?? '0', year)} />
+				<BranchTree twins={result.twins} selectedYear={year} brokenShock={activeShock} />
+				<TimeScrubber
+					bind:year
+					twins={result.twins}
+					narration={sim.textForTwin(focusedTwin ?? result.twins[1]?.code ?? '0', year)}
+					onFocusTwin={(c) => (focusedTwin = c)}
+				/>
 				<NetWorthChart twins={result.twins} bind:selectedYear={year} bind:real />
 				<CompareView twins={result.twins} />
-				<StressTestPanel twins={result.twins} />
+				<StressTestPanel twins={result.twins} bind:active={activeShock} />
 			</div>
 
 			<div class="space-y-4">
