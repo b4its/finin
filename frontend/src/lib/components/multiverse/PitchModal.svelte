@@ -39,6 +39,15 @@
 		};
 	});
 
+	let fastest100m = $derived.by(() => {
+		const reached = simulation.twins
+			.map((t) => ({ twin: t, month: t.milestones?.net_worth_100m }))
+			.filter((x): x is { twin: Twin; month: number } => typeof x.month === 'number');
+		if (!reached.length) return null;
+		reached.sort((a, b) => a.month - b.month);
+		return reached[0];
+	});
+
 	function next() {
 		if (currentSlide < 3) currentSlide++;
 	}
@@ -179,6 +188,16 @@
 										</div>
 									</div>
 								</div>
+								{#if fastest100m}
+									<div
+										class="mt-3 border-t border-[var(--color-line)] pt-3 text-xs text-emerald-400 font-semibold text-center"
+									>
+										🚀 100 Juta Pertama: Twin {fastest100m.twin.code} ({fastest100m.twin.label})
+										mencapai di {fastest100m.month === 0
+											? 'Bulan ke-0 (Awal)'
+											: `Bulan ke-${fastest100m.month}`}
+									</div>
+								{/if}
 							</div>
 						{/if}
 					</div>
