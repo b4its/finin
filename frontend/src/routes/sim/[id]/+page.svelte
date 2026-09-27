@@ -13,6 +13,8 @@
 	import MilestoneTracker from '$lib/components/multiverse/MilestoneTracker.svelte';
 	import FinancialHealthScorecard from '$lib/components/multiverse/FinancialHealthScorecard.svelte';
 	import PurchasingPowerHorizon from '$lib/components/multiverse/PurchasingPowerHorizon.svelte';
+	import PortfolioAllocationRadar from '$lib/components/multiverse/PortfolioAllocationRadar.svelte';
+	import TaxAndBPJSBreakdown from '$lib/components/multiverse/TaxAndBPJSBreakdown.svelte';
 	import ScenarioSandbox from '$lib/components/multiverse/ScenarioSandbox.svelte';
 	import ShareModal from '$lib/components/multiverse/ShareModal.svelte';
 	import Disclaimer from '$lib/components/ui/Disclaimer.svelte';
@@ -212,7 +214,9 @@
 				<CompareView twins={result.twins} {year} />
 				<MilestoneTracker twins={result.twins} />
 				<FinancialHealthScorecard twins={result.twins} />
+				<PortfolioAllocationRadar twins={result.twins} />
 				<PurchasingPowerHorizon twins={result.twins} />
+				<TaxAndBPJSBreakdown initialGross={sim.input.profile.income_monthly || 10000000} />
 				<StressTestPanel twins={result.twins} bind:active={activeShock} />
 				<ScenarioSandbox />
 			</div>
