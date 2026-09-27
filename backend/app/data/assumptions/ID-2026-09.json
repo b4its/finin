@@ -1,0 +1,178 @@
+{
+  "code": "ID-2026-09",
+  "as_of": "2026-09-30",
+  "label": "Set asumsi Indonesia — September 2026",
+  "engine_version": "2.0.0",
+  "presets": {
+    "konservatif": {
+      "inflation": 0.040,
+      "returns": {
+        "savings": 0.010,
+        "deposit": 0.030,
+        "money_market": 0.035,
+        "bond": 0.060,
+        "stock": 0.050
+      },
+      "salary_growth": 0.030,
+      "s2_salary_premium": 0.080
+    },
+    "moderat": {
+      "inflation": 0.030,
+      "returns": {
+        "savings": 0.010,
+        "deposit": 0.035,
+        "money_market": 0.045,
+        "bond": 0.068,
+        "stock": 0.090
+      },
+      "salary_growth": 0.050,
+      "s2_salary_premium": 0.150
+    },
+    "optimis": {
+      "inflation": 0.025,
+      "returns": {
+        "savings": 0.010,
+        "deposit": 0.040,
+        "money_market": 0.055,
+        "bond": 0.070,
+        "stock": 0.120
+      },
+      "salary_growth": 0.070,
+      "s2_salary_premium": 0.250
+    }
+  },
+  "common": {
+    "bi_rate": 0.0575,
+    "education_wage": {
+      "sma": 3080000,
+      "d1_d3": 4040000,
+      "d4_s3": 4770000
+    },
+    "upskill_premium": 0.10,
+    "premium_after_months": 12,
+    "job_wait_months": 3,
+    "emergency_fund_months_min": 3,
+    "emergency_fund_months_max": 6,
+    "s2_premium_range": [0.08, 0.25],
+    "stock_volatility": 0.18,
+    "downside_probability": 0.20
+  },
+  "regulatory": {
+    "ruleset_version": "SEOJK-19-2025",
+    "replaces": "SEOJK-19-2023",
+    "effective_from": "2025-07-31",
+    "source": {
+      "label": "SEOJK 19/SEOJK.06/2025 (mencabut SEOJK 19/2023)",
+      "url": "https://www.ojk.go.id/id/regulasi/"
+    },
+    "consumer_caps": [
+      {"tenor_max_months": 6, "rate_daily_max": 0.003, "penalty_daily_max": 0.003},
+      {"tenor_max_months": null, "rate_daily_max": 0.002, "penalty_daily_max": 0.002}
+    ],
+    "lock_cap_ratio": 1.00,
+    "dsr_cap": 0.30,
+    "dsr_effective_from": "2026-01-01",
+    "default_days": 90
+  },
+  "sources": {
+    "inflation": {
+      "label": "Sasaran BI 2,5% ± 1% (PMK 31/2024); realisasi Agustus 2026 3,19% (BPS)",
+      "url": "https://www.bi.go.id/id/statistik/indikator/target-inflasi.aspx",
+      "as_of": "2026-09-30",
+      "kind": "official"
+    },
+    "bi_rate": {
+      "label": "BI-Rate hasil RDG 23 September 2026",
+      "url": "https://www.bi.go.id/id/publikasi/ruang-media/news-release/",
+      "as_of": "2026-09-23",
+      "kind": "official"
+    },
+    "returns.savings": {
+      "label": "Asumsi bunga tabungan reguler (umumnya di bawah LPS)",
+      "url": "https://www.lps.go.id/tingkat-bunga-penjaminan",
+      "as_of": "2026-09-30",
+      "kind": "assumption"
+    },
+    "returns.deposit": {
+      "label": "Deposito di bawah bunga penjaminan LPS bank umum 3,75% (s.d. 30 Sep 2026)",
+      "url": "https://www.lps.go.id/tingkat-bunga-penjaminan",
+      "as_of": "2026-09-30",
+      "kind": "official"
+    },
+    "returns.money_market": {
+      "label": "Reksa dana pasar uang 4–5,5%/tahun (Kompas.id)",
+      "url": "https://www.kompas.id/",
+      "as_of": "2026-09-30",
+      "kind": "media"
+    },
+    "returns.bond": {
+      "label": "SR025: T3 6,80%, T5 6,90% (Kemenkeu/DJPPR)",
+      "url": "https://www.kemenkeu.go.id/informasi-publik/surat-berharga-negara-ritel",
+      "as_of": "2026-09-30",
+      "kind": "official"
+    },
+    "returns.stock": {
+      "label": "ASUMSI jangka panjang reksa dana indeks saham, berisiko, bukan jaminan",
+      "url": "https://www.ojk.go.id/id/kanal/pasar-modal/",
+      "as_of": "2026-09-30",
+      "kind": "assumption"
+    },
+    "salary_growth": {
+      "label": "Asumsi kenaikan gaji nominal; referensi kenaikan UMP 2026 rata-rata 5–7%",
+      "url": "https://www.kemnaker.go.id/",
+      "as_of": "2026-09-30",
+      "kind": "assumption"
+    },
+    "education_wage": {
+      "label": "Rata-rata upah Sakernas BPS Februari 2026: SMA 3,08 jt; D1–D3 4,04 jt; D4–S3 4,77 jt",
+      "url": "https://www.bps.go.id/id/statistics-table",
+      "as_of": "2026-02-28",
+      "kind": "official"
+    },
+    "s2_salary_premium": {
+      "label": "Imbal hasil pendidikan Indonesia ±4,7%/tahun sekolah (Purnastuti 2015); literatur lain 6–11%",
+      "url": "https://www.tandfonline.com/",
+      "as_of": "2015-12-31",
+      "kind": "academic"
+    },
+    "upskill_premium": {
+      "label": "ASUMSI tanpa data resmi — premi keahlian setelah kursus",
+      "url": "",
+      "as_of": "2026-09-30",
+      "kind": "assumption"
+    },
+    "job_wait_months": {
+      "label": "ASUMSI masa tunggu kerja lulusan, bisa diedit",
+      "url": "",
+      "as_of": "2026-09-30",
+      "kind": "assumption"
+    },
+    "emergency_fund_months": {
+      "label": "Target dana darurat 3–6 bulan biaya hidup (Media Keuangan Kemenkeu, untuk lajang)",
+      "url": "https://www.kemenkeu.go.id/media/",
+      "as_of": "2026-09-30",
+      "kind": "official"
+    },
+    "regulatory": {
+      "label": "SEOJK 19/SEOJK.06/2025: batas bunga 0,3%/hari (tenor ≤6 bln) & 0,2%/hari (>6 bln), denda sama, lock cap 100% pokok, DSR 30% sejak 2026",
+      "url": "https://www.ojk.go.id/id/regulasi/",
+      "as_of": "2025-07-31",
+      "kind": "official"
+    },
+    "paylater_rate": {
+      "label": "Bunga paylater wajib diisi pengguna — sangat bervariasi antar-penyedia, tidak diberi default",
+      "url": "https://www.ojk.go.id/id/kanal/iknb/",
+      "as_of": "2026-09-30",
+      "kind": "assumption"
+    }
+  },
+  "market_context": [
+    {"label": "Utang pinjol Rp105,63 T (juli 2026, +24,76% yoy); TWP90 4,32%", "source": "OJK"},
+    {"label": "48,65% kredit macet pinjol dari usia 19–34 (Maret 2026)", "source": "OJK"},
+    {"label": "Paylater bank Rp31,5 T, perusahaan pembiayaan Rp13,62 T; 93% konsumsi", "source": "OJK"},
+    {"label": "Indeks literasi keuangan 69,57% vs inklusi 93,61% (SNLIK 2026)", "source": "OJK–BPS–LPS"},
+    {"label": "90% pekerja menanggung dua generasi (Sun Life Indonesia, Feb 2026)", "source": "Sun Life"},
+    {"label": "52,2% generasi sandwich belum punya dana darurat (Katadata, 2021)", "source": "Katadata"},
+    {"label": "KPPU denda 97 perusahaan pinjol Rp755 miliar atas kartel bunga (26 Mar 2026)", "source": "KPPU"}
+  ]
+}
