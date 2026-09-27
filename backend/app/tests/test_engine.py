@@ -636,4 +636,52 @@ def test_haji_furoda_vs_reguler(assumptions):
     assert res_r.at_year(20).net_worth > res_q.at_year(20).net_worth
 
 
+def test_career_corporate_vs_freelance(assumptions):
+    from app.engine.regulatory import ruleset_from_assumptions
+    from app.schemas.input import CareerCorporateDecision, CareerFreelanceDecision
+
+    prof = Profile(
+        age=27,
+        income_type="salary",
+        income_monthly=12_000_000,
+        expense_monthly=5_000_000,
+        dependents_monthly=0,
+        savings=40_000_000,
+        existing_debt=ExistingDebt(),
+    )
+    ip = IncomeProfile("salary", 12_000_000)
+    rs = ruleset_from_assumptions(None)
+    dec = Decision(
+        type="career_corporate_vs_freelance",
+        career_corporate=CareerCorporateDecision(
+            salary_growth_annual=0.06,
+            bonus_months_annual=2.0,
+        ),
+        career_freelance=CareerFreelanceDecision(
+            revenue_multiplier=1.40,
+            emergency_target_months=9,
+            bpjs_mandiri_monthly=350_000,
+        ),
+    )
+    twins = twins_for_decision(dec, prof, ip, rs, 0.05, {})
+    assert len(twins) == 2
+    twin_s, twin_t = twins[0], twins[1]
+    assert twin_s.code == "S"
+    assert twin_s.emergency_target_months == 6
+    assert twin_s.business_profit_monthly == (12_000_000 * 2.0) / 12.0
+
+    assert twin_t.code == "T"
+    assert twin_t.emergency_target_months == 9
+    assert twin_t.insurance_monthly == 350_000
+    assert twin_t.business_profit_monthly == pytest.approx(12_000_000 * 0.40)
+
+    res_s = simulate(twin_s, prof, ip, {"inflation": 0.03, "returns": {"money_market": 0.045}}, rs, months=120)
+    res_t = simulate(twin_t, prof, ip, {"inflation": 0.03, "returns": {"money_market": 0.045}}, rs, months=120)
+
+    assert res_s.at_year(5).net_worth > 0
+    assert res_t.at_year(5).net_worth > 0
+    assert res_s.at_year(10).net_worth > 0
+    assert res_t.at_year(10).net_worth > 0
+
+
 

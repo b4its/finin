@@ -34,6 +34,8 @@ TWIN_STYLE = {
     "P": {"color": "#059669", "dash": "dashed", "icon": "graduation-cap"},
     "Q": {"color": "#D97706", "dash": "solid", "icon": "kaaba"},
     "R": {"color": "#0D9488", "dash": "dashed", "icon": "moon"},
+    "S": {"color": "#3B82F6", "dash": "solid", "icon": "building"},
+    "T": {"color": "#F59E0B", "dash": "dashed", "icon": "laptop"},
 }
 
 STYLE_FALLBACK = {"color": "#94A3B8", "dash": "solid", "icon": "circle"}
@@ -602,6 +604,58 @@ def twins_for_decision(
         )
         return [twin_q, twin_r]
 
+    if (
+        dec.type == "career_corporate_vs_freelance"
+        and dec.career_corporate
+        and dec.career_freelance
+    ):
+        s_style = _style("S")
+        t_style = _style("T")
+
+        # Bonus tahunan korporat disebar rata per bulan
+        corp_bonus_monthly = (profile.income_monthly * dec.career_corporate.bonus_months_annual) / 12.0
+
+        twin_s = TwinConfig(
+            code="S",
+            label="Si Pegawai Korporat",
+            description=(
+                f"Karier korporat stabil (gaji pokok Rp{profile.income_monthly:,.0f}/bln "
+                f"+ bonus tahunan {dec.career_corporate.bonus_months_annual}x gaji, "
+                f"fasilitas BPJS PPU subsidi kantor)."
+            ),
+            business_profit_monthly=corp_bonus_monthly,
+            emergency_target_months=6,
+            emergency_first=False,
+            meta={
+                "bonus_months_annual": dec.career_corporate.bonus_months_annual,
+                "corp_bonus_monthly": corp_bonus_monthly,
+            },
+            **s_style,
+        )
+
+        # Freelancer: premi omset lebih tinggi tapi bayar BPJS mandiri & butuh dana darurat lebih tebal
+        freelance_gross_extra = profile.income_monthly * (dec.career_freelance.revenue_multiplier - 1.0)
+        twin_t = TwinConfig(
+            code="T",
+            label="Si Freelancer & Solopreneur",
+            description=(
+                f"Karier independen (omset {dec.career_freelance.revenue_multiplier:.1f}x gaji, "
+                f"iuran BPJS BPU mandiri Rp{dec.career_freelance.bpjs_mandiri_monthly:,.0f}/bln, "
+                f"target dana darurat {dec.career_freelance.emergency_target_months} bln)."
+            ),
+            business_profit_monthly=freelance_gross_extra,
+            insurance_monthly=dec.career_freelance.bpjs_mandiri_monthly,
+            emergency_target_months=dec.career_freelance.emergency_target_months,
+            emergency_first=True,
+            meta={
+                "revenue_multiplier": dec.career_freelance.revenue_multiplier,
+                "bpjs_mandiri_monthly": dec.career_freelance.bpjs_mandiri_monthly,
+                "emergency_target_months": dec.career_freelance.emergency_target_months,
+            },
+            **t_style,
+        )
+        return [twin_s, twin_t]
+
     return []
 
 
@@ -902,6 +956,40 @@ def decision_templates() -> list[dict]:
                     "key": "haji_reguler.invest_instrument",
                     "label": "Instrumen investasi syariah pembanding",
                     "type": "instrument",
+                },
+            ],
+        },
+        {
+            "type": "career_corporate_vs_freelance",
+            "title": "Jalur Karier: Pegawai Korporat (Gaji + BPJS PPU) vs Freelancer / Solopreneur",
+            "twin_a": {"code": "S", "label": "Si Pegawai Korporat", **_style("S")},
+            "twin_b": {"code": "T", "label": "Si Freelancer & Solopreneur", **_style("T")},
+            "fields": [
+                {
+                    "key": "career_corporate.bonus_months_annual",
+                    "label": "Bonus tahunan korporat (kali gaji)",
+                    "type": "float",
+                    "min": 0.0,
+                    "max": 6.0,
+                },
+                {
+                    "key": "career_freelance.revenue_multiplier",
+                    "label": "Pengali omset freelance vs gaji korporat",
+                    "type": "float",
+                    "min": 1.0,
+                    "max": 3.0,
+                },
+                {
+                    "key": "career_freelance.emergency_target_months",
+                    "label": "Target dana darurat freelancer (bulan)",
+                    "type": "int",
+                    "min": 6,
+                    "max": 18,
+                },
+                {
+                    "key": "career_freelance.bpjs_mandiri_monthly",
+                    "label": "Biaya BPJS Ketenagakerjaan BPU + Kesehatan mandiri/bln",
+                    "type": "currency",
                 },
             ],
         },

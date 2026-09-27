@@ -157,6 +157,17 @@ class HajiRegulerDecision(BaseModel):
     invest_instrument: Instrument = "bond"
 
 
+class CareerCorporateDecision(BaseModel):
+    salary_growth_annual: float = Field(0.06, ge=0.01, le=0.20)
+    bonus_months_annual: float = Field(1.5, ge=0.0, le=6.0)
+
+
+class CareerFreelanceDecision(BaseModel):
+    revenue_multiplier: float = Field(1.40, ge=1.0, le=3.0)
+    emergency_target_months: int = Field(9, ge=6, le=18)
+    bpjs_mandiri_monthly: float = Field(350_000, ge=100_000)
+
+
 class Decision(BaseModel):
     type: Literal[
         "loan_vs_save",
@@ -168,6 +179,7 @@ class Decision(BaseModel):
         "franchise_vs_passive_invest",
         "child_education_unitlink_vs_diy",
         "haji_furoda_vs_reguler",
+        "career_corporate_vs_freelance",
     ]
     loan: LoanDecision | None = None
     save: SaveDecision | None = None
@@ -186,6 +198,8 @@ class Decision(BaseModel):
     child_education_diy: ChildEducationDiyDecision | None = None
     haji_furoda: HajiFurodaDecision | None = None
     haji_reguler: HajiRegulerDecision | None = None
+    career_corporate: CareerCorporateDecision | None = None
+    career_freelance: CareerFreelanceDecision | None = None
 
     @model_validator(mode="after")
     def _require_payload(self) -> Decision:
@@ -217,6 +231,12 @@ class Decision(BaseModel):
             self.haji_furoda is None or self.haji_reguler is None
         ):
             raise ValueError("haji_furoda_vs_reguler butuh 'haji_furoda' dan 'haji_reguler'")
+        if self.type == "career_corporate_vs_freelance" and (
+            self.career_corporate is None or self.career_freelance is None
+        ):
+            raise ValueError(
+                "career_corporate_vs_freelance butuh 'career_corporate' dan 'career_freelance'"
+            )
         return self
 
 

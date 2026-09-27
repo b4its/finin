@@ -98,6 +98,7 @@ async def test_templates(client: AsyncClient):
         "franchise_vs_passive_invest",
         "child_education_unitlink_vs_diy",
         "haji_furoda_vs_reguler",
+        "career_corporate_vs_freelance",
     }
 
 
@@ -618,6 +619,42 @@ async def test_api_haji_furoda_vs_reguler(client: AsyncClient):
     assert "0" in codes
     assert "Q" in codes
     assert "R" in codes
+
+
+async def test_api_career_corporate_vs_freelance(client: AsyncClient):
+    payload = {
+        "profile": {
+            "age": 27,
+            "income_type": "salary",
+            "income_monthly": 15_000_000,
+            "expense_monthly": 6_000_000,
+            "dependents_monthly": 0,
+            "savings": 50_000_000,
+            "existing_debt": {"principal": 0, "monthly_payment": 0},
+        },
+        "decisions": [
+            {
+                "type": "career_corporate_vs_freelance",
+                "career_corporate": {
+                    "salary_growth_annual": 0.06,
+                    "bonus_months_annual": 2.0,
+                },
+                "career_freelance": {
+                    "revenue_multiplier": 1.40,
+                    "emergency_target_months": 9,
+                    "bpjs_mandiri_monthly": 350_000,
+                },
+            }
+        ],
+        "preset": "moderat",
+    }
+    r = await client.post("/api/v1/simulations", json=payload)
+    assert r.status_code == 201
+    body = r.json()
+    codes = [t["code"] for t in body["twins"]]
+    assert "0" in codes
+    assert "S" in codes
+    assert "T" in codes
 
 
 
