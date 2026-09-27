@@ -684,4 +684,59 @@ def test_career_corporate_vs_freelance(assumptions):
     assert res_t.at_year(10).net_worth > 0
 
 
+def test_rental_property_vs_dividend(assumptions):
+    from app.engine.regulatory import ruleset_from_assumptions
+    from app.schemas.input import DividendInvestDecision, RentalPropertyDecision
+
+    prof = Profile(
+        age=30,
+        income_type="salary",
+        income_monthly=18_000_000,
+        expense_monthly=7_000_000,
+        dependents_monthly=0,
+        savings=150_000_000,
+        existing_debt=ExistingDebt(),
+    )
+    ip = IncomeProfile("salary", 18_000_000)
+    rs = ruleset_from_assumptions(None)
+    dec = Decision(
+        type="rental_property_vs_dividend",
+        rental_property=RentalPropertyDecision(
+            property_price=600_000_000,
+            down_payment_pct=0.20,
+            kpr_interest_rate_annual=0.085,
+            kpr_tenor_years=15,
+            gross_rental_yield_annual=0.08,
+            occupancy_rate=0.85,
+            operational_cost_pct=0.15,
+            property_appreciation_annual=0.04,
+        ),
+        dividend_invest=DividendInvestDecision(
+            invest_instrument="stock",
+        ),
+    )
+    twins = twins_for_decision(dec, prof, ip, rs, 0.05, {})
+    assert len(twins) == 2
+    twin_u, twin_v = twins[0], twins[1]
+    assert twin_u.code == "U"
+    assert twin_u.initial_dp == 120_000_000
+    assert twin_u.property_initial_value == 600_000_000
+    assert twin_u.loan is not None
+    assert twin_u.loan.principal == 480_000_000
+    assert twin_u.business_profit_monthly > 0  # net rental income is positive
+
+    assert twin_v.code == "V"
+    assert twin_v.loan is None
+    assert twin_v.monthly_invest > 0
+    assert twin_v.instrument == "stock"
+
+    res_u = simulate(twin_u, prof, ip, {"inflation": 0.03, "returns": {"stock": 0.09}}, rs, months=240)
+    res_v = simulate(twin_v, prof, ip, {"inflation": 0.03, "returns": {"stock": 0.09}}, rs, months=240)
+
+    assert res_u.at_year(10).net_worth > 0
+    assert res_v.at_year(10).net_worth > 0
+    assert res_u.at_year(20).net_worth > 0
+    assert res_v.at_year(20).net_worth > 0
+
+
 

@@ -168,6 +168,21 @@ class CareerFreelanceDecision(BaseModel):
     bpjs_mandiri_monthly: float = Field(350_000, ge=100_000)
 
 
+class RentalPropertyDecision(BaseModel):
+    property_price: float = Field(..., ge=50_000_000)
+    down_payment_pct: float = Field(0.20, ge=0.05, le=0.50)
+    kpr_interest_rate_annual: float = Field(0.085, ge=0.01, le=0.20)
+    kpr_tenor_years: int = Field(15, ge=5, le=25)
+    gross_rental_yield_annual: float = Field(0.08, ge=0.02, le=0.20)
+    occupancy_rate: float = Field(0.85, ge=0.50, le=1.00)
+    operational_cost_pct: float = Field(0.15, ge=0.05, le=0.40)
+    property_appreciation_annual: float = Field(0.04, ge=0.00, le=0.15)
+
+
+class DividendInvestDecision(BaseModel):
+    invest_instrument: Instrument = "stock"
+
+
 class Decision(BaseModel):
     type: Literal[
         "loan_vs_save",
@@ -180,6 +195,7 @@ class Decision(BaseModel):
         "child_education_unitlink_vs_diy",
         "haji_furoda_vs_reguler",
         "career_corporate_vs_freelance",
+        "rental_property_vs_dividend",
     ]
     loan: LoanDecision | None = None
     save: SaveDecision | None = None
@@ -200,6 +216,8 @@ class Decision(BaseModel):
     haji_reguler: HajiRegulerDecision | None = None
     career_corporate: CareerCorporateDecision | None = None
     career_freelance: CareerFreelanceDecision | None = None
+    rental_property: RentalPropertyDecision | None = None
+    dividend_invest: DividendInvestDecision | None = None
 
     @model_validator(mode="after")
     def _require_payload(self) -> Decision:
@@ -236,6 +254,12 @@ class Decision(BaseModel):
         ):
             raise ValueError(
                 "career_corporate_vs_freelance butuh 'career_corporate' dan 'career_freelance'"
+            )
+        if self.type == "rental_property_vs_dividend" and (
+            self.rental_property is None or self.dividend_invest is None
+        ):
+            raise ValueError(
+                "rental_property_vs_dividend butuh 'rental_property' dan 'dividend_invest'"
             )
         return self
 

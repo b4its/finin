@@ -36,6 +36,8 @@ TWIN_STYLE = {
     "R": {"color": "#0D9488", "dash": "dashed", "icon": "moon"},
     "S": {"color": "#3B82F6", "dash": "solid", "icon": "building"},
     "T": {"color": "#F59E0B", "dash": "dashed", "icon": "laptop"},
+    "U": {"color": "#8B5CF6", "dash": "solid", "icon": "building-2"},
+    "V": {"color": "#10B981", "dash": "dashed", "icon": "chart-line"},
 }
 
 STYLE_FALLBACK = {"color": "#94A3B8", "dash": "solid", "icon": "circle"}
@@ -656,6 +658,82 @@ def twins_for_decision(
         )
         return [twin_s, twin_t]
 
+    if (
+        dec.type == "rental_property_vs_dividend"
+        and dec.rental_property
+        and dec.dividend_invest
+    ):
+        u_style = _style("U")
+        v_style = _style("V")
+
+        prop = dec.rental_property
+        dp_amount = prop.property_price * prop.down_payment_pct
+        loan_principal = prop.property_price - dp_amount
+        tenor_months = prop.kpr_tenor_years * 12
+        kpr_loan = Loan(
+            kind="kpr",
+            principal=loan_principal,
+            tenor_months=tenor_months,
+            annual_rate=prop.kpr_interest_rate_annual,
+            ruleset=ruleset,
+        )
+
+        # Pendapatan sewa bruto = Harga properti * Yield kotor * Okupansi
+        gross_annual_rent = prop.property_price * prop.gross_rental_yield_annual * prop.occupancy_rate
+        # Biaya pemeliharaan & pengelolaan operasional kos/ruko
+        net_after_opex = gross_annual_rent * (1.0 - prop.operational_cost_pct)
+        # PPh Final Sewa Tanah dan/atau Bangunan PP 34/2016 (10% dari nilai bruto sewa)
+        pph_final_rent = gross_annual_rent * 0.10
+        # PBB P2 tahunan (Pajak Bumi & Bangunan) ~0.1% nilai properti
+        pbb_annual = prop.property_price * 0.001
+        net_annual_cashflow = max(0.0, net_after_opex - pph_final_rent - pbb_annual)
+        monthly_net_rent = net_annual_cashflow / 12.0
+
+        twin_u = TwinConfig(
+            code="U",
+            label="Si Juragan Properti Sewa",
+            description=(
+                f"Beli properti sewa komersial Rp{prop.property_price:,.0f} (DP {prop.down_payment_pct:.0%}, "
+                f"KPR {prop.kpr_tenor_years} th bunga {prop.kpr_interest_rate_annual:.1%}/th, "
+                f"arus kas sewa bersih Rp{monthly_net_rent:,.0f}/bln net PPh Final 10% PP 34/2016 & opex)."
+            ),
+            loan=kpr_loan,
+            property_initial_value=prop.property_price,
+            property_appreciation_annual=prop.property_appreciation_annual,
+            initial_dp=dp_amount,
+            business_profit_monthly=monthly_net_rent,
+            monthly_invest=0.0,
+            meta={
+                "property_price": prop.property_price,
+                "dp_amount": dp_amount,
+                "monthly_net_rent": monthly_net_rent,
+                "tenor_years": prop.kpr_tenor_years,
+                "interest_rate": prop.kpr_interest_rate_annual,
+            },
+            **u_style,
+        )
+
+        # Twin V: Portofolio Saham Dividen Pasar Modal (IDX High Dividend 20 / SBN)
+        # Bebas utang fisik, menahan modal DP, dan menginvestasikan selisih cicilan bulanan KPR
+        invest_diff = max(0.0, kpr_loan.scheduled_payment)
+        twin_v = TwinConfig(
+            code="V",
+            label="Si Investor Dividen Pasar Modal",
+            description=(
+                f"Tanpa utang fisik properti, menahan modal DP di portofolio, dan mengalokasikan "
+                f"setara cicilan KPR Rp{invest_diff:,.0f}/bln ke {dec.dividend_invest.invest_instrument} "
+                f"(bebas PPh dividen UU HPP)."
+            ),
+            monthly_invest=invest_diff,
+            instrument=dec.dividend_invest.invest_instrument,
+            meta={
+                "monthly_invest": invest_diff,
+                "instrument": dec.dividend_invest.invest_instrument,
+            },
+            **v_style,
+        )
+        return [twin_u, twin_v]
+
     return []
 
 
@@ -990,6 +1068,52 @@ def decision_templates() -> list[dict]:
                     "key": "career_freelance.bpjs_mandiri_monthly",
                     "label": "Biaya BPJS Ketenagakerjaan BPU + Kesehatan mandiri/bln",
                     "type": "currency",
+                },
+            ],
+        },
+        {
+            "type": "rental_property_vs_dividend",
+            "title": "Investasi Properti Sewa (KPR Kos/Ruko) vs Saham Dividen (IDX High Dividend 20)",
+            "twin_a": {"code": "U", "label": "Si Juragan Properti Sewa", **_style("U")},
+            "twin_b": {"code": "V", "label": "Si Investor Dividen Pasar Modal", **_style("V")},
+            "fields": [
+                {
+                    "key": "rental_property.property_price",
+                    "label": "Harga properti sewa komersial",
+                    "type": "currency",
+                },
+                {
+                    "key": "rental_property.down_payment_pct",
+                    "label": "Uang muka (DP)",
+                    "type": "percent",
+                    "min": 0.05,
+                    "max": 0.50,
+                },
+                {
+                    "key": "rental_property.kpr_interest_rate_annual",
+                    "label": "Suku bunga KPR komersial/tahun",
+                    "type": "percent",
+                    "min": 0.03,
+                    "max": 0.15,
+                },
+                {
+                    "key": "rental_property.kpr_tenor_years",
+                    "label": "Tenor KPR (tahun)",
+                    "type": "int",
+                    "min": 5,
+                    "max": 25,
+                },
+                {
+                    "key": "rental_property.gross_rental_yield_annual",
+                    "label": "Rental yield kotor/tahun",
+                    "type": "percent",
+                    "min": 0.04,
+                    "max": 0.15,
+                },
+                {
+                    "key": "dividend_invest.invest_instrument",
+                    "label": "Instrumen investasi dividen pembanding",
+                    "type": "instrument",
                 },
             ],
         },

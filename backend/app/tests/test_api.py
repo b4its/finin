@@ -99,6 +99,7 @@ async def test_templates(client: AsyncClient):
         "child_education_unitlink_vs_diy",
         "haji_furoda_vs_reguler",
         "career_corporate_vs_freelance",
+        "rental_property_vs_dividend",
     }
 
 
@@ -655,6 +656,47 @@ async def test_api_career_corporate_vs_freelance(client: AsyncClient):
     assert "0" in codes
     assert "S" in codes
     assert "T" in codes
+
+
+async def test_api_rental_property_vs_dividend(client: AsyncClient):
+    payload = {
+        "profile": {
+            "age": 30,
+            "income_type": "salary",
+            "income_monthly": 18_000_000,
+            "expense_monthly": 7_000_000,
+            "dependents_monthly": 0,
+            "savings": 150_000_000,
+            "existing_debt": {"principal": 0, "monthly_payment": 0},
+        },
+        "decisions": [
+            {
+                "type": "rental_property_vs_dividend",
+                "rental_property": {
+                    "property_price": 500_000_000,
+                    "down_payment_pct": 0.20,
+                    "kpr_interest_rate_annual": 0.085,
+                    "kpr_tenor_years": 15,
+                    "gross_rental_yield_annual": 0.08,
+                    "occupancy_rate": 0.85,
+                    "operational_cost_pct": 0.15,
+                    "property_appreciation_annual": 0.04,
+                },
+                "dividend_invest": {
+                    "invest_instrument": "stock",
+                },
+            }
+        ],
+        "preset": "moderat",
+    }
+    r = await client.post("/api/v1/simulations", json=payload)
+    assert r.status_code == 201
+    body = r.json()
+    codes = [t["code"] for t in body["twins"]]
+    assert "0" in codes
+    assert "U" in codes
+    assert "V" in codes
+
 
 
 
