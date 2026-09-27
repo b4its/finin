@@ -19,6 +19,8 @@
 	import PensionAndFireCalculator from '$lib/components/multiverse/PensionAndFireCalculator.svelte';
 	import SandwichGenerationCalculator from '$lib/components/multiverse/SandwichGenerationCalculator.svelte';
 	import EstatePlanningSimulator from '$lib/components/multiverse/EstatePlanningSimulator.svelte';
+	import MonteCarloSimulation from '$lib/components/multiverse/MonteCarloSimulation.svelte';
+	import DebtPayoffAccelerator from '$lib/components/multiverse/DebtPayoffAccelerator.svelte';
 	import ScenarioSandbox from '$lib/components/multiverse/ScenarioSandbox.svelte';
 	import ShareModal from '$lib/components/multiverse/ShareModal.svelte';
 	import Disclaimer from '$lib/components/ui/Disclaimer.svelte';
@@ -218,8 +220,10 @@
 				<CompareView twins={result.twins} {year} />
 				<MilestoneTracker twins={result.twins} />
 				<FinancialHealthScorecard twins={result.twins} />
+				<MonteCarloSimulation twins={result.twins} {simId} preset={preset ?? result.preset} />
 				<PortfolioAllocationRadar twins={result.twins} />
 				<PurchasingPowerHorizon twins={result.twins} />
+				<DebtPayoffAccelerator profile={sim.input.profile} twins={result.twins} />
 				<ZakatAndFinalTaxCalculator twins={result.twins} profile={sim.input.profile} />
 				<PensionAndFireCalculator twins={result.twins} profile={sim.input.profile} />
 				<SandwichGenerationCalculator profile={sim.input.profile} twins={result.twins} />

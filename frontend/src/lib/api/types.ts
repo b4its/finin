@@ -301,6 +301,54 @@ export interface IceVehicleSpec {
 	invest_instrument: string;
 }
 
+export interface HealthBPJSSpec {
+	class_level: number;
+	monthly_premium: number;
+	invest_instrument: string;
+}
+
+export interface HealthPrivateSpec {
+	monthly_premium: number;
+	annual_limit: number;
+	coverage_ratio_catastrophic: number;
+}
+
+export interface PercentileValues {
+	p10: number;
+	p25: number;
+	p50: number;
+	p75: number;
+	p90: number;
+}
+
+export interface MonteCarloYearPercentile {
+	year: number;
+	nominal: PercentileValues;
+	real: PercentileValues;
+}
+
+export interface MonteCarloMetrics {
+	success_rate_positive_y10: number;
+	success_rate_wealth_preservation_y10: number;
+	median_net_worth_nominal_y10: number;
+	median_net_worth_real_y10: number;
+	p10_net_worth_y10: number;
+	p90_net_worth_y10: number;
+	var_95_nominal_y10: number;
+	cvar_95_nominal_y10: number;
+	preset_used: string;
+	instrument_volatility: number;
+	inflation_volatility: number;
+}
+
+export interface MonteCarloResult {
+	twin_code: string;
+	twin_label: string;
+	runs: number;
+	yearly_percentiles: MonteCarloYearPercentile[];
+	metrics: MonteCarloMetrics;
+}
+
 export interface Decision {
 	type: string;
 	loan?: LoanSpec;
@@ -326,4 +374,6 @@ export interface Decision {
 	dividend_invest?: DividendInvestSpec;
 	ev_vehicle?: EvVehicleSpec;
 	ice_vehicle?: IceVehicleSpec;
+	health_bpjs?: HealthBPJSSpec;
+	health_private?: HealthPrivateSpec;
 }

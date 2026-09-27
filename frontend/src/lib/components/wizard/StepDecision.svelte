@@ -68,6 +68,12 @@
 			title: 'Kendaraan Listrik EV vs Bensin (ICE)',
 			icon: '⚡',
 			twins: 'W & X'
+		},
+		{
+			type: 'health_bpjs_vs_private',
+			title: 'BPJS Kesehatan vs Asuransi Swasta Murni',
+			icon: '🩺',
+			twins: 'Y & Z'
 		}
 	];
 
@@ -245,6 +251,20 @@
 					loan_interest_rate_annual: 0.09,
 					loan_tenor_months: 36,
 					invest_instrument: 'bond'
+				}
+			};
+		if (type === 'health_bpjs_vs_private')
+			return {
+				type,
+				health_bpjs: {
+					class_level: 1,
+					monthly_premium: 150_000,
+					invest_instrument: 'bond'
+				},
+				health_private: {
+					monthly_premium: 1_500_000,
+					annual_limit: 2_000_000_000,
+					coverage_ratio_catastrophic: 0.95
 				}
 			};
 		return { type, emergency: { target_months: 6, invest_monthly: 1_000_000 } };
@@ -1117,6 +1137,74 @@
 				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
 					Harga awal kendaraan bensin lebih murah tanpa risiko penggantian baterai di tahun ke-8,
 					namun menanggung beban BBM harian dan PKB tahunan secara berkelanjutan.
+				</p>
+			</div>
+		</div>
+	{/if}
+
+	{#if selected.includes('health_bpjs_vs_private')}
+		{@const d = decisionOf('health_bpjs_vs_private')!}
+		{@const bpjs = d.health_bpjs!}
+		{@const pvt = d.health_private!}
+		<div class="card space-y-4 p-4">
+			<p class="text-sm font-semibold">
+				🩺 BPJS Kesehatan Terpadu (KRIS) vs Asuransi Kesehatan Swasta Murni (Cashless VIP)
+			</p>
+			<div>
+				<p class="mb-3 text-sm font-semibold text-teal-400">
+					Skenario Y — Si Peserta BPJS Terpadu & Dana Darurat Medis
+				</p>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+					<CurrencyInput
+						bind:value={bpjs.monthly_premium}
+						label="Iuran Bulanan BPJS Kesehatan (Kelas 1 / KRIS)"
+						help="Iuran BPJS Kelas 1 per orang Rp150.000/bln (UU No. 24/2011)."
+					/>
+					<label class="block">
+						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]"
+							>Instrumen Investasi Selisih Premi</span
+						>
+						<select class="input" bind:value={bpjs.invest_instrument}>
+							{#each instruments as ins}
+								<option value={ins.value}>{ins.label}</option>
+							{/each}
+						</select>
+					</label>
+				</div>
+				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
+					Mengandalkan faskes berjenjang BPJS Kesehatan. Selisih biaya premi swasta yang jauh lebih
+					mahal diinvestasikan secara disiplin tiap bulan untuk membentuk dana darurat medis
+					mandiri.
+				</p>
+			</div>
+
+			<div class="border-t border-[var(--color-line)] pt-4">
+				<p class="mb-3 text-sm font-semibold text-indigo-400">
+					Skenario Z — Si Pemilik Asuransi Swasta Murni (Cashless RS Swasta & Penyakit Kritis)
+				</p>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+					<CurrencyInput
+						bind:value={pvt.monthly_premium}
+						label="Premi Asuransi Swasta Murni / Bulan"
+						help="Premi murni rawat inap VIP 1 bed tanpa investasi (PAYDI)."
+					/>
+					<CurrencyInput
+						bind:value={pvt.annual_limit}
+						label="Limit Proteksi Medis Tahunan (On-Bill)"
+					/>
+					<PercentInput
+						bind:value={pvt.coverage_ratio_catastrophic}
+						label="Rasio Penyerapan Syok Biaya Darurat"
+						step={5}
+						min={50}
+						max={100}
+						help="Persentase biaya darurat medis yang diserap asuransi (90–100%)."
+					/>
+				</div>
+				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
+					Membayar premi swasta murni secara rutin tiap bulan. Jika terkena guncangan medis darurat,
+					asuransi langsung mencairkan klaim cashless sehingga tabungan dan portofolio investasi
+					tetap aman utuh 100%.
 				</p>
 			</div>
 		</div>

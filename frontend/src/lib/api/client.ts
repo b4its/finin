@@ -7,7 +7,8 @@ import type {
 	Flag,
 	NarrativeChunk,
 	Recommendation,
-	Simulation
+	Simulation,
+	MonteCarloResult
 } from './types';
 
 function baseUrl(): string {
@@ -96,7 +97,12 @@ export const api = {
 			commit_rate: number | null;
 		}>('/impact/summary'),
 	exportCsvUrl: (id: string) => `${baseUrl()}${API}/simulations/${id}/export/csv`,
-	exportJsonUrl: (id: string) => `${baseUrl()}${API}/simulations/${id}/export/json`
+	exportJsonUrl: (id: string) => `${baseUrl()}${API}/simulations/${id}/export/json`,
+	getMonteCarlo: (id: string, twinCode: string = '0', runs: number = 500, preset?: string) => {
+		const p = new URLSearchParams({ twin_code: twinCode, runs: String(runs) });
+		if (preset) p.set('preset', preset);
+		return request<MonteCarloResult>(`/simulations/${id}/monte-carlo?${p.toString()}`);
+	}
 };
 
 /** Stream narasi (SSE) dengan EventSource-like parsing via fetch. */

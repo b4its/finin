@@ -28,6 +28,8 @@ const ICONS: Record<string, string> = {
 	'chart-line': '📈', // Si Investor Dividen Pasar Modal
 	zap: '⚡', // Si Pengadopsi Kendaraan Listrik (EV)
 	fuel: '⛽', // Si Pengendara Bensin Konvensional (ICE)
+	'shield-check': '🛡️', // Si Peserta BPJS Terpadu & Dana Darurat
+	'heart-pulse': '🩺', // Si Pemilik Asuransi Swasta Murni
 	circle: '●'
 };
 
