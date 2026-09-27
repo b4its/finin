@@ -250,8 +250,50 @@ def yearly_series(result: SimResult, max_year: int = 20) -> list[dict]:
     return out
 
 
-def summary(result: SimResult) -> dict:
-    """Metrik pada tahun 5/10/20."""
+def compute_milestones(
+    result: SimResult,
+    base_expense: float = 0.0,
+    emergency_target_months: float = 3.0,
+) -> dict[str, int | None]:
+    """Hitung bulan pencapaian tonggak finansial penting (0..horizon) atau None jika belum tercapai."""
+    target_ef = max(base_expense * emergency_target_months, 1.0)
+    fire_target = max(base_expense * 12 * 25, 1.0)
+    has_debt = any(m.debt > 0 for m in result.months)
+
+    ef_month: int | None = None
+    nw100_month: int | None = None
+    debt_free_month: int | None = None
+    nw1b_month: int | None = None
+    fire_month: int | None = None
+
+    for m in result.months:
+        if ef_month is None and (
+            m.emergency_months >= emergency_target_months or (base_expense > 0 and m.cash >= target_ef)
+        ):
+            ef_month = m.month
+        if nw100_month is None and m.net_worth >= 100_000_000:
+            nw100_month = m.month
+        if nw1b_month is None and m.net_worth >= 1_000_000_000:
+            nw1b_month = m.month
+        if fire_month is None and base_expense > 0 and m.net_worth_real >= fire_target:
+            fire_month = m.month
+        if has_debt and debt_free_month is None and m.month >= 1 and m.debt <= 0.01:
+            debt_free_month = m.month
+
+    if not has_debt:
+        debt_free_month = 0
+
+    return {
+        "emergency_fund_full": ef_month,
+        "net_worth_100m": nw100_month,
+        "debt_free": debt_free_month,
+        "net_worth_1b": nw1b_month,
+        "financial_independence": fire_month,
+    }
+
+
+def summary(result: SimResult, base_expense: float = 0.0) -> dict:
+    """Metrik pada tahun 5/10/20 serta tonggak capaian finansial."""
     out: dict = {}
     for y in (5, 10, 20):
         s = result.at_year(y)
@@ -273,4 +315,10 @@ def summary(result: SimResult) -> dict:
     out["dsr_over_months"] = result.dsr_over_months
     out["final_net_worth"] = seen[-1].net_worth
     out["final_net_worth_real"] = seen[-1].net_worth_real
+    out["milestones"] = compute_milestones(
+        result,
+        base_expense=base_expense,
+        emergency_target_months=float(result.config.emergency_target_months),
+    )
     return out
+

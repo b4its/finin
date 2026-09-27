@@ -352,3 +352,38 @@ def test_kpr_vs_rent_twins():
 
     assert res_g.at_year(10).net_worth > 0
     assert res_h.at_year(10).net_worth > 0
+
+
+def test_compute_milestones():
+    from app.engine.simulator import MonthSnapshot, SimResult, compute_milestones
+    from app.engine.templates import TwinConfig
+
+    cfg = TwinConfig(code="0", label="Test")
+    res = SimResult(config=cfg)
+    for m in range(25):
+        nw = m * 5_000_000  # reaches 100M at m=20
+        debt = max(0.0, 10_000_000.0 - m * 2_000_000.0)  # debt=0 at m=5
+        cash = m * 2_000_000.0  # reaches 6M at m=3
+        res.months.append(
+            MonthSnapshot(
+                month=m,
+                income=10_000_000,
+                living=2_000_000,
+                paid_debt=500_000,
+                cash=cash,
+                invest=0.0,
+                debt=debt,
+                net_worth=nw,
+                net_worth_real=nw,
+                cashflow=1_000_000,
+                emergency_months=cash / 2_000_000,
+                dsr=0.1,
+                defaulted=False,
+            )
+        )
+    milestones = compute_milestones(res, base_expense=2_000_000, emergency_target_months=3.0)
+    assert milestones["emergency_fund_full"] == 3
+    assert milestones["debt_free"] == 5
+    assert milestones["net_worth_100m"] == 20
+    assert milestones["net_worth_1b"] is None
+

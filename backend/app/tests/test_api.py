@@ -388,3 +388,29 @@ async def test_edge_income_zero(client: AsyncClient):
     r = await client.post("/api/v1/simulations", json=payload)
     assert r.status_code == 201
     assert [t["code"] for t in r.json()["twins"]] == ["0", "E", "F"]
+
+
+async def test_export_csv_and_json(client: AsyncClient):
+    r = await client.post("/api/v1/simulations", json=SAMPLE)
+    assert r.status_code == 201
+    sim_id = r.json()["id"]
+
+    # Test CSV export
+    csv_res = await client.get(f"/api/v1/simulations/{sim_id}/export/csv")
+    assert csv_res.status_code == 200
+    assert csv_res.headers["content-type"].startswith("text/csv")
+    assert "attachment; filename=" in csv_res.headers["content-disposition"]
+    text_content = csv_res.text
+    assert "Twin Code,Twin Label,Month,Year" in text_content
+    assert "Net Worth Nominal" in text_content
+
+    # Test JSON export
+    json_res = await client.get(f"/api/v1/simulations/{sim_id}/export/json")
+    assert json_res.status_code == 200
+    assert json_res.headers["content-type"].startswith("application/json")
+    json_data = json_res.json()
+    assert json_data["id"] == sim_id
+    assert "twins" in json_data
+    assert "input" in json_data
+    assert "exported_at" in json_data
+

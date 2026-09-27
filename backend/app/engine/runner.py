@@ -161,9 +161,10 @@ def run_full_simulation(request: SimulationRequest, assumptions: Assumptions | N
     # 6. Rakit hasil
     twin_results: list[TwinResult] = []
     input_flags = regulatory_flags_for_input(profile, request.decisions, ruleset)
+    base_expense = profile.expense_monthly + profile.dependents_monthly
     for cfg in twins_cfg:
         res = results[cfg.code]
-        summ = summary(res)
+        summ = summary(res, base_expense=base_expense)
         # Bendera tingkat-twin hanya untuk twin yang benar-benar mengambil pinjaman.
         # Bendera input (mis. DSR dari pinjol di template) tampil di level simulasi.
         flags: list[dict] = []

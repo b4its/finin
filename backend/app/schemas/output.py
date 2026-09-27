@@ -56,6 +56,7 @@ class TwinOut(BaseModel):
     config: dict[str, Any] = {}
     yearly_series: list[YearPoint] = []
     summary: dict[str, Any] = {}
+    milestones: dict[str, int | None] = {}
     flags: list[FlagOut] = []
     stress: list[StressResult] = []
     score: float = 0.0
