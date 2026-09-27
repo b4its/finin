@@ -32,6 +32,12 @@
 			title: 'Pesta Nikah Mewah vs Intim & Modal Keluarga',
 			icon: '💍',
 			twins: 'K & L'
+		},
+		{
+			type: 'franchise_vs_passive_invest',
+			title: 'Franchise Mikro (KUR) vs Investasi Dividen Pasif',
+			icon: '🏪',
+			twins: 'M & N'
 		}
 	];
 
@@ -113,6 +119,21 @@
 				wedding_intimate: {
 					intimate_cost: 25_000_000,
 					invest_instrument: 'stock'
+				}
+			};
+		if (type === 'franchise_vs_passive_invest')
+			return {
+				type,
+				franchise: {
+					franchise_fee: 75_000_000,
+					savings_used: 25_000_000,
+					kur_loan_amount: 50_000_000,
+					kur_interest_rate_annual: 0.06,
+					kur_tenor_months: 36,
+					monthly_net_profit: 4_500_000
+				},
+				passive_invest: {
+					invest_instrument: 'bond'
 				}
 			};
 		return { type, emergency: { target_months: 6, invest_monthly: 1_000_000 } };
@@ -508,6 +529,63 @@
 				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
 					Pernikahan sakral intim/KUA secara tunai tanpa utang KTA baru. Sisa tabungan dan selisih cicilan
 					bulanan KTA diinvestasikan penuh ke portofolio modal rumah tangga.
+				</p>
+			</div>
+		</div>
+	{/if}
+
+	{#if selected.includes('franchise_vs_passive_invest')}
+		{@const d = decisionOf('franchise_vs_passive_invest')!}
+		{@const fran = d.franchise!}
+		{@const pass = d.passive_invest!}
+		<div class="card space-y-4 p-4">
+			<p class="text-sm font-semibold">🏪 Franchise Mikro (KUR) vs Portofolio Dividen Pasif</p>
+			<div>
+				<p class="mb-3 text-sm font-semibold text-purple-400">
+					Skenario M — Si Pebisnis Waralaba (Modal Usaha + Pinjaman KUR)
+				</p>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+					<CurrencyInput bind:value={fran.franchise_fee} label="Total Modal Awal Waralaba" />
+					<CurrencyInput bind:value={fran.savings_used} label="Porsi Modal Sendiri (Tabungan)" />
+					<CurrencyInput bind:value={fran.kur_loan_amount} label="Pinjaman KUR Bank (Subsidi 6%/th)" />
+				</div>
+				<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+					<label class="block">
+						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]"
+							>Tenor KUR (bulan)</span
+						>
+						<input
+							class="input num"
+							type="number"
+							min="12"
+							max="60"
+							value={fran.kur_tenor_months}
+							oninput={(e) =>
+								(fran.kur_tenor_months = parseInt((e.target as HTMLInputElement).value) || 36)}
+						/>
+					</label>
+					<CurrencyInput bind:value={fran.monthly_net_profit} label="Estimasi Laba Bersih Usaha / Bulan" />
+				</div>
+			</div>
+
+			<div class="border-t border-[var(--color-line)] pt-4">
+				<p class="mb-3 text-sm font-semibold text-emerald-400">
+					Skenario N — Si Investor Pasif & Dividen
+				</p>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+					<label class="block">
+						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]"
+							>Instrumen Investasi Pasif</span
+						>
+						<select class="input" bind:value={pass.invest_instrument}>
+							{#each instruments as ins}
+								<option value={ins.value}>{ins.label}</option>
+							{/each}
+						</select>
+					</label>
+				</div>
+				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
+					Tidak mengambil risiko operasional bisnis dan bebas cicilan utang KUR. Tabungan tetap utuh di portofolio, dan alokasi dana setara cicilan dialihkan tiap bulan ke instrumen pasif.
 				</p>
 			</div>
 		</div>

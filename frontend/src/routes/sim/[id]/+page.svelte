@@ -15,6 +15,7 @@
 	import PurchasingPowerHorizon from '$lib/components/multiverse/PurchasingPowerHorizon.svelte';
 	import PortfolioAllocationRadar from '$lib/components/multiverse/PortfolioAllocationRadar.svelte';
 	import TaxAndBPJSBreakdown from '$lib/components/multiverse/TaxAndBPJSBreakdown.svelte';
+	import ZakatAndFinalTaxCalculator from '$lib/components/multiverse/ZakatAndFinalTaxCalculator.svelte';
 	import ScenarioSandbox from '$lib/components/multiverse/ScenarioSandbox.svelte';
 	import ShareModal from '$lib/components/multiverse/ShareModal.svelte';
 	import Disclaimer from '$lib/components/ui/Disclaimer.svelte';
@@ -216,6 +217,7 @@
 				<FinancialHealthScorecard twins={result.twins} />
 				<PortfolioAllocationRadar twins={result.twins} />
 				<PurchasingPowerHorizon twins={result.twins} />
+				<ZakatAndFinalTaxCalculator twins={result.twins} />
 				<TaxAndBPJSBreakdown initialGross={sim.input.profile.income_monthly || 10000000} />
 				<StressTestPanel twins={result.twins} bind:active={activeShock} />
 				<ScenarioSandbox />

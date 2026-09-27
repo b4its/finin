@@ -201,6 +201,19 @@ export interface WeddingIntimateSpec {
 	invest_instrument: string;
 }
 
+export interface FranchiseSpec {
+	franchise_fee: number;
+	savings_used: number;
+	kur_loan_amount: number;
+	kur_interest_rate_annual: number;
+	kur_tenor_months: number;
+	monthly_net_profit: number;
+}
+
+export interface PassiveInvestSpec {
+	invest_instrument: string;
+}
+
 export interface Decision {
 	type: string;
 	loan?: LoanSpec;
@@ -214,4 +227,6 @@ export interface Decision {
 	vehicle_cash?: VehicleCashSpec;
 	wedding_grand?: WeddingGrandSpec;
 	wedding_intimate?: WeddingIntimateSpec;
+	franchise?: FranchiseSpec;
+	passive_invest?: PassiveInvestSpec;
 }
