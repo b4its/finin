@@ -37,7 +37,7 @@ class Profile(BaseModel):
     expense_monthly: float = Field(..., ge=0)
     dependents_monthly: float = Field(0, ge=0)
     savings: float = Field(0, ge=0)
-    existing_debt: ExistingDebt = Field(default_factory=ExistingDebt)
+    existing_debt: ExistingDebt = Field(default_factory=lambda: ExistingDebt())
 
     @model_validator(mode="after")
     def _check_range(self) -> Profile:
@@ -130,6 +130,20 @@ class PassiveInvestDecision(BaseModel):
     invest_instrument: Instrument = "bond"
 
 
+class ChildEducationUnitLinkDecision(BaseModel):
+    monthly_premium: float = Field(..., ge=200_000)
+    target_years: int = Field(15, ge=5, le=20)
+    acquisition_fee_pct_y1: float = Field(0.60, ge=0.10, le=0.90)
+    acquisition_fee_pct_y2: float = Field(0.30, ge=0.00, le=0.60)
+    acquisition_fee_pct_y3: float = Field(0.15, ge=0.00, le=0.40)
+    invest_instrument: Instrument = "stock"
+
+
+class ChildEducationDiyDecision(BaseModel):
+    term_life_premium_monthly: float = Field(250_000, ge=50_000)
+    invest_instrument: Instrument = "stock"
+
+
 class Decision(BaseModel):
     type: Literal[
         "loan_vs_save",
@@ -139,6 +153,7 @@ class Decision(BaseModel):
         "vehicle_lease_vs_cash",
         "wedding_grand_vs_intimate",
         "franchise_vs_passive_invest",
+        "child_education_unitlink_vs_diy",
     ]
     loan: LoanDecision | None = None
     save: SaveDecision | None = None
@@ -153,6 +168,8 @@ class Decision(BaseModel):
     wedding_intimate: WeddingIntimateDecision | None = None
     franchise: FranchiseDecision | None = None
     passive_invest: PassiveInvestDecision | None = None
+    child_education_unitlink: ChildEducationUnitLinkDecision | None = None
+    child_education_diy: ChildEducationDiyDecision | None = None
 
     @model_validator(mode="after")
     def _require_payload(self) -> Decision:
@@ -174,6 +191,12 @@ class Decision(BaseModel):
             self.franchise is None or self.passive_invest is None
         ):
             raise ValueError("franchise_vs_passive_invest butuh 'franchise' dan 'passive_invest'")
+        if self.type == "child_education_unitlink_vs_diy" and (
+            self.child_education_unitlink is None or self.child_education_diy is None
+        ):
+            raise ValueError(
+                "child_education_unitlink_vs_diy butuh 'child_education_unitlink' dan 'child_education_diy'"
+            )
         return self
 
 

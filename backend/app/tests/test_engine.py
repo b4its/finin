@@ -536,4 +536,53 @@ def test_franchise_vs_passive_invest(assumptions):
     assert res_n.at_year(3).net_worth > 0
 
 
+def test_child_education_unitlink_vs_diy(assumptions):
+    from app.engine.regulatory import ruleset_from_assumptions
+    from app.schemas.input import ChildEducationDiyDecision, ChildEducationUnitLinkDecision
+
+    prof = Profile(
+        age=30,
+        income_type="salary",
+        income_monthly=15_000_000,
+        expense_monthly=6_000_000,
+        dependents_monthly=1_500_000,
+        savings=50_000_000,
+        existing_debt=ExistingDebt(),
+    )
+    ip = IncomeProfile("salary", 15_000_000)
+    rs = ruleset_from_assumptions(None)
+    dec = Decision(
+        type="child_education_unitlink_vs_diy",
+        child_education_unitlink=ChildEducationUnitLinkDecision(
+            monthly_premium=1_500_000,
+            target_years=15,
+            acquisition_fee_pct_y1=0.60,
+            acquisition_fee_pct_y2=0.30,
+            acquisition_fee_pct_y3=0.15,
+            invest_instrument="stock",
+        ),
+        child_education_diy=ChildEducationDiyDecision(
+            term_life_premium_monthly=250_000,
+            invest_instrument="stock",
+        ),
+    )
+    twins = twins_for_decision(dec, prof, ip, rs, 0.05, {})
+    assert len(twins) == 2
+    twin_o, twin_p = twins[0], twins[1]
+    assert twin_o.code == "O"
+    assert twin_o.unitlink_monthly_premium == 1_500_000
+    assert twin_o.unitlink_acq_y1 == 0.60
+
+    assert twin_p.code == "P"
+    assert twin_p.insurance_monthly == 250_000
+    assert twin_p.monthly_invest == 1_250_000
+
+    res_o = simulate(twin_o, prof, ip, {"inflation": 0.03, "returns": {"stock": 0.09}}, rs, months=180)
+    res_p = simulate(twin_p, prof, ip, {"inflation": 0.03, "returns": {"stock": 0.09}}, rs, months=180)
+
+    # Si Portofolio Mandiri (Twin P) mengungguli Unit Link (Twin O) karena 0% biaya akuisisi
+    assert res_p.at_year(10).net_worth > res_o.at_year(10).net_worth
+    assert res_p.at_year(15).net_worth > res_o.at_year(15).net_worth
+
+
 

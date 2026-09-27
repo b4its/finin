@@ -247,8 +247,8 @@ def calculate_statutory_deductions(
         jp_employer = round(jp_base * 0.02)
         kes_employer = round(kes_base * 0.04)
     else:
-        jht_worker = jp_worker = kes_worker = 0.0
-        jht_employer = jp_employer = kes_employer = 0.0
+        jht_worker = jp_worker = kes_worker = 0
+        jht_employer = jp_employer = kes_employer = 0
 
     total_worker = pph21 + jht_worker + jp_worker + kes_worker
     net_thp = max(0.0, gross_monthly - total_worker)
@@ -284,7 +284,7 @@ def project_jht_wealth(
     monthly_rate = (1 + annual_return) ** (1 / 12) - 1
 
     current_gross = monthly_gross
-    for y in range(years):
+    for _y in range(years):
         jht_monthly = current_gross * 0.057  # 2% pekerja + 3.7% pemberi kerja
         for _ in range(12):
             total_balance = (total_balance + jht_monthly) * (1 + monthly_rate)

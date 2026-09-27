@@ -130,7 +130,7 @@ def simulate(
         ) + cfg.business_profit_monthly
 
         rent_cost = (cfg.rent_monthly * (1 + infl) ** m) if cfg.rent_monthly > 0 else 0.0
-        extra_cost = cfg.study_cost + cfg.upskill_monthly + rent_cost
+        extra_cost = cfg.study_cost + cfg.upskill_monthly + rent_cost + cfg.insurance_monthly
         if shock is not None and shock.start_month <= m < shock.start_month + max(shock.duration_months, 1):
             income *= shock.income_multiplier
             extra_cost += shock.extra_cost
@@ -166,9 +166,28 @@ def simulate(
                 to_emergency = min(surplus, room)
                 cash += to_emergency
                 surplus -= to_emergency
-            contrib = min(surplus, cfg.monthly_invest)
-            invest += contrib
-            cash += surplus - contrib
+
+            if cfg.unitlink_monthly_premium > 0:
+                prem_target = cfg.unitlink_monthly_premium
+                prem_investable = max(0.0, prem_target - cfg.insurance_monthly)
+                prem = min(surplus, prem_investable)
+                # Biaya akuisisi PAYDI (SEOJK No. 5/SEOJK.05/2022)
+                yr = m // 12 + 1
+                if yr == 1:
+                    acq_rate = cfg.unitlink_acq_y1
+                elif yr == 2:
+                    acq_rate = cfg.unitlink_acq_y2
+                elif yr == 3:
+                    acq_rate = cfg.unitlink_acq_y3
+                else:
+                    acq_rate = 0.05
+                fee = prem_target * acq_rate
+                invest += max(0.0, prem - fee)
+                cash += surplus - prem
+            else:
+                contrib = min(surplus, cfg.monthly_invest)
+                invest += contrib
+                cash += surplus - contrib
         else:
             # Defisit: pakai kas; kalau kas habis, jual investasi.
             cash += surplus

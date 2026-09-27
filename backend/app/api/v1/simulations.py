@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import csv
-from datetime import datetime, timezone
 import io
 import json
 import uuid
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.responses import StreamingResponse
@@ -374,7 +374,7 @@ async def export_simulation_json(sim_id: str, session: AsyncSession = Depends(ge
     twins = list(result.scalars().all())
     data = _stored_to_response(sim, twins)
     data["input"] = sim.input
-    data["exported_at"] = datetime.now(timezone.utc).isoformat()
+    data["exported_at"] = datetime.now(UTC).isoformat()
 
     json_str = json.dumps(data, indent=2, ensure_ascii=False)
     filename = f"financial-twin-{sim_id[:8]}.json"

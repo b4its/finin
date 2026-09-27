@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
 from httpx import AsyncClient
 
 from app.engine.tax import (
@@ -72,7 +71,8 @@ def test_project_jht_wealth():
 
 
 async def test_api_tax_calculate():
-    from httpx import ASGITransport, AsyncClient
+    from httpx import ASGITransport
+
     from app.main import app
 
     transport = ASGITransport(app=app)

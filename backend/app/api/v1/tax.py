@@ -8,7 +8,6 @@ from fastapi import APIRouter, Query
 from pydantic import BaseModel, Field
 
 from app.engine.tax import (
-    TERCategory,
     calculate_statutory_deductions,
     project_jht_wealth,
 )

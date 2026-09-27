@@ -30,6 +30,8 @@ TWIN_STYLE = {
     "L": {"color": "#14B8A6", "dash": "dashed", "icon": "gem"},
     "M": {"color": "#8B5CF6", "dash": "solid", "icon": "store"},
     "N": {"color": "#10B981", "dash": "dashed", "icon": "trending-up"},
+    "O": {"color": "#F43F5E", "dash": "solid", "icon": "shield-alert"},
+    "P": {"color": "#059669", "dash": "dashed", "icon": "graduation-cap"},
 }
 
 STYLE_FALLBACK = {"color": "#94A3B8", "dash": "solid", "icon": "circle"}
@@ -75,6 +77,12 @@ class TwinConfig:
     # kendaraan kredit vs tunai
     vehicle_initial_value: float = 0.0
     vehicle_depreciation_annual: float = 0.0
+    # pendidikan anak: asuransi jiwa murni vs unitlink PAYDI
+    insurance_monthly: float = 0.0
+    unitlink_monthly_premium: float = 0.0
+    unitlink_acq_y1: float = 0.60
+    unitlink_acq_y2: float = 0.30
+    unitlink_acq_y3: float = 0.15
     meta: dict[str, Any] = field(default_factory=dict)
 
 
@@ -474,6 +482,59 @@ def twins_for_decision(
         )
         return [twin_m, twin_n]
 
+    if (
+        dec.type == "child_education_unitlink_vs_diy"
+        and dec.child_education_unitlink
+        and dec.child_education_diy
+    ):
+        o_style = _style("O")
+        p_style = _style("P")
+
+        prem = dec.child_education_unitlink.monthly_premium
+        term_prem = dec.child_education_diy.term_life_premium_monthly
+        diy_invest = max(0.0, prem - term_prem)
+
+        twin_o = TwinConfig(
+            code="O",
+            label="Si Unit Link Pendidikan",
+            description=(
+                f"Asuransi Unit Link pendidikan Rp{prem:,.0f}/bln (termasuk biaya asuransi "
+                f"dan akuisisi {dec.child_education_unitlink.acquisition_fee_pct_y1*100:.0f}% th-1, "
+                f"{dec.child_education_unitlink.acquisition_fee_pct_y2*100:.0f}% th-2)."
+            ),
+            insurance_monthly=term_prem,
+            unitlink_monthly_premium=prem,
+            unitlink_acq_y1=dec.child_education_unitlink.acquisition_fee_pct_y1,
+            unitlink_acq_y2=dec.child_education_unitlink.acquisition_fee_pct_y2,
+            unitlink_acq_y3=dec.child_education_unitlink.acquisition_fee_pct_y3,
+            instrument=dec.child_education_unitlink.invest_instrument,
+            meta={
+                "monthly_premium": prem,
+                "acquisition_fee_pct_y1": dec.child_education_unitlink.acquisition_fee_pct_y1,
+                "instrument": dec.child_education_unitlink.invest_instrument,
+            },
+            **o_style,
+        )
+
+        twin_p = TwinConfig(
+            code="P",
+            label="Si Portofolio Mandiri & Asuransi Murni",
+            description=(
+                f"Pisahkan asuransi jiwa murni Rp{term_prem:,.0f}/bln dan investasikan "
+                f"penuh Rp{diy_invest:,.0f}/bln ke {dec.child_education_diy.invest_instrument} (0% biaya akuisisi)."
+            ),
+            insurance_monthly=term_prem,
+            monthly_invest=diy_invest,
+            instrument=dec.child_education_diy.invest_instrument,
+            meta={
+                "term_life_premium": term_prem,
+                "monthly_invest": diy_invest,
+                "instrument": dec.child_education_diy.invest_instrument,
+            },
+            **p_style,
+        )
+        return [twin_o, twin_p]
+
     return []
 
 
@@ -698,6 +759,41 @@ def decision_templates() -> list[dict]:
                 {
                     "key": "passive_invest.invest_instrument",
                     "label": "Instrumen investasi pasif pembanding",
+                    "type": "instrument",
+                },
+            ],
+        },
+        {
+            "type": "child_education_unitlink_vs_diy",
+            "title": "Dana Pendidikan Anak: Unit Link vs Tabungan Mandiri + Asuransi Murni",
+            "twin_a": {"code": "O", "label": "Si Unit Link Pendidikan", **_style("O")},
+            "twin_b": {"code": "P", "label": "Si Portofolio Mandiri & Asuransi Murni", **_style("P")},
+            "fields": [
+                {
+                    "key": "child_education_unitlink.monthly_premium",
+                    "label": "Premi bulanan Unit Link (PAYDI)",
+                    "type": "currency",
+                },
+                {
+                    "key": "child_education_unitlink.acquisition_fee_pct_y1",
+                    "label": "Biaya akuisisi Th-1",
+                    "type": "percent",
+                    "min": 0.10,
+                    "max": 0.90,
+                },
+                {
+                    "key": "child_education_unitlink.invest_instrument",
+                    "label": "Subdana investasi polis",
+                    "type": "instrument",
+                },
+                {
+                    "key": "child_education_diy.term_life_premium_monthly",
+                    "label": "Premi asuransi jiwa murni/bulan",
+                    "type": "currency",
+                },
+                {
+                    "key": "child_education_diy.invest_instrument",
+                    "label": "Instrumen investasi mandiri",
                     "type": "instrument",
                 },
             ],
