@@ -95,6 +95,7 @@ async def test_templates(client: AsyncClient):
         "kpr_vs_rent",
         "vehicle_lease_vs_cash",
         "wedding_grand_vs_intimate",
+        "franchise_vs_passive_invest",
     }
 
 
@@ -500,6 +501,45 @@ async def test_api_wedding_grand_vs_intimate(client: AsyncClient):
     twin_k = next(t for t in body["twins"] if t["code"] == "K")
     twin_l = next(t for t in body["twins"] if t["code"] == "L")
     assert twin_l["score"] > twin_k["score"]
+
+
+async def test_api_franchise_vs_passive_invest(client: AsyncClient):
+    payload = {
+        "profile": {
+            "age": 28,
+            "income_type": "salary",
+            "income_monthly": 12_000_000,
+            "expense_monthly": 5_000_000,
+            "dependents_monthly": 0,
+            "savings": 50_000_000,
+            "existing_debt": {"principal": 0, "monthly_payment": 0},
+        },
+        "decisions": [
+            {
+                "type": "franchise_vs_passive_invest",
+                "franchise": {
+                    "franchise_fee": 80_000_000,
+                    "savings_used": 30_000_000,
+                    "kur_loan_amount": 50_000_000,
+                    "kur_interest_rate_annual": 0.06,
+                    "kur_tenor_months": 36,
+                    "monthly_net_profit": 5_000_000,
+                },
+                "passive_invest": {
+                    "invest_instrument": "bond",
+                },
+            }
+        ],
+        "preset": "moderat",
+    }
+    r = await client.post("/api/v1/simulations", json=payload)
+    assert r.status_code == 201
+    body = r.json()
+    codes = [t["code"] for t in body["twins"]]
+    assert "0" in codes
+    assert "M" in codes
+    assert "N" in codes
+
 
 
 

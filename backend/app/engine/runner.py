@@ -141,6 +141,29 @@ def regulatory_flags_for_input(profile: Profile, decisions: list[Decision], rule
                                 f"melebihi batas kemampuan bayar OJK {ruleset.get('dsr_cap', 0.30):.0%}.",
                             )
                         )
+        if dec.type == "franchise_vs_passive_invest" and dec.franchise is not None:
+            if dec.franchise.kur_loan_amount > 0:
+                from app.engine.loans import Loan
+
+                kur_l = Loan(
+                    kind="annuity",
+                    principal=dec.franchise.kur_loan_amount,
+                    tenor_months=dec.franchise.kur_tenor_months,
+                    annual_rate=dec.franchise.kur_interest_rate_annual,
+                    ruleset=ruleset,
+                )
+                if profile.income_monthly > 0:
+                    tot = kur_l.scheduled_payment + profile.existing_debt.monthly_payment
+                    dsr = tot / profile.income_monthly
+                    if dsr > ruleset.get("dsr_cap", 0.30):
+                        flags.append(
+                            Flag(
+                                "orange",
+                                "DSR_OVER_30",
+                                f"Cicilan pinjaman KUR waralaba Rp{tot:,.0f}/bulan ≈ {dsr:.0%} penghasilan, "
+                                f"melebihi batas kemampuan bayar OJK {ruleset.get('dsr_cap', 0.30):.0%}.",
+                            )
+                        )
     # DSR utang berjalan
     if profile.income_monthly > 0 and profile.existing_debt.monthly_payment > 0:
         f = check_dsr(profile.existing_debt.monthly_payment, profile.income_monthly, ruleset)

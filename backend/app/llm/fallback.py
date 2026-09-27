@@ -96,6 +96,14 @@ def recommendation_fallback(best: dict, others: list[dict], robust: bool) -> dic
         first_step = (
             "Kunci alokasi penghematan pesta pernikahan langsung ke instrumen investasi atau tabungan DP rumah sebelum terpakai konsumsi lain."
         )
+    elif best.get("code") == "M":
+        first_step = (
+            "Pisahkan rekening operasional usaha waralaba dari rekening pribadi dan sisihkan cadangan kas minimal 3 bulan beban operasional."
+        )
+    elif best.get("code") == "N":
+        first_step = (
+            "Manfaatkan autodebet rutin ke instrumen pasar modal (SBN / Saham Dividen) untuk menikmati pertumbuhan majemuk pasif tanpa risiko operasional usaha."
+        )
 
     alasan = (
         f"{label} menghasilkan nilai riil tahun ke-10 sekitar {rp_brief(nw10)} "

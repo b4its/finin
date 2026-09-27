@@ -117,6 +117,19 @@ class WeddingIntimateDecision(BaseModel):
     invest_instrument: Instrument = "stock"
 
 
+class FranchiseDecision(BaseModel):
+    franchise_fee: float = Field(..., ge=0)
+    savings_used: float = Field(..., ge=0)
+    kur_loan_amount: float = Field(0.0, ge=0)
+    kur_interest_rate_annual: float = Field(0.06, ge=0.01, le=0.25)
+    kur_tenor_months: int = Field(36, ge=6, le=60)
+    monthly_net_profit: float = Field(..., ge=0)
+
+
+class PassiveInvestDecision(BaseModel):
+    invest_instrument: Instrument = "bond"
+
+
 class Decision(BaseModel):
     type: Literal[
         "loan_vs_save",
@@ -125,6 +138,7 @@ class Decision(BaseModel):
         "kpr_vs_rent",
         "vehicle_lease_vs_cash",
         "wedding_grand_vs_intimate",
+        "franchise_vs_passive_invest",
     ]
     loan: LoanDecision | None = None
     save: SaveDecision | None = None
@@ -137,6 +151,8 @@ class Decision(BaseModel):
     vehicle_cash: VehicleCashDecision | None = None
     wedding_grand: WeddingGrandDecision | None = None
     wedding_intimate: WeddingIntimateDecision | None = None
+    franchise: FranchiseDecision | None = None
+    passive_invest: PassiveInvestDecision | None = None
 
     @model_validator(mode="after")
     def _require_payload(self) -> Decision:
@@ -154,6 +170,10 @@ class Decision(BaseModel):
             self.wedding_grand is None or self.wedding_intimate is None
         ):
             raise ValueError("wedding_grand_vs_intimate butuh 'wedding_grand' dan 'wedding_intimate'")
+        if self.type == "franchise_vs_passive_invest" and (
+            self.franchise is None or self.passive_invest is None
+        ):
+            raise ValueError("franchise_vs_passive_invest butuh 'franchise' dan 'passive_invest'")
         return self
 
 

@@ -487,3 +487,53 @@ def test_wedding_grand_vs_intimate(assumptions):
     assert res_l.at_year(3).net_worth > res_k.at_year(3).net_worth
 
 
+def test_franchise_vs_passive_invest(assumptions):
+    from app.engine.regulatory import ruleset_from_assumptions
+    from app.schemas.input import FranchiseDecision, PassiveInvestDecision
+
+    prof = Profile(
+        age=28,
+        income_type="salary",
+        income_monthly=10_000_000,
+        expense_monthly=4_500_000,
+        dependents_monthly=0,
+        savings=40_000_000,
+        existing_debt=ExistingDebt(),
+    )
+    ip = IncomeProfile("salary", 10_000_000)
+    rs = ruleset_from_assumptions(None)
+    dec = Decision(
+        type="franchise_vs_passive_invest",
+        franchise=FranchiseDecision(
+            franchise_fee=75_000_000,
+            savings_used=25_000_000,
+            kur_loan_amount=50_000_000,
+            kur_interest_rate_annual=0.06,
+            kur_tenor_months=36,
+            monthly_net_profit=4_500_000,
+        ),
+        passive_invest=PassiveInvestDecision(
+            invest_instrument="bond",
+        ),
+    )
+    twins = twins_for_decision(dec, prof, ip, rs, 0.05, {})
+    assert len(twins) == 2
+    twin_m, twin_n = twins[0], twins[1]
+    assert twin_m.code == "M"
+    assert twin_m.initial_dp == 25_000_000
+    assert twin_m.loan is not None
+    assert twin_m.business_profit_monthly == 4_500_000
+
+    assert twin_n.code == "N"
+    assert twin_n.initial_dp == 0.0
+    assert twin_n.loan is None
+    assert twin_n.monthly_invest > 0
+
+    res_m = simulate(twin_m, prof, ip, {"inflation": 0.03, "returns": {"bond": 0.068}}, rs, months=60)
+    res_n = simulate(twin_n, prof, ip, {"inflation": 0.03, "returns": {"bond": 0.068}}, rs, months=60)
+
+    assert res_m.at_year(3).net_worth > 0
+    assert res_n.at_year(3).net_worth > 0
+
+
+

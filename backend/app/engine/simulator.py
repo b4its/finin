@@ -127,7 +127,7 @@ def simulate(
             skill_month=cfg.skill_month,
             skill_multiplier=cfg.skill_multiplier,
             use_min=use_min_income,
-        )
+        ) + cfg.business_profit_monthly
 
         rent_cost = (cfg.rent_monthly * (1 + infl) ** m) if cfg.rent_monthly > 0 else 0.0
         extra_cost = cfg.study_cost + cfg.upskill_monthly + rent_cost

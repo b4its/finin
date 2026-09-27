@@ -28,6 +28,8 @@ TWIN_STYLE = {
     "J": {"color": "#06B6D4", "dash": "dashed", "icon": "bike"},
     "K": {"color": "#E11D48", "dash": "solid", "icon": "party"},
     "L": {"color": "#14B8A6", "dash": "dashed", "icon": "gem"},
+    "M": {"color": "#8B5CF6", "dash": "solid", "icon": "store"},
+    "N": {"color": "#10B981", "dash": "dashed", "icon": "trending-up"},
 }
 
 STYLE_FALLBACK = {"color": "#94A3B8", "dash": "solid", "icon": "circle"}
@@ -59,6 +61,8 @@ class TwinConfig:
     post_graduate_multiplier: float = 1.0
     skill_month: int | None = None
     skill_multiplier: float = 1.0
+    # laba usaha sampingan/waralaba bulanan
+    business_profit_monthly: float = 0.0
     # biaya kuliah (dibayar bulanan)
     study_cost: float = 0.0
     # biaya kursus bulanan
@@ -408,6 +412,68 @@ def twins_for_decision(
         )
         return [twin_k, twin_l]
 
+    if dec.type == "franchise_vs_passive_invest":
+        assert dec.franchise is not None and dec.passive_invest is not None
+        m_style = _style("M")
+        n_style = _style("N")
+
+        kur_loan = None
+        scheduled_pay = 0.0
+        if dec.franchise.kur_loan_amount > 0:
+            kur_loan = Loan(
+                kind="annuity",
+                principal=dec.franchise.kur_loan_amount,
+                tenor_months=dec.franchise.kur_tenor_months,
+                annual_rate=dec.franchise.kur_interest_rate_annual,
+                ruleset=ruleset,
+            )
+            scheduled_pay = kur_loan.scheduled_payment
+
+        loan_desc = (
+            f" + KUR Rp{dec.franchise.kur_loan_amount:,.0f} tenor {dec.franchise.kur_tenor_months} bln)"
+            if dec.franchise.kur_loan_amount > 0
+            else ")"
+        )
+        twin_m = TwinConfig(
+            code="M",
+            label="Si Pebisnis Waralaba",
+            description=(
+                f"Buka franchise mikro Rp{dec.franchise.franchise_fee:,.0f} "
+                f"(modal tabungan Rp{dec.franchise.savings_used:,.0f}{loan_desc}, "
+                f"laba bersih Rp{dec.franchise.monthly_net_profit:,.0f}/bln."
+            ),
+            loan=kur_loan,
+            initial_dp=dec.franchise.savings_used,
+            business_profit_monthly=dec.franchise.monthly_net_profit,
+            monthly_invest=0.0,
+            meta={
+                "franchise_fee": dec.franchise.franchise_fee,
+                "savings_used": dec.franchise.savings_used,
+                "kur_loan_amount": dec.franchise.kur_loan_amount,
+                "monthly_net_profit": dec.franchise.monthly_net_profit,
+            },
+            **m_style,
+        )
+
+        invest_diff = max(0.0, scheduled_pay)
+        twin_n = TwinConfig(
+            code="N",
+            label="Si Investor Pasif & Dividen",
+            description=(
+                f"Investasi pasif bebas utang bisnis, tabungan utuh dan "
+                f"investasikan alokasi modal/cicilan Rp{invest_diff:,.0f}/bln ke {dec.passive_invest.invest_instrument}."
+            ),
+            initial_dp=0.0,
+            monthly_invest=invest_diff,
+            instrument=dec.passive_invest.invest_instrument,
+            meta={
+                "monthly_invest": invest_diff,
+                "instrument": dec.passive_invest.invest_instrument,
+            },
+            **n_style,
+        )
+        return [twin_m, twin_n]
+
     return []
 
 
@@ -592,6 +658,46 @@ def decision_templates() -> list[dict]:
                 {
                     "key": "wedding_intimate.invest_instrument",
                     "label": "Instrumen investasi selisih dana",
+                    "type": "instrument",
+                },
+            ],
+        },
+        {
+            "type": "franchise_vs_passive_invest",
+            "title": "Franchise Mikro (KUR) vs Portofolio Dividen Pasif",
+            "twin_a": {"code": "M", "label": "Si Pebisnis Waralaba", **_style("M")},
+            "twin_b": {"code": "N", "label": "Si Investor Pasif & Dividen", **_style("N")},
+            "fields": [
+                {
+                    "key": "franchise.franchise_fee",
+                    "label": "Estimasi modal awal franchise",
+                    "type": "currency",
+                },
+                {
+                    "key": "franchise.savings_used",
+                    "label": "Porsi dari tabungan sendiri",
+                    "type": "currency",
+                },
+                {
+                    "key": "franchise.kur_loan_amount",
+                    "label": "Porsi pinjaman KUR bank (6%/th)",
+                    "type": "currency",
+                },
+                {
+                    "key": "franchise.kur_tenor_months",
+                    "label": "Tenor pinjaman KUR (bulan)",
+                    "type": "int",
+                    "min": 12,
+                    "max": 60,
+                },
+                {
+                    "key": "franchise.monthly_net_profit",
+                    "label": "Estimasi laba bersih bisnis/bulan",
+                    "type": "currency",
+                },
+                {
+                    "key": "passive_invest.invest_instrument",
+                    "label": "Instrumen investasi pasif pembanding",
                     "type": "instrument",
                 },
             ],
