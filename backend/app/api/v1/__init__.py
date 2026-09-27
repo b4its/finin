@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from app.api.v1 import assumptions, events, health, regulatory, simulations, templates
+from app.api.v1 import assumptions, events, health, regulatory, simulations, tax, templates
 
 api_router = APIRouter()
 api_router.include_router(health.router, tags=["health"])
@@ -10,4 +10,5 @@ api_router.include_router(assumptions.router, prefix="/assumptions", tags=["assu
 api_router.include_router(templates.router, prefix="/templates", tags=["templates"])
 api_router.include_router(regulatory.router, prefix="/regulatory", tags=["regulatory"])
 api_router.include_router(simulations.router, prefix="/simulations", tags=["simulations"])
+api_router.include_router(tax.router, prefix="/tax", tags=["tax"])
 api_router.include_router(events.router, tags=["events"])
