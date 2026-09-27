@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Disclaimer from '$lib/components/ui/Disclaimer.svelte';
+	import FutureSelfScale from '$lib/components/ui/FutureSelfScale.svelte';
 	import StepIncome from '$lib/components/wizard/StepIncome.svelte';
 	import StepPosition from '$lib/components/wizard/StepPosition.svelte';
 	import StepDecision from '$lib/components/wizard/StepDecision.svelte';
@@ -9,7 +10,7 @@
 	import { onMount } from 'svelte';
 
 	let step = $state(0);
-	let fsc = $state<number | null>(null);
+	let fsc = $state<number | null>(sim.fscPre);
 	let building = $state(false);
 	let buildError = $state<string | null>(null);
 
@@ -83,23 +84,24 @@
 
 	{#if step === 0 && fsc === null}
 		<div class="card mb-4 p-5">
-			<h2 class="text-lg font-bold">Sebelum mulai — satu pertanyaan singkat</h2>
-			<p class="mt-1 text-sm text-[var(--color-ink-dim)]">
-				Seberapa dekat kamu merasa dengan “dirimu di masa depan”? (opsional, 1–7)
+			<div class="flex items-center justify-between">
+				<h2 class="text-base font-bold">
+					🧬 Sebelum mulai — seberapa dekat kamu dengan masa depan?
+				</h2>
+				<button
+					class="text-xs text-[var(--color-ink-dim)] hover:underline"
+					onclick={() => (fsc = 0)}
+				>
+					Lewati
+				</button>
+			</div>
+			<p class="mt-1 text-xs text-[var(--color-ink-dim)]">
+				Riset Hershfield (2011) membuktikan: keterhubungan visual dengan diri masa depan
+				melipatgandakan tabungan.
 			</p>
-			<div class="mt-3 flex flex-wrap gap-1.5">
-				{#each [1, 2, 3, 4, 5, 6, 7] as v}
-					<button class="chip flex-col !px-3 !py-2" onclick={() => (fsc = v)}>
-						<span class="num text-base font-bold">{v}</span>
-					</button>
-				{/each}
+			<div class="mt-3">
+				<FutureSelfScale bind:value={fsc} compact />
 			</div>
-			<div class="mt-2 flex justify-between text-xs text-[var(--color-ink-dim)]">
-				<span>orang asing</span><span>aku sendiri</span>
-			</div>
-			<button class="mt-3 text-xs text-[var(--color-accent)] underline" onclick={() => (fsc = 0)}>
-				Lewati saja
-			</button>
 		</div>
 	{/if}
 

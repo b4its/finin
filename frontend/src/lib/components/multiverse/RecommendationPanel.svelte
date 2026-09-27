@@ -1,6 +1,8 @@
 <script lang="ts">
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Disclaimer from '$lib/components/ui/Disclaimer.svelte';
+	import FutureSelfScale from '$lib/components/ui/FutureSelfScale.svelte';
+	import { sim } from '$lib/stores/simulation.svelte';
 	import type { Recommendation, Twin } from '$lib/api/types';
 	import { api } from '$lib/api/client';
 
@@ -12,9 +14,11 @@
 
 	let committed = $state(false);
 	let showPost = $state(false);
-	let fscPre = $state<number | null>(null);
+	let fscPost = $state<number | null>(null);
+	let submittedPost = $state(false);
 	let copied = $state(false);
 
+	let fscPre = $derived(sim.fscPre);
 	let best = $derived(twins.find((t) => t.code === recommendation?.best_twin));
 
 	async function commit() {
@@ -28,13 +32,16 @@
 	}
 
 	async function submitPost(v: number) {
+		fscPost = v;
 		try {
 			await api.recordEvent(simulationId, 'fsc_post', v);
-			if (fscPre !== null) await api.recordEvent(simulationId, 'fsc_pre', fscPre);
+			if (fscPre !== null && fscPre > 0) {
+				await api.recordEvent(simulationId, 'fsc_pre', fscPre);
+			}
+			submittedPost = true;
 		} catch {
-			/* diabaikan */
+			submittedPost = true;
 		}
-		showPost = false;
 	}
 
 	async function copyLink() {
@@ -89,19 +96,32 @@
 		</div>
 
 		{#if showPost}
-			<div class="mt-4 rounded-xl border border-[var(--color-accent)] bg-blue-500/5 p-4">
-				<p class="text-sm font-medium">
-					Sekarang, seberapa dekat kamu merasa dengan “dirimu yang lebih tua” setelah melihat ini?
-					(1–7)
-				</p>
-				<div class="mt-2 flex gap-1.5">
-					{#each [1, 2, 3, 4, 5, 6, 7] as v}
-						<button class="chip !h-8 !w-8 justify-center" onclick={() => submitPost(v)}>{v}</button>
-					{/each}
+			<div class="mt-4 rounded-xl border border-[var(--color-accent)] bg-blue-500/5 p-4 space-y-3">
+				<div>
+					<p class="text-sm font-semibold">
+						🧬 Evaluasi Pasca-Simulasi: Seberapa dekat kamu dengan dirimu di masa depan sekarang?
+					</p>
+					<p class="mt-0.5 text-xs text-[var(--color-ink-dim)]">
+						Setelah melihat proyeksi 5, 10, dan 20 tahun di multiverse (1–7):
+					</p>
 				</div>
-				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
-					Dicatat anonim untuk mengukur dampak produk.
-				</p>
+				<FutureSelfScale bind:value={fscPost} onchange={submitPost} compact />
+				{#if submittedPost}
+					<div
+						class="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-2.5 text-xs text-emerald-400"
+					>
+						✓ Evaluasi tersimpan!
+						{#if fscPre !== null && fscPre > 0 && fscPost !== null}
+							{@const delta = fscPost - fscPre}
+							<span class="font-semibold ml-1">
+								Skor kedekatan: {fscPre} → {fscPost} ({delta >= 0 ? `+${delta}` : delta} poin).
+								{delta > 0
+									? 'Keterhubungan masa depanmu meningkat!'
+									: 'Persepsi masa depanmu telah dipetakan.'}
+							</span>
+						{/if}
+					</div>
+				{/if}
 			</div>
 		{/if}
 	{:else}

@@ -1,5 +1,7 @@
 <script lang="ts">
 	import Disclaimer from '$lib/components/ui/Disclaimer.svelte';
+	import FutureSelfScale from '$lib/components/ui/FutureSelfScale.svelte';
+	import { sim } from '$lib/stores/simulation.svelte';
 	import { api } from '$lib/api/client';
 	import { onMount } from 'svelte';
 
@@ -54,6 +56,27 @@
 		<p class="mt-3 text-xs text-[var(--color-ink-dim)]">
 			Gratis · tanpa akun · selesai dalam &lt; 90 detik
 		</p>
+
+		<div
+			class="mx-auto mt-10 max-w-xl rounded-2xl border border-[var(--color-line)] bg-[var(--color-void-2)] p-5 text-left"
+		>
+			<div class="flex items-center justify-between gap-2">
+				<div>
+					<h3 class="text-sm font-semibold">🧬 Seberapa Dekat Kamu dengan Dirimu di Masa Depan?</h3>
+					<p class="mt-0.5 text-xs text-[var(--color-ink-dim)]">
+						Riset Hershfield (2011): keterhubungan visual dengan diri masa depan meningkatkan
+						alokasi tabungan hingga 2× lipat.
+					</p>
+				</div>
+				<span
+					class="rounded-full bg-[var(--color-void-3)] px-2 py-0.5 text-[10px] font-medium text-[var(--color-ink-dim)]"
+					>Pra-simulasi</span
+				>
+			</div>
+			<div class="mt-4">
+				<FutureSelfScale bind:value={sim.fscPre} />
+			</div>
+		</div>
 	</section>
 
 	{#if impact && impact.commits > 0}
