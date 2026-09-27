@@ -115,19 +115,22 @@ def simulate(
     new_debt_total = 0.0
 
     for m in range(months + 1):
-        income = income_path(
-            income_profile,
-            growth,
-            m,
-            study=cfg.study,
-            part_time_monthly=cfg.part_time_monthly,
-            job_wait_months=job_wait,
-            graduate_month=cfg.graduate_month,
-            post_graduate_multiplier=cfg.post_graduate_multiplier,
-            skill_month=cfg.skill_month,
-            skill_multiplier=cfg.skill_multiplier,
-            use_min=use_min_income,
-        ) + cfg.business_profit_monthly
+        income = (
+            income_path(
+                income_profile,
+                growth,
+                m,
+                study=cfg.study,
+                part_time_monthly=cfg.part_time_monthly,
+                job_wait_months=job_wait,
+                graduate_month=cfg.graduate_month,
+                post_graduate_multiplier=cfg.post_graduate_multiplier,
+                skill_month=cfg.skill_month,
+                skill_multiplier=cfg.skill_multiplier,
+                use_min=use_min_income,
+            )
+            + cfg.business_profit_monthly
+        )
 
         rent_cost = (cfg.rent_monthly * (1 + infl) ** m) if cfg.rent_monthly > 0 else 0.0
         extra_cost = cfg.study_cost + cfg.upskill_monthly + rent_cost + cfg.insurance_monthly
@@ -349,4 +352,3 @@ def summary(result: SimResult, base_expense: float = 0.0) -> dict:
         emergency_target_months=float(result.config.emergency_target_months),
     )
     return out
-

@@ -281,34 +281,22 @@ class Decision(BaseModel):
             raise ValueError(
                 "child_education_unitlink_vs_diy butuh 'child_education_unitlink' dan 'child_education_diy'"
             )
-        if self.type == "haji_furoda_vs_reguler" and (
-            self.haji_furoda is None or self.haji_reguler is None
-        ):
+        if self.type == "haji_furoda_vs_reguler" and (self.haji_furoda is None or self.haji_reguler is None):
             raise ValueError("haji_furoda_vs_reguler butuh 'haji_furoda' dan 'haji_reguler'")
         if self.type == "career_corporate_vs_freelance" and (
             self.career_corporate is None or self.career_freelance is None
         ):
-            raise ValueError(
-                "career_corporate_vs_freelance butuh 'career_corporate' dan 'career_freelance'"
-            )
+            raise ValueError("career_corporate_vs_freelance butuh 'career_corporate' dan 'career_freelance'")
         if self.type == "rental_property_vs_dividend" and (
             self.rental_property is None or self.dividend_invest is None
         ):
-            raise ValueError(
-                "rental_property_vs_dividend butuh 'rental_property' dan 'dividend_invest'"
-            )
-        if self.type == "electric_vehicle_vs_ice" and (
-            self.ev_vehicle is None or self.ice_vehicle is None
-        ):
-            raise ValueError(
-                "electric_vehicle_vs_ice butuh 'ev_vehicle' dan 'ice_vehicle'"
-            )
+            raise ValueError("rental_property_vs_dividend butuh 'rental_property' dan 'dividend_invest'")
+        if self.type == "electric_vehicle_vs_ice" and (self.ev_vehicle is None or self.ice_vehicle is None):
+            raise ValueError("electric_vehicle_vs_ice butuh 'ev_vehicle' dan 'ice_vehicle'")
         if self.type == "health_bpjs_vs_private" and (
             self.health_bpjs is None or self.health_private is None
         ):
-            raise ValueError(
-                "health_bpjs_vs_private butuh 'health_bpjs' dan 'health_private'"
-            )
+            raise ValueError("health_bpjs_vs_private butuh 'health_bpjs' dan 'health_private'")
         return self
 
 

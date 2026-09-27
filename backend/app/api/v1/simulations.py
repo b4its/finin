@@ -320,43 +320,47 @@ async def export_simulation_csv(sim_id: str, session: AsyncSession = Depends(get
     output = io.StringIO()
     output.write("\ufeff")  # UTF-8 BOM untuk Excel
     writer = csv.writer(output)
-    writer.writerow([
-        "Twin Code",
-        "Twin Label",
-        "Month",
-        "Year",
-        "Income Nominal",
-        "Living Cost",
-        "Debt Payment",
-        "Cash Balance",
-        "Investment Balance",
-        "Debt Balance",
-        "Net Worth Nominal",
-        "Net Worth Real",
-        "Emergency Fund Months",
-        "DSR Ratio",
-        "Defaulted",
-    ])
+    writer.writerow(
+        [
+            "Twin Code",
+            "Twin Label",
+            "Month",
+            "Year",
+            "Income Nominal",
+            "Living Cost",
+            "Debt Payment",
+            "Cash Balance",
+            "Investment Balance",
+            "Debt Balance",
+            "Net Worth Nominal",
+            "Net Worth Real",
+            "Emergency Fund Months",
+            "DSR Ratio",
+            "Defaulted",
+        ]
+    )
 
     for tr in full.twins:
         for m in tr.result.months:
-            writer.writerow([
-                tr.cfg.code,
-                tr.cfg.label,
-                m.month,
-                m.month // 12,
-                round(m.income, 2),
-                round(m.living, 2),
-                round(m.paid_debt, 2),
-                round(m.cash, 2),
-                round(m.invest, 2),
-                round(m.debt, 2),
-                round(m.net_worth, 2),
-                round(m.net_worth_real, 2),
-                round(m.emergency_months, 2),
-                round(m.dsr, 4),
-                m.defaulted,
-            ])
+            writer.writerow(
+                [
+                    tr.cfg.code,
+                    tr.cfg.label,
+                    m.month,
+                    m.month // 12,
+                    round(m.income, 2),
+                    round(m.living, 2),
+                    round(m.paid_debt, 2),
+                    round(m.cash, 2),
+                    round(m.invest, 2),
+                    round(m.debt, 2),
+                    round(m.net_worth, 2),
+                    round(m.net_worth_real, 2),
+                    round(m.emergency_months, 2),
+                    round(m.dsr, 4),
+                    m.defaulted,
+                ]
+            )
 
     filename = f"financial-twin-{sim_id[:8]}.csv"
     return Response(
@@ -421,4 +425,3 @@ async def get_simulation_monte_carlo(
         horizon_months=req.horizon_months,
     )
     return mc_result.to_dict()
-

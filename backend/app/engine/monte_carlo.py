@@ -19,12 +19,12 @@ from app.schemas.input import Profile
 
 # Volatilitas tahunan (standar deviasi sigma) acuan pasar modal & makro RI (2026)
 VOLATILITY_MAP: dict[str, float] = {
-    "stock": 0.16,         # IHSG / Indeks Saham (~16%/tahun)
-    "bond": 0.04,          # SBN Ritel / Sukuk Negara (~4%/tahun)
-    "money_market": 0.012, # Reksadana Pasar Uang (~1,2%/tahun)
-    "savings": 0.005,      # Tabungan Bank Reguler
-    "deposit": 0.008,      # Deposito Berjangka
-    "inflation": 0.015,    # Volatilitas inflasi IHK (~1,5%/tahun)
+    "stock": 0.16,  # IHSG / Indeks Saham (~16%/tahun)
+    "bond": 0.04,  # SBN Ritel / Sukuk Negara (~4%/tahun)
+    "money_market": 0.012,  # Reksadana Pasar Uang (~1,2%/tahun)
+    "savings": 0.005,  # Tabungan Bank Reguler
+    "deposit": 0.008,  # Deposito Berjangka
+    "inflation": 0.015,  # Volatilitas inflasi IHK (~1,5%/tahun)
 }
 
 
@@ -135,22 +135,27 @@ def run_monte_carlo(
             m_cash = max(0.0, base_cash / 12.0)
 
             # Pendapatan deterministik jalur karier + laba bisnis
-            income = income_path(
-                income_profile,
-                growth,
-                m,
-                study=cfg.study,
-                part_time_monthly=cfg.part_time_monthly,
-                job_wait_months=job_wait,
-                graduate_month=cfg.graduate_month,
-                post_graduate_multiplier=cfg.post_graduate_multiplier,
-                skill_month=cfg.skill_month,
-                skill_multiplier=cfg.skill_multiplier,
-            ) + cfg.business_profit_monthly
+            income = (
+                income_path(
+                    income_profile,
+                    growth,
+                    m,
+                    study=cfg.study,
+                    part_time_monthly=cfg.part_time_monthly,
+                    job_wait_months=job_wait,
+                    graduate_month=cfg.graduate_month,
+                    post_graduate_multiplier=cfg.post_graduate_multiplier,
+                    skill_month=cfg.skill_month,
+                    skill_multiplier=cfg.skill_multiplier,
+                )
+                + cfg.business_profit_monthly
+            )
 
             rent_cost = cfg.rent_monthly * cum_infl if cfg.rent_monthly > 0 else 0.0
             extra_cost = cfg.study_cost + cfg.upskill_monthly + rent_cost + cfg.insurance_monthly
-            living = (profile.expense_monthly * cum_infl) + (profile.dependents_monthly * cum_infl) + extra_cost
+            living = (
+                (profile.expense_monthly * cum_infl) + (profile.dependents_monthly * cum_infl) + extra_cost
+            )
 
             available = income - living
 

@@ -93,4 +93,3 @@ async def test_api_tax_calculate():
         assert data["net_take_home_pay"] > 13_000_000
         assert "jht_projection" in data
         assert data["jht_projection"]["projected_jht_lump_sum"] > 0
-

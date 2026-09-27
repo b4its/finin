@@ -81,29 +81,21 @@ def recommendation_fallback(best: dict, others: list[dict], robust: bool) -> dic
             "Siapkan rekening autodebet investasi bulanan untuk menyalurkan selisih biaya sewa vs cicilan."
         )
     elif best.get("code") == "I":
-        first_step = (
-            "Siapkan rekening autodebet cicilan kendaraan dan disiplin bayar sebelum jatuh tempo agar skor SLIK OJK tetap prima."
-        )
+        first_step = "Siapkan rekening autodebet cicilan kendaraan dan disiplin bayar sebelum jatuh tempo agar skor SLIK OJK tetap prima."
     elif best.get("code") == "J":
-        first_step = (
-            "Cari unit kendaraan bekas terinspeksi, dan langsung alihkan selisih cicilan bulanan ke reksadana/saham tiap tanggal gajian."
-        )
+        first_step = "Cari unit kendaraan bekas terinspeksi, dan langsung alihkan selisih cicilan bulanan ke reksadana/saham tiap tanggal gajian."
     elif best.get("code") == "K":
-        first_step = (
-            "Batasi plafon pinjaman KTA dan pastikan cicilan bulanan resepsi tidak melebihi 20-30% penghasilan bersih keluarga."
-        )
+        first_step = "Batasi plafon pinjaman KTA dan pastikan cicilan bulanan resepsi tidak melebihi 20-30% penghasilan bersih keluarga."
     elif best.get("code") == "L":
-        first_step = (
-            "Kunci alokasi penghematan pesta pernikahan langsung ke instrumen investasi atau tabungan DP rumah sebelum terpakai konsumsi lain."
-        )
+        first_step = "Kunci alokasi penghematan pesta pernikahan langsung ke instrumen investasi atau tabungan DP rumah sebelum terpakai konsumsi lain."
     elif best.get("code") == "M":
-        first_step = (
-            "Pisahkan rekening operasional usaha waralaba dari rekening pribadi dan sisihkan cadangan kas minimal 3 bulan beban operasional."
-        )
+        first_step = "Pisahkan rekening operasional usaha waralaba dari rekening pribadi dan sisihkan cadangan kas minimal 3 bulan beban operasional."
     elif best.get("code") == "N":
-        first_step = (
-            "Manfaatkan autodebet rutin ke instrumen pasar modal (SBN / Saham Dividen) untuk menikmati pertumbuhan majemuk pasif tanpa risiko operasional usaha."
-        )
+        first_step = "Manfaatkan autodebet rutin ke instrumen pasar modal (SBN / Saham Dividen) untuk menikmati pertumbuhan majemuk pasif tanpa risiko operasional usaha."
+    elif best.get("code") == "Y":
+        first_step = "Pastikan kepesertaan aktif BPJS Kesehatan dan kunci selisih premi bulanan langsung ke instrumen pasar modal untuk dana darurat medis."
+    elif best.get("code") == "Z":
+        first_step = "Pilih polis asuransi swasta murni berfasilitas rawat inap cashless VIP dengan limit tahunan tinggi tanpa embel-embel investasi PAYDI."
 
     alasan = (
         f"{label} menghasilkan nilai riil tahun ke-10 sekitar {rp_brief(nw10)} "

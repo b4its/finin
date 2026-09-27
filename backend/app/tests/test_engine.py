@@ -14,14 +14,14 @@ from app.schemas.input import (
     Decision,
     EmergencyDecision,
     ExistingDebt,
+    HealthBPJSDecision,
+    HealthPrivateDecision,
     LoanDecision,
     Profile,
     SaveDecision,
     SimulationRequest,
     StudyDecision,
     WorkDecision,
-    HealthBPJSDecision,
-    HealthPrivateDecision,
 )
 
 
@@ -677,8 +677,12 @@ def test_career_corporate_vs_freelance(assumptions):
     assert twin_t.insurance_monthly == 350_000
     assert twin_t.business_profit_monthly == pytest.approx(12_000_000 * 0.40)
 
-    res_s = simulate(twin_s, prof, ip, {"inflation": 0.03, "returns": {"money_market": 0.045}}, rs, months=120)
-    res_t = simulate(twin_t, prof, ip, {"inflation": 0.03, "returns": {"money_market": 0.045}}, rs, months=120)
+    res_s = simulate(
+        twin_s, prof, ip, {"inflation": 0.03, "returns": {"money_market": 0.045}}, rs, months=120
+    )
+    res_t = simulate(
+        twin_t, prof, ip, {"inflation": 0.03, "returns": {"money_market": 0.045}}, rs, months=120
+    )
 
     assert res_s.at_year(5).net_worth > 0
     assert res_t.at_year(5).net_worth > 0
@@ -842,13 +846,13 @@ def test_health_bpjs_vs_private_template(assumptions):
         duration_months=1,
         extra_cost=14_000_000,
     )
-    res_y = simulate(twin_y, prof, ip, {"inflation": 0.03, "returns": {"bond": 0.068}}, rs, months=60, shock=shock_medis)
-    res_z = simulate(twin_z, prof, ip, {"inflation": 0.03, "returns": {"bond": 0.068}}, rs, months=60, shock=shock_medis)
+    res_y = simulate(
+        twin_y, prof, ip, {"inflation": 0.03, "returns": {"bond": 0.068}}, rs, months=60, shock=shock_medis
+    )
+    res_z = simulate(
+        twin_z, prof, ip, {"inflation": 0.03, "returns": {"bond": 0.068}}, rs, months=60, shock=shock_medis
+    )
 
     # Twin Z menanggung biaya shock darurat yang 95% diserap asuransi
     assert res_y.at_year(3).net_worth > 0
     assert res_z.at_year(3).net_worth > 0
-
-
-
-

@@ -511,8 +511,8 @@ def twins_for_decision(
             label="Si Unit Link Pendidikan",
             description=(
                 f"Asuransi Unit Link pendidikan Rp{prem:,.0f}/bln (termasuk biaya asuransi "
-                f"dan akuisisi {dec.child_education_unitlink.acquisition_fee_pct_y1*100:.0f}% th-1, "
-                f"{dec.child_education_unitlink.acquisition_fee_pct_y2*100:.0f}% th-2)."
+                f"dan akuisisi {dec.child_education_unitlink.acquisition_fee_pct_y1 * 100:.0f}% th-1, "
+                f"{dec.child_education_unitlink.acquisition_fee_pct_y2 * 100:.0f}% th-2)."
             ),
             insurance_monthly=term_prem,
             unitlink_monthly_premium=prem,
@@ -547,11 +547,7 @@ def twins_for_decision(
         )
         return [twin_o, twin_p]
 
-    if (
-        dec.type == "haji_furoda_vs_reguler"
-        and dec.haji_furoda
-        and dec.haji_reguler
-    ):
+    if dec.type == "haji_furoda_vs_reguler" and dec.haji_furoda and dec.haji_reguler:
         q_style = _style("Q")
         r_style = _style("R")
 
@@ -612,11 +608,7 @@ def twins_for_decision(
         )
         return [twin_q, twin_r]
 
-    if (
-        dec.type == "career_corporate_vs_freelance"
-        and dec.career_corporate
-        and dec.career_freelance
-    ):
+    if dec.type == "career_corporate_vs_freelance" and dec.career_corporate and dec.career_freelance:
         s_style = _style("S")
         t_style = _style("T")
 
@@ -664,11 +656,7 @@ def twins_for_decision(
         )
         return [twin_s, twin_t]
 
-    if (
-        dec.type == "rental_property_vs_dividend"
-        and dec.rental_property
-        and dec.dividend_invest
-    ):
+    if dec.type == "rental_property_vs_dividend" and dec.rental_property and dec.dividend_invest:
         u_style = _style("U")
         v_style = _style("V")
 
@@ -740,11 +728,7 @@ def twins_for_decision(
         )
         return [twin_u, twin_v]
 
-    if (
-        dec.type == "electric_vehicle_vs_ice"
-        and dec.ev_vehicle
-        and dec.ice_vehicle
-    ):
+    if dec.type == "electric_vehicle_vs_ice" and dec.ev_vehicle and dec.ice_vehicle:
         w_style = _style("W")
         x_style = _style("X")
 
@@ -832,11 +816,7 @@ def twins_for_decision(
         )
         return [twin_w, twin_x]
 
-    if (
-        dec.type == "health_bpjs_vs_private"
-        and dec.health_bpjs
-        and dec.health_private
-    ):
+    if dec.type == "health_bpjs_vs_private" and dec.health_bpjs and dec.health_private:
         y_style = _style("Y")
         z_style = _style("Z")
 
@@ -1015,7 +995,11 @@ def decision_templates() -> list[dict]:
                     "min": 12,
                     "max": 60,
                 },
-                {"key": "vehicle_cash.used_vehicle_price", "label": "Harga beli bekas tunai", "type": "currency"},
+                {
+                    "key": "vehicle_cash.used_vehicle_price",
+                    "label": "Harga beli bekas tunai",
+                    "type": "currency",
+                },
                 {
                     "key": "vehicle_cash.invest_instrument",
                     "label": "Instrumen investasi selisih cicilan",
@@ -1309,7 +1293,11 @@ def decision_templates() -> list[dict]:
             "type": "health_bpjs_vs_private",
             "title": "BPJS Kesehatan Terpadu (KRIS) vs Asuransi Kesehatan Swasta Murni (Cashless VIP)",
             "twin_a": {"code": "Y", "label": "Si Peserta BPJS Terpadu & Dana Darurat", **_style("Y")},
-            "twin_b": {"code": "Z", "label": "Si Pemilik Asuransi Swasta Murni (Cashless VIP)", **_style("Z")},
+            "twin_b": {
+                "code": "Z",
+                "label": "Si Pemilik Asuransi Swasta Murni (Cashless VIP)",
+                **_style("Z"),
+            },
             "fields": [
                 {
                     "key": "health_bpjs.monthly_premium",

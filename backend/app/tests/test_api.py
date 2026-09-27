@@ -794,9 +794,3 @@ async def test_api_health_bpjs_vs_private_and_monte_carlo(client):
     # Test 404 for invalid twin code
     bad_r = await client.get(f"/api/v1/simulations/{sim_id}/monte-carlo?twin_code=INVALID")
     assert bad_r.status_code == 404
-
-
-
-
-
-
