@@ -8,6 +8,8 @@
 	import RobustBadge from '$lib/components/multiverse/RobustBadge.svelte';
 	import AssumptionPanel from '$lib/components/multiverse/AssumptionPanel.svelte';
 	import RecommendationPanel from '$lib/components/multiverse/RecommendationPanel.svelte';
+	import ReportModal from '$lib/components/multiverse/ReportModal.svelte';
+	import PitchModal from '$lib/components/multiverse/PitchModal.svelte';
 	import Disclaimer from '$lib/components/ui/Disclaimer.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
@@ -28,6 +30,8 @@
 	let activeShock = $state<string | null>(null);
 	let assumptionOverrides = $state<Record<string, unknown>>({});
 	let focusedTwin = $state<string | null>(null);
+	let reportOpen = $state(false);
+	let pitchOpen = $state(false);
 
 	onMount(async () => {
 		if (!sim.result || sim.result.id !== simId) {
@@ -90,12 +94,28 @@
 	<header class="mb-6 flex flex-wrap items-center justify-between gap-3">
 		<a href="/" class="flex items-center gap-2 font-bold"><span>🌌</span> Financial Twin</a>
 		<div class="flex flex-wrap items-center gap-2">
-			{#if result}<RobustBadge
+			{#if result}
+				<RobustBadge
 					robust={result.robust}
 					reason={result.robust_reason}
 					winners={result.preset_winners}
 					drivers={result.sensitivity_drivers}
-				/>{/if}
+				/>
+				<button
+					class="btn btn-ghost !py-1.5 !px-3 text-xs"
+					onclick={() => (reportOpen = true)}
+					title="Cetak atau unduh laporan PDF eksekutif"
+				>
+					📄 Laporan PDF
+				</button>
+				<button
+					class="btn btn-ghost !py-1.5 !px-3 text-xs font-semibold text-[var(--color-accent)]"
+					onclick={() => (pitchOpen = true)}
+					title="Mode presentasi cepat untuk juri"
+				>
+					⚡ Presentasi Juri
+				</button>
+			{/if}
 			<a href="/start" class="btn btn-ghost !py-1.5">Simulasi baru</a>
 		</div>
 	</header>
@@ -340,3 +360,8 @@
 		</div>
 	{/if}
 </Modal>
+
+{#if result}
+	<ReportModal bind:open={reportOpen} simulation={result} recommendation={sim.recommendation} />
+	<PitchModal bind:open={pitchOpen} simulation={result} recommendation={sim.recommendation} />
+{/if}

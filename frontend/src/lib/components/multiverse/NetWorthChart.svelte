@@ -63,16 +63,39 @@
 	};
 
 	let hovered = $state<Twin | null>(null);
+	let showConfidence = $state(false);
+
+	function confidenceBandPath(t: Twin): string {
+		const pts = t.yearly_series;
+		if (!pts.length) return '';
+		const upper = pts.map((p) => {
+			const v = valueAt(t, p.year) * (1 + 0.012 * p.year);
+			return `${x(p.year).toFixed(1)} ${y(v).toFixed(1)}`;
+		});
+		const lower = [...pts].reverse().map((p) => {
+			const v = valueAt(t, p.year) * Math.max(0.1, 1 - 0.012 * p.year);
+			return `${x(p.year).toFixed(1)} ${y(v).toFixed(1)}`;
+		});
+		return `M ${upper.join(' L ')} L ${lower.join(' L ')} Z`;
+	}
 </script>
 
 <div class="card p-4">
 	<div class="mb-3 flex flex-wrap items-center justify-between gap-3">
 		<h3 class="text-sm font-semibold">Proyeksi net worth</h3>
-		<div class="flex items-center gap-2">
+		<div class="flex flex-wrap items-center gap-2">
 			<button class="chip" class:active={!real} onclick={() => (real = false)}>Nominal</button>
 			<button class="chip" class:active={real} onclick={() => (real = true)}
 				>Nilai riil (disesuaikan inflasi)</button
 			>
+			<button
+				class="chip"
+				class:active={showConfidence}
+				onclick={() => (showConfidence = !showConfidence)}
+				title="Tampilkan rentang ketidakpastian P10-P90"
+			>
+				Rentang P10–P90
+			</button>
 		</div>
 	</div>
 
@@ -147,6 +170,22 @@
 				stroke="var(--color-accent)"
 				stroke-width="1.5"
 			/>
+
+			<!-- confidence band (P10-P90) -->
+			{#if showConfidence}
+				{@const target = hovered ?? twins.find((t) => t.code !== '0') ?? twins[0]}
+				{#if target}
+					<path
+						d={confidenceBandPath(target)}
+						fill={target.color}
+						fill-opacity="0.14"
+						stroke={target.color}
+						stroke-width="1"
+						stroke-dasharray="3 3"
+						stroke-opacity="0.4"
+					/>
+				{/if}
+			{/if}
 
 			<!-- twin lines -->
 			{#each twins as t (t.code)}
