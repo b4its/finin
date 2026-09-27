@@ -9,7 +9,7 @@ from app.engine.income import IncomeProfile
 from app.engine.loans import Loan, LoanState, annuity_payment, apply_month, flat_monthly_payment
 from app.engine.runner import run_full_simulation
 from app.engine.simulator import Shock, simulate
-from app.engine.templates import build_twins
+from app.engine.templates import build_twins, twins_for_decision
 from app.schemas.input import (
     Decision,
     EmergencyDecision,
@@ -436,5 +436,54 @@ def test_vehicle_lease_vs_cash():
 
     assert res_i.at_year(3).net_worth > 0
     assert res_j.at_year(3).net_worth > 0
+
+
+def test_wedding_grand_vs_intimate(assumptions):
+    from app.engine.regulatory import ruleset_from_assumptions
+    from app.schemas.input import WeddingGrandDecision, WeddingIntimateDecision
+
+    prof = Profile(
+        age=26,
+        income_type="salary",
+        income_monthly=12_000_000,
+        expense_monthly=5_000_000,
+        dependents_monthly=0,
+        savings=60_000_000,
+        existing_debt=ExistingDebt(),
+    )
+    ip = IncomeProfile("salary", 12_000_000)
+    rs = ruleset_from_assumptions(None)
+    dec = Decision(
+        type="wedding_grand_vs_intimate",
+        wedding_grand=WeddingGrandDecision(
+            reception_cost=150_000_000,
+            savings_used=50_000_000,
+            loan_amount=100_000_000,
+            interest_rate_annual=0.12,
+            tenor_months=36,
+        ),
+        wedding_intimate=WeddingIntimateDecision(
+            intimate_cost=25_000_000,
+            invest_instrument="stock",
+        ),
+    )
+    twins = twins_for_decision(dec, prof, ip, rs, 0.05, {})
+    assert len(twins) == 2
+    twin_k, twin_l = twins[0], twins[1]
+    assert twin_k.code == "K"
+    assert twin_k.initial_dp == 50_000_000
+    assert twin_k.loan is not None
+    assert twin_k.loan.principal == 100_000_000
+
+    assert twin_l.code == "L"
+    assert twin_l.initial_dp == 25_000_000
+    assert twin_l.loan is None
+    assert twin_l.monthly_invest > 0
+
+    res_k = simulate(twin_k, prof, ip, {"inflation": 0.03, "returns": {"stock": 0.10}}, rs, months=60)
+    res_l = simulate(twin_l, prof, ip, {"inflation": 0.03, "returns": {"stock": 0.10}}, rs, months=60)
+
+    # Si Intim harus jauh lebih kaya dibanding Si Pesta yang terbebani cicilan KTA
+    assert res_l.at_year(3).net_worth > res_k.at_year(3).net_worth
 
 

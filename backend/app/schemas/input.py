@@ -104,6 +104,19 @@ class VehicleCashDecision(BaseModel):
     invest_instrument: Instrument = "stock"
 
 
+class WeddingGrandDecision(BaseModel):
+    reception_cost: float = Field(..., ge=0)
+    savings_used: float = Field(..., ge=0)
+    loan_amount: float = Field(0.0, ge=0)
+    interest_rate_annual: float = Field(0.12, ge=0.01, le=0.35)
+    tenor_months: int = Field(36, ge=6, le=60)
+
+
+class WeddingIntimateDecision(BaseModel):
+    intimate_cost: float = Field(..., ge=0)
+    invest_instrument: Instrument = "stock"
+
+
 class Decision(BaseModel):
     type: Literal[
         "loan_vs_save",
@@ -111,6 +124,7 @@ class Decision(BaseModel):
         "emergency_vs_invest",
         "kpr_vs_rent",
         "vehicle_lease_vs_cash",
+        "wedding_grand_vs_intimate",
     ]
     loan: LoanDecision | None = None
     save: SaveDecision | None = None
@@ -121,6 +135,8 @@ class Decision(BaseModel):
     rent: RentDecision | None = None
     vehicle_lease: VehicleLeaseDecision | None = None
     vehicle_cash: VehicleCashDecision | None = None
+    wedding_grand: WeddingGrandDecision | None = None
+    wedding_intimate: WeddingIntimateDecision | None = None
 
     @model_validator(mode="after")
     def _require_payload(self) -> Decision:
@@ -134,6 +150,10 @@ class Decision(BaseModel):
             raise ValueError("kpr_vs_rent butuh 'kpr' dan 'rent'")
         if self.type == "vehicle_lease_vs_cash" and (self.vehicle_lease is None or self.vehicle_cash is None):
             raise ValueError("vehicle_lease_vs_cash butuh 'vehicle_lease' dan 'vehicle_cash'")
+        if self.type == "wedding_grand_vs_intimate" and (
+            self.wedding_grand is None or self.wedding_intimate is None
+        ):
+            raise ValueError("wedding_grand_vs_intimate butuh 'wedding_grand' dan 'wedding_intimate'")
         return self
 
 

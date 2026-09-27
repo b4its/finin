@@ -26,6 +26,8 @@ TWIN_STYLE = {
     "H": {"color": "#EC4899", "dash": "dashed", "icon": "key"},
     "I": {"color": "#F97316", "dash": "solid", "icon": "car"},
     "J": {"color": "#06B6D4", "dash": "dashed", "icon": "bike"},
+    "K": {"color": "#E11D48", "dash": "solid", "icon": "party"},
+    "L": {"color": "#14B8A6", "dash": "dashed", "icon": "gem"},
 }
 
 STYLE_FALLBACK = {"color": "#94A3B8", "dash": "solid", "icon": "circle"}
@@ -344,6 +346,68 @@ def twins_for_decision(
         )
         return [twin_i, twin_j]
 
+    if dec.type == "wedding_grand_vs_intimate":
+        assert dec.wedding_grand is not None and dec.wedding_intimate is not None
+        k_style = _style("K")
+        l_style = _style("L")
+
+        kta_loan = None
+        scheduled_pay = 0.0
+        if dec.wedding_grand.loan_amount > 0:
+            kta_loan = Loan(
+                kind="annuity",
+                principal=dec.wedding_grand.loan_amount,
+                tenor_months=dec.wedding_grand.tenor_months,
+                annual_rate=dec.wedding_grand.interest_rate_annual,
+                ruleset=ruleset,
+            )
+            scheduled_pay = kta_loan.scheduled_payment
+
+        loan_desc = (
+            f" + KTA Rp{dec.wedding_grand.loan_amount:,.0f} tenor {dec.wedding_grand.tenor_months} bln)"
+            if dec.wedding_grand.loan_amount > 0
+            else ")"
+        )
+        twin_k = TwinConfig(
+            code="K",
+            label="Si Pesta Akbar",
+            description=(
+                f"Pesta pernikahan megah Rp{dec.wedding_grand.reception_cost:,.0f} "
+                f"(tabungan Rp{dec.wedding_grand.savings_used:,.0f}{loan_desc}."
+            ),
+            loan=kta_loan,
+            initial_dp=dec.wedding_grand.savings_used,
+            monthly_invest=0.0,
+            meta={
+                "reception_cost": dec.wedding_grand.reception_cost,
+                "savings_used": dec.wedding_grand.savings_used,
+                "loan_amount": dec.wedding_grand.loan_amount,
+                "tenor_months": dec.wedding_grand.tenor_months,
+                "interest_rate": dec.wedding_grand.interest_rate_annual,
+            },
+            **k_style,
+        )
+
+        invest_diff = max(0.0, scheduled_pay)
+        twin_l = TwinConfig(
+            code="L",
+            label="Si Intim & Modal Keluarga",
+            description=(
+                f"Pernikahan intim/KUA Rp{dec.wedding_intimate.intimate_cost:,.0f} tunai bebas utang, "
+                f"investasikan selisih cicilan Rp{invest_diff:,.0f}/bln ke {dec.wedding_intimate.invest_instrument}."
+            ),
+            initial_dp=dec.wedding_intimate.intimate_cost,
+            monthly_invest=invest_diff,
+            instrument=dec.wedding_intimate.invest_instrument,
+            meta={
+                "intimate_cost": dec.wedding_intimate.intimate_cost,
+                "monthly_invest": invest_diff,
+                "instrument": dec.wedding_intimate.invest_instrument,
+            },
+            **l_style,
+        )
+        return [twin_k, twin_l]
+
     return []
 
 
@@ -481,6 +545,53 @@ def decision_templates() -> list[dict]:
                 {
                     "key": "vehicle_cash.invest_instrument",
                     "label": "Instrumen investasi selisih cicilan",
+                    "type": "instrument",
+                },
+            ],
+        },
+        {
+            "type": "wedding_grand_vs_intimate",
+            "title": "Pesta Pernikahan Mewah (KTA) vs Nikah Intim & Modal Keluarga",
+            "twin_a": {"code": "K", "label": "Si Pesta Akbar", **_style("K")},
+            "twin_b": {"code": "L", "label": "Si Intim & Modal Keluarga", **_style("L")},
+            "fields": [
+                {
+                    "key": "wedding_grand.reception_cost",
+                    "label": "Estimasi total biaya pesta megah",
+                    "type": "currency",
+                },
+                {
+                    "key": "wedding_grand.savings_used",
+                    "label": "Porsi dari tabungan sendiri",
+                    "type": "currency",
+                },
+                {
+                    "key": "wedding_grand.loan_amount",
+                    "label": "Porsi pinjaman KTA/keluarga",
+                    "type": "currency",
+                },
+                {
+                    "key": "wedding_grand.tenor_months",
+                    "label": "Tenor cicilan KTA (bulan)",
+                    "type": "int",
+                    "min": 6,
+                    "max": 60,
+                },
+                {
+                    "key": "wedding_grand.interest_rate_annual",
+                    "label": "Bunga pinjaman/tahun",
+                    "type": "percent",
+                    "min": 0.05,
+                    "max": 0.30,
+                },
+                {
+                    "key": "wedding_intimate.intimate_cost",
+                    "label": "Biaya nikah intim/KUA",
+                    "type": "currency",
+                },
+                {
+                    "key": "wedding_intimate.invest_instrument",
+                    "label": "Instrumen investasi selisih dana",
                     "type": "instrument",
                 },
             ],

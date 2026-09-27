@@ -94,6 +94,7 @@ async def test_templates(client: AsyncClient):
         "emergency_vs_invest",
         "kpr_vs_rent",
         "vehicle_lease_vs_cash",
+        "wedding_grand_vs_intimate",
     }
 
 
@@ -457,5 +458,48 @@ async def test_api_vehicle_lease_vs_cash(client: AsyncClient):
     assert "0" in codes
     assert "I" in codes
     assert "J" in codes
+
+
+async def test_api_wedding_grand_vs_intimate(client: AsyncClient):
+    payload = {
+        "profile": {
+            "age": 27,
+            "income_type": "salary",
+            "income_monthly": 15_000_000,
+            "expense_monthly": 6_000_000,
+            "dependents_monthly": 0,
+            "savings": 50_000_000,
+            "existing_debt": {"principal": 0, "monthly_payment": 0},
+        },
+        "decisions": [
+            {
+                "type": "wedding_grand_vs_intimate",
+                "wedding_grand": {
+                    "reception_cost": 200_000_000,
+                    "savings_used": 50_000_000,
+                    "loan_amount": 150_000_000,
+                    "interest_rate_annual": 0.12,
+                    "tenor_months": 36,
+                },
+                "wedding_intimate": {
+                    "intimate_cost": 30_000_000,
+                    "invest_instrument": "stock",
+                },
+            }
+        ],
+        "preset": "moderat",
+    }
+    r = await client.post("/api/v1/simulations", json=payload)
+    assert r.status_code == 201
+    body = r.json()
+    codes = [t["code"] for t in body["twins"]]
+    assert "0" in codes
+    assert "K" in codes
+    assert "L" in codes
+    # Twin L harus mengalahkan Twin K
+    twin_k = next(t for t in body["twins"] if t["code"] == "K")
+    twin_l = next(t for t in body["twins"] if t["code"] == "L")
+    assert twin_l["score"] > twin_k["score"]
+
 
 
