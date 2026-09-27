@@ -62,7 +62,9 @@ export function twinIconLabel(name: string): string {
 		'building-2': 'juragan properti sewa komersial',
 		'chart-line': 'investor dividen pasar modal',
 		zap: 'kendaraan listrik ev subsidi',
-		fuel: 'kendaraan bensin konvensional'
+		fuel: 'kendaraan bensin konvensional',
+		'shield-check': 'peserta bpjs terpadu dan dana darurat',
+		'heart-pulse': 'pemilik asuransi swasta murni'
 	};
 	return labels[name] ?? 'twin';
 }

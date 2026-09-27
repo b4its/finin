@@ -21,6 +21,8 @@
 	import EstatePlanningSimulator from '$lib/components/multiverse/EstatePlanningSimulator.svelte';
 	import MonteCarloSimulation from '$lib/components/multiverse/MonteCarloSimulation.svelte';
 	import DebtPayoffAccelerator from '$lib/components/multiverse/DebtPayoffAccelerator.svelte';
+	import EducationFundPlanner from '$lib/components/multiverse/EducationFundPlanner.svelte';
+	import EmergencyRunwaySimulator from '$lib/components/multiverse/EmergencyRunwaySimulator.svelte';
 	import ScenarioSandbox from '$lib/components/multiverse/ScenarioSandbox.svelte';
 	import ShareModal from '$lib/components/multiverse/ShareModal.svelte';
 	import Disclaimer from '$lib/components/ui/Disclaimer.svelte';
@@ -47,6 +49,15 @@
 	let pitchOpen = $state(false);
 	let shareOpen = $state(false);
 	let exportMenuOpen = $state(false);
+	let activeTab = $state<'overview' | 'risk' | 'strategy' | 'future' | 'all'>('overview');
+
+	const TABS = [
+		{ id: 'overview', label: 'Multiverse Utama', icon: '🌌', count: 5 },
+		{ id: 'risk', label: 'Risiko & Ketahanan', icon: '🎲', count: 5 },
+		{ id: 'strategy', label: 'Akselerasi & Target', icon: '🎯', count: 4 },
+		{ id: 'future', label: 'Pensiun, Waris & Pajak', icon: '🏛️', count: 5 },
+		{ id: 'all', label: 'Semua Modul', icon: '📋', count: 19 }
+	] as const;
 
 	onMount(async () => {
 		if (!sim.result || sim.result.id !== simId) {
@@ -207,30 +218,69 @@
 			</section>
 		{/if}
 
+		<!-- Multiverse Hub Navigation Bar -->
+		<div
+			class="mb-5 flex flex-wrap items-center gap-1.5 rounded-2xl border border-[var(--color-line)] bg-[var(--color-void-2)] p-1.5 shadow-sm"
+		>
+			{#each TABS as tab}
+				<button
+					type="button"
+					class="flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all {activeTab ===
+					tab.id
+						? 'bg-[var(--color-accent)] font-bold text-slate-950 shadow-md'
+						: 'text-[var(--color-ink-dim)] hover:bg-[var(--color-void-3)] hover:text-[var(--color-ink)]'}"
+					onclick={() => (activeTab = tab.id)}
+				>
+					<span>{tab.icon}</span>
+					<span>{tab.label}</span>
+					<span
+						class="rounded-full px-1.5 py-0.5 text-[10px] {activeTab === tab.id
+							? 'bg-slate-900/30 font-black text-slate-950'
+							: 'bg-[var(--color-void-1)] text-[var(--color-ink-dim)]'}"
+					>
+						{tab.count}
+					</span>
+				</button>
+			{/each}
+		</div>
+
 		<div class="grid grid-cols-1 gap-5 lg:grid-cols-3">
 			<div class="space-y-5 lg:col-span-2">
-				<BranchTree twins={result.twins} selectedYear={year} brokenShock={activeShock} />
-				<TimeScrubber
-					bind:year
-					twins={result.twins}
-					narration={sim.textForTwin(focusedTwin ?? result.twins[1]?.code ?? '0', year)}
-					onFocusTwin={(c) => (focusedTwin = c)}
-				/>
-				<NetWorthChart twins={result.twins} bind:selectedYear={year} bind:real />
-				<CompareView twins={result.twins} {year} />
-				<MilestoneTracker twins={result.twins} />
-				<FinancialHealthScorecard twins={result.twins} />
-				<MonteCarloSimulation twins={result.twins} {simId} preset={preset ?? result.preset} />
-				<PortfolioAllocationRadar twins={result.twins} />
-				<PurchasingPowerHorizon twins={result.twins} />
-				<DebtPayoffAccelerator profile={sim.input.profile} twins={result.twins} />
-				<ZakatAndFinalTaxCalculator twins={result.twins} profile={sim.input.profile} />
-				<PensionAndFireCalculator twins={result.twins} profile={sim.input.profile} />
-				<SandwichGenerationCalculator profile={sim.input.profile} twins={result.twins} />
-				<EstatePlanningSimulator twins={result.twins} profile={sim.input.profile} />
-				<TaxAndBPJSBreakdown initialGross={sim.input.profile.income_monthly || 10000000} />
-				<StressTestPanel twins={result.twins} bind:active={activeShock} />
-				<ScenarioSandbox />
+				{#if activeTab === 'overview' || activeTab === 'all'}
+					<BranchTree twins={result.twins} selectedYear={year} brokenShock={activeShock} />
+					<TimeScrubber
+						bind:year
+						twins={result.twins}
+						narration={sim.textForTwin(focusedTwin ?? result.twins[1]?.code ?? '0', year)}
+						onFocusTwin={(c) => (focusedTwin = c)}
+					/>
+					<NetWorthChart twins={result.twins} bind:selectedYear={year} bind:real />
+					<CompareView twins={result.twins} {year} />
+					<MilestoneTracker twins={result.twins} />
+				{/if}
+
+				{#if activeTab === 'risk' || activeTab === 'all'}
+					<MonteCarloSimulation twins={result.twins} {simId} preset={preset ?? result.preset} />
+					<FinancialHealthScorecard twins={result.twins} />
+					<EmergencyRunwaySimulator twins={result.twins} profile={sim.input.profile} />
+					<StressTestPanel twins={result.twins} bind:active={activeShock} />
+					<PurchasingPowerHorizon twins={result.twins} />
+				{/if}
+
+				{#if activeTab === 'strategy' || activeTab === 'all'}
+					<DebtPayoffAccelerator profile={sim.input.profile} twins={result.twins} />
+					<EducationFundPlanner twins={result.twins} profile={sim.input.profile} />
+					<PortfolioAllocationRadar twins={result.twins} />
+					<ScenarioSandbox />
+				{/if}
+
+				{#if activeTab === 'future' || activeTab === 'all'}
+					<PensionAndFireCalculator twins={result.twins} profile={sim.input.profile} />
+					<SandwichGenerationCalculator profile={sim.input.profile} twins={result.twins} />
+					<EstatePlanningSimulator twins={result.twins} profile={sim.input.profile} />
+					<ZakatAndFinalTaxCalculator twins={result.twins} profile={sim.input.profile} />
+					<TaxAndBPJSBreakdown initialGross={sim.input.profile.income_monthly || 10000000} />
+				{/if}
 			</div>
 
 			<div class="space-y-4">
