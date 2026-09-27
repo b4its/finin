@@ -586,7 +586,9 @@
 		{@const grand = d.wedding_grand!}
 		{@const intimate = d.wedding_intimate!}
 		<div class="card space-y-4 p-4">
-			<p class="text-sm font-semibold">💍 Pesta Pernikahan Mewah (KTA) vs Nikah Intim & Modal Keluarga</p>
+			<p class="text-sm font-semibold">
+				💍 Pesta Pernikahan Mewah (KTA) vs Nikah Intim & Modal Keluarga
+			</p>
 			<div>
 				<p class="mb-3 text-sm font-semibold text-rose-400">
 					Skenario K — Si Pesta Akbar (Resepsi Besar & Utang KTA)
@@ -625,7 +627,10 @@
 					Skenario L — Si Intim & Modal Keluarga
 				</p>
 				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-					<CurrencyInput bind:value={intimate.intimate_cost} label="Biaya Nikah Intim / KUA (Tunai)" />
+					<CurrencyInput
+						bind:value={intimate.intimate_cost}
+						label="Biaya Nikah Intim / KUA (Tunai)"
+					/>
 					<label class="block">
 						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]"
 							>Instrumen Investasi Selisih Cicilan</span
@@ -638,8 +643,8 @@
 					</label>
 				</div>
 				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
-					Pernikahan sakral intim/KUA secara tunai tanpa utang KTA baru. Sisa tabungan dan selisih cicilan
-					bulanan KTA diinvestasikan penuh ke portofolio modal rumah tangga.
+					Pernikahan sakral intim/KUA secara tunai tanpa utang KTA baru. Sisa tabungan dan selisih
+					cicilan bulanan KTA diinvestasikan penuh ke portofolio modal rumah tangga.
 				</p>
 			</div>
 		</div>
@@ -658,7 +663,10 @@
 				<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
 					<CurrencyInput bind:value={fran.franchise_fee} label="Total Modal Awal Waralaba" />
 					<CurrencyInput bind:value={fran.savings_used} label="Porsi Modal Sendiri (Tabungan)" />
-					<CurrencyInput bind:value={fran.kur_loan_amount} label="Pinjaman KUR Bank (Subsidi 6%/th)" />
+					<CurrencyInput
+						bind:value={fran.kur_loan_amount}
+						label="Pinjaman KUR Bank (Subsidi 6%/th)"
+					/>
 				</div>
 				<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
 					<label class="block">
@@ -675,7 +683,10 @@
 								(fran.kur_tenor_months = parseInt((e.target as HTMLInputElement).value) || 36)}
 						/>
 					</label>
-					<CurrencyInput bind:value={fran.monthly_net_profit} label="Estimasi Laba Bersih Usaha / Bulan" />
+					<CurrencyInput
+						bind:value={fran.monthly_net_profit}
+						label="Estimasi Laba Bersih Usaha / Bulan"
+					/>
 				</div>
 			</div>
 
@@ -696,7 +707,8 @@
 					</label>
 				</div>
 				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
-					Tidak mengambil risiko operasional bisnis dan bebas cicilan utang KUR. Tabungan tetap utuh di portofolio, dan alokasi dana setara cicilan dialihkan tiap bulan ke instrumen pasif.
+					Tidak mengambil risiko operasional bisnis dan bebas cicilan utang KUR. Tabungan tetap utuh
+					di portofolio, dan alokasi dana setara cicilan dialihkan tiap bulan ke instrumen pasif.
 				</p>
 			</div>
 		</div>
@@ -707,7 +719,9 @@
 		{@const ul = d.child_education_unitlink!}
 		{@const diy = d.child_education_diy!}
 		<div class="card space-y-4 p-4">
-			<p class="text-sm font-semibold">🎓 Dana Pendidikan Anak: Unit Link vs Tabungan Mandiri + Asuransi Murni</p>
+			<p class="text-sm font-semibold">
+				🎓 Dana Pendidikan Anak: Unit Link vs Tabungan Mandiri + Asuransi Murni
+			</p>
 			<div>
 				<p class="mb-3 text-sm font-semibold text-rose-400">
 					Skenario O — Si Asuransi Unit Link (PAYDI Terintegrasi)
@@ -739,7 +753,10 @@
 					Skenario P — Si Portofolio Mandiri (SBN/Saham) + Asuransi Murni
 				</p>
 				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-					<CurrencyInput bind:value={diy.term_life_premium_monthly} label="Premi Asuransi Jiwa Murni / Bulan" />
+					<CurrencyInput
+						bind:value={diy.term_life_premium_monthly}
+						label="Premi Asuransi Jiwa Murni / Bulan"
+					/>
 					<label class="block">
 						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]"
 							>Instrumen Investasi Mandiri (0% Akuisisi)</span
@@ -752,8 +769,9 @@
 					</label>
 				</div>
 				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
-					Memisahkan proteksi jiwa dengan asuransi murni (tanpa embel-embel investasi). Sisa alokasi dana
-					diinvestasikan 100% secara langsung ke instrumen pasar modal tanpa potongan biaya akuisisi PAYDI.
+					Memisahkan proteksi jiwa dengan asuransi murni (tanpa embel-embel investasi). Sisa alokasi
+					dana diinvestasikan 100% secara langsung ke instrumen pasar modal tanpa potongan biaya
+					akuisisi PAYDI.
 				</p>
 			</div>
 		</div>
@@ -764,7 +782,9 @@
 		{@const furoda = d.haji_furoda!}
 		{@const reguler = d.haji_reguler!}
 		<div class="card space-y-4 p-4">
-			<p class="text-sm font-semibold">🕋 Haji Khusus / Furoda vs Haji Reguler BPKH + Investasi Sukuk</p>
+			<p class="text-sm font-semibold">
+				🕋 Haji Khusus / Furoda vs Haji Reguler BPKH + Investasi Sukuk
+			</p>
 			<div>
 				<p class="mb-3 text-sm font-semibold text-amber-400">
 					Skenario Q — Si Haji Khusus / Furoda (Berangkat Instan Tanpa Antre)
@@ -804,7 +824,10 @@
 					Skenario R — Si Haji Reguler BPKH & Sukuk Syariah
 				</p>
 				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-					<CurrencyInput bind:value={reguler.bpkh_initial_deposit} label="Setoran Awal Porsi BPKH" />
+					<CurrencyInput
+						bind:value={reguler.bpkh_initial_deposit}
+						label="Setoran Awal Porsi BPKH"
+					/>
 					<label class="block">
 						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]"
 							>Instrumen Investasi Syariah Selisih Dana</span
@@ -817,8 +840,9 @@
 					</label>
 				</div>
 				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
-					Mendaftar nomor porsi haji reguler BPKH (Rp25jt). Sisa ratusan juta tabungan dan alokasi cicilan diinvestasikan
-					penuh ke instrumen syariah (Sukuk/Reksadana Syariah) yang terus bertumbuh selama masa tunggu antrean.
+					Mendaftar nomor porsi haji reguler BPKH (Rp25jt). Sisa ratusan juta tabungan dan alokasi
+					cicilan diinvestasikan penuh ke instrumen syariah (Sukuk/Reksadana Syariah) yang terus
+					bertumbuh selama masa tunggu antrean.
 				</p>
 			</div>
 		</div>
@@ -829,7 +853,9 @@
 		{@const corp = d.career_corporate!}
 		{@const free = d.career_freelance!}
 		<div class="card space-y-4 p-4">
-			<p class="text-sm font-semibold">💼 Karier: Pekerja Korporat (Tetap & BPJS PPU) vs Freelancer / Solopreneur</p>
+			<p class="text-sm font-semibold">
+				💼 Karier: Pekerja Korporat (Tetap & BPJS PPU) vs Freelancer / Solopreneur
+			</p>
 			<div>
 				<p class="mb-3 text-sm font-semibold text-blue-400">
 					Skenario S — Si Pegawai Korporat (Gaji Tetap, Bonus & BPJS TK/Kes PPU)
@@ -856,7 +882,9 @@
 							oninput={(e) =>
 								(corp.bonus_months_annual = parseFloat((e.target as HTMLInputElement).value) || 0)}
 						/>
-						<span class="mt-1 block text-xs text-[var(--color-ink-dim)]">Bonus performa tahunan / THR / insentif kerja.</span>
+						<span class="mt-1 block text-xs text-[var(--color-ink-dim)]"
+							>Bonus performa tahunan / THR / insentif kerja.</span
+						>
 					</label>
 				</div>
 			</div>
@@ -880,7 +908,9 @@
 							oninput={(e) =>
 								(free.revenue_multiplier = parseFloat((e.target as HTMLInputElement).value) || 1.0)}
 						/>
-						<span class="mt-1 block text-xs text-[var(--color-ink-dim)]">Kelipatan omset kotor dibanding gaji korporat (cth: 1.4x).</span>
+						<span class="mt-1 block text-xs text-[var(--color-ink-dim)]"
+							>Kelipatan omset kotor dibanding gaji korporat (cth: 1.4x).</span
+						>
 					</label>
 					<label class="block">
 						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]"
@@ -893,9 +923,12 @@
 							max="24"
 							value={free.emergency_target_months}
 							oninput={(e) =>
-								(free.emergency_target_months = parseInt((e.target as HTMLInputElement).value) || 6)}
+								(free.emergency_target_months =
+									parseInt((e.target as HTMLInputElement).value) || 6)}
 						/>
-						<span class="mt-1 block text-xs text-[var(--color-ink-dim)]">Rekomendasi CFP untuk pekerja lepas: 9–12 bulan.</span>
+						<span class="mt-1 block text-xs text-[var(--color-ink-dim)]"
+							>Rekomendasi CFP untuk pekerja lepas: 9–12 bulan.</span
+						>
 					</label>
 					<CurrencyInput
 						bind:value={free.bpjs_mandiri_monthly}
@@ -904,7 +937,8 @@
 					/>
 				</div>
 				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
-					Pekerja lepas memikul iuran asuransi mandiri dan ketidakpastian arus kas musiman. Pajak dihitung dengan Norma Penghitungan Penghasilan Neto (NPPN 50%) sesuai PMK No. 168/2023.
+					Pekerja lepas memikul iuran asuransi mandiri dan ketidakpastian arus kas musiman. Pajak
+					dihitung dengan Norma Penghitungan Penghasilan Neto (NPPN 50%) sesuai PMK No. 168/2023.
 				</p>
 			</div>
 		</div>
@@ -915,7 +949,9 @@
 		{@const prop = d.rental_property!}
 		{@const div = d.dividend_invest!}
 		<div class="card space-y-4 p-4">
-			<p class="text-sm font-semibold">🏬 Investasi Properti Sewa (KPR Kos/Ruko) vs Portofolio Saham Dividen (IDX High Dividend 20)</p>
+			<p class="text-sm font-semibold">
+				🏬 Investasi Properti Sewa (KPR Kos/Ruko) vs Portofolio Saham Dividen (IDX High Dividend 20)
+			</p>
 			<div>
 				<p class="mb-3 text-sm font-semibold text-purple-400">
 					Skenario U — Si Juragan Properti Sewa (Leverage KPR & Passive Rental Income)
@@ -939,7 +975,9 @@
 				</div>
 				<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
 					<label class="block">
-						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]">Tenor KPR (tahun)</span>
+						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]"
+							>Tenor KPR (tahun)</span
+						>
 						<input
 							class="input num"
 							type="number"
@@ -968,7 +1006,8 @@
 					/>
 				</div>
 				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
-					Pendapatan sewa dipotong otomatis PPh Final Sewa 10% (PP No. 34/2016), beban operasional kos 15%, dan PBB P2 tahunan.
+					Pendapatan sewa dipotong otomatis PPh Final Sewa 10% (PP No. 34/2016), beban operasional
+					kos 15%, dan PBB P2 tahunan.
 				</p>
 			</div>
 
@@ -989,7 +1028,9 @@
 					</label>
 				</div>
 				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
-					Menghindari kerepotan operasional fisik properti (penyewa menunggak, renovasi atap bocor). Uang DP ditahan utuh dan setara cicilan KPR dialihkan penuh ke portofolio saham dividen (bebas PPh dividen UU HPP / PMK 18/2021).
+					Menghindari kerepotan operasional fisik properti (penyewa menunggak, renovasi atap bocor).
+					Uang DP ditahan utuh dan setara cicilan KPR dialihkan penuh ke portofolio saham dividen
+					(bebas PPh dividen UU HPP / PMK 18/2021).
 				</p>
 			</div>
 		</div>
@@ -1000,14 +1041,20 @@
 		{@const ev = d.ev_vehicle!}
 		{@const ice = d.ice_vehicle!}
 		<div class="card space-y-4 p-4">
-			<p class="text-sm font-semibold">⚡ Kendaraan Listrik (EV Subsidi OJK/Kemenperin) vs Motor/Mobil Bensin (ICE)</p>
+			<p class="text-sm font-semibold">
+				⚡ Kendaraan Listrik (EV Subsidi OJK/Kemenperin) vs Motor/Mobil Bensin (ICE)
+			</p>
 			<div>
 				<p class="mb-3 text-sm font-semibold text-cyan-400">
 					Skenario W — Si Pengadopsi Kendaraan Listrik EV (Subsidi Pemerintah & Efisiensi Energi)
 				</p>
 				<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
 					<CurrencyInput bind:value={ev.vehicle_price} label="Harga Resmi OTR Kendaraan Listrik" />
-					<CurrencyInput bind:value={ev.government_subsidy} label="Subsidi / Insentif PPN DTP" help="Subsidi motor listrik Rp7jt (Permenperin 21/2023) atau PPN DTP 1% (PMK 8/2024)." />
+					<CurrencyInput
+						bind:value={ev.government_subsidy}
+						label="Subsidi / Insentif PPN DTP"
+						help="Subsidi motor listrik Rp7jt (Permenperin 21/2023) atau PPN DTP 1% (PMK 8/2024)."
+					/>
 					<PercentInput
 						bind:value={ev.down_payment_pct}
 						label="Uang Muka (DP EV)"
@@ -1017,10 +1064,19 @@
 					/>
 				</div>
 				<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-					<CurrencyInput bind:value={ev.monthly_fuel_cost_savings} label="Hemat Biaya Energi (PLN vs BBM)/Bulan" help="Listrik PLN Rp1.699/kWh vs Bensin Pertalite/Pertamax." />
-					<CurrencyInput bind:value={ev.annual_tax_pkb_savings} label="Hemat PKB Tahunan (PKB EV 0% Permendagri 6/2023)" />
+					<CurrencyInput
+						bind:value={ev.monthly_fuel_cost_savings}
+						label="Hemat Biaya Energi (PLN vs BBM)/Bulan"
+						help="Listrik PLN Rp1.699/kWh vs Bensin Pertalite/Pertamax."
+					/>
+					<CurrencyInput
+						bind:value={ev.annual_tax_pkb_savings}
+						label="Hemat PKB Tahunan (PKB EV 0% Permendagri 6/2023)"
+					/>
 					<label class="block">
-						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]">Tenor Pembiayaan (bulan)</span>
+						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]"
+							>Tenor Pembiayaan (bulan)</span
+						>
 						<input
 							class="input num"
 							type="number"
@@ -1059,7 +1115,8 @@
 					</label>
 				</div>
 				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
-					Harga awal kendaraan bensin lebih murah tanpa risiko penggantian baterai di tahun ke-8, namun menanggung beban BBM harian dan PKB tahunan secara berkelanjutan.
+					Harga awal kendaraan bensin lebih murah tanpa risiko penggantian baterai di tahun ke-8,
+					namun menanggung beban BBM harian dan PKB tahunan secara berkelanjutan.
 				</p>
 			</div>
 		</div>

@@ -100,7 +100,9 @@
 
 	let jhtWorker = $derived(includeBpjs ? Math.round(grossMonthly * 0.02) : 0);
 	let jpWorker = $derived(includeBpjs ? Math.round(Math.min(grossMonthly, JP_MAX_WAGE) * 0.01) : 0);
-	let kesWorker = $derived(includeBpjs ? Math.round(Math.min(grossMonthly, KES_MAX_WAGE) * 0.01) : 0);
+	let kesWorker = $derived(
+		includeBpjs ? Math.round(Math.min(grossMonthly, KES_MAX_WAGE) * 0.01) : 0
+	);
 
 	let jhtEmployer = $derived(includeBpjs ? Math.round(grossMonthly * 0.037) : 0);
 	let totalJhtMonthly = $derived(jhtWorker + jhtEmployer);
@@ -125,7 +127,9 @@
 </script>
 
 <div class="card p-5">
-	<div class="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-line)] pb-4">
+	<div
+		class="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-line)] pb-4"
+	>
 		<div>
 			<div class="flex items-center gap-2">
 				<span class="text-xl">🏛️</span>
@@ -134,12 +138,19 @@
 				</h3>
 			</div>
 			<p class="mt-1 text-xs text-[var(--color-ink-dim)]">
-				Simulasi pemotongan resmi PPh 21 TER, iuran BPJS Ketenagakerjaan & Kesehatan, serta akumulasi saldo JHT pensiun.
+				Simulasi pemotongan resmi PPh 21 TER, iuran BPJS Ketenagakerjaan & Kesehatan, serta
+				akumulasi saldo JHT pensiun.
 			</p>
 		</div>
 
-		<label class="flex items-center gap-2 text-xs font-semibold text-[var(--color-ink)] cursor-pointer">
-			<input type="checkbox" bind:checked={includeBpjs} class="rounded border-[var(--color-line)]" />
+		<label
+			class="flex items-center gap-2 text-xs font-semibold text-[var(--color-ink)] cursor-pointer"
+		>
+			<input
+				type="checkbox"
+				bind:checked={includeBpjs}
+				class="rounded border-[var(--color-line)]"
+			/>
 			<span>Potong Iuran BPJS Ketenagakerjaan & Kesehatan</span>
 		</label>
 	</div>
@@ -152,7 +163,9 @@
 			<span class="mb-1.5 block text-xs font-semibold text-[var(--color-ink-dim)]">
 				Kategori TER (Status PTKP Pajak)
 			</span>
-			<div class="flex rounded-lg border border-[var(--color-line)] bg-[var(--color-void-2)] p-0.5 text-xs">
+			<div
+				class="flex rounded-lg border border-[var(--color-line)] bg-[var(--color-void-2)] p-0.5 text-xs"
+			>
 				<button
 					class="flex-1 rounded-md py-1.5 font-semibold transition"
 					class:bg-[var(--color-accent)]={terCategory === 'A'}
@@ -188,13 +201,7 @@
 				<span class="mb-1.5 block text-xs font-semibold text-[var(--color-ink-dim)]">
 					Usia Saat Ini (Untuk Proyeksi JHT 56 Th)
 				</span>
-				<input
-					class="input num text-xs"
-					type="number"
-					min="18"
-					max="55"
-					bind:value={currentAge}
-				/>
+				<input class="input num text-xs" type="number" min="18" max="55" bind:value={currentAge} />
 			</label>
 		</div>
 	</div>
@@ -202,7 +209,9 @@
 	<!-- Rincian Slip Gaji Bersih (Payroll Voucher Grid) -->
 	<div class="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
 		<!-- Sisi Kiri: Slip Gaji Take-Home Pay -->
-		<div class="rounded-xl border border-[var(--color-line)] bg-[var(--color-void-2)] p-4 space-y-3">
+		<div
+			class="rounded-xl border border-[var(--color-line)] bg-[var(--color-void-2)] p-4 space-y-3"
+		>
 			<div class="flex items-center justify-between border-b border-[var(--color-line)]/50 pb-2">
 				<span class="text-xs font-bold uppercase tracking-wider text-[var(--color-ink-dim)]">
 					Rincian Slip Gaji Bulanan
@@ -238,12 +247,16 @@
 				{/if}
 			</div>
 
-			<div class="flex justify-between border-t border-[var(--color-line)] pt-2 text-xs font-semibold">
+			<div
+				class="flex justify-between border-t border-[var(--color-line)] pt-2 text-xs font-semibold"
+			>
 				<span class="text-[var(--color-ink-dim)]">Total Potongan Wajib:</span>
 				<span class="text-rose-400">-{rupiah(totalDeductions)}</span>
 			</div>
 
-			<div class="mt-2 rounded-lg bg-[var(--color-void-1)] p-3 border border-[var(--color-line)]/80 flex items-center justify-between">
+			<div
+				class="mt-2 rounded-lg bg-[var(--color-void-1)] p-3 border border-[var(--color-line)]/80 flex items-center justify-between"
+			>
 				<div>
 					<span class="text-[11px] uppercase tracking-wide text-[var(--color-ink-dim)] block">
 						Gaji Bersih Diterima (Take-Home Pay)
@@ -257,7 +270,9 @@
 		</div>
 
 		<!-- Sisi Kanan: Hidden Wealth BPJS Ketenagakerjaan -->
-		<div class="rounded-xl border border-[var(--color-line)] bg-[var(--color-void-2)] p-4 flex flex-col justify-between">
+		<div
+			class="rounded-xl border border-[var(--color-line)] bg-[var(--color-void-2)] p-4 flex flex-col justify-between"
+		>
 			<div>
 				<div class="flex items-center justify-between border-b border-[var(--color-line)]/50 pb-2">
 					<span class="text-xs font-bold uppercase tracking-wider text-[var(--color-ink-dim)]">
@@ -275,13 +290,17 @@
 						<span>Iuran JHT dari Pemberi Kerja (3,7%):</span>
 						<span class="text-emerald-400 font-semibold">+{rupiah(jhtEmployer)}/bln</span>
 					</div>
-					<div class="flex justify-between text-[var(--color-ink-dim)] border-t border-dashed border-[var(--color-line)] pt-1.5">
+					<div
+						class="flex justify-between text-[var(--color-ink-dim)] border-t border-dashed border-[var(--color-line)] pt-1.5"
+					>
 						<span>Total Tabungan JHT Masuk Rekening BPJS:</span>
 						<strong class="text-[var(--color-accent)]">{rupiah(totalJhtMonthly)}/bulan</strong>
 					</div>
 				</div>
 
-				<div class="mt-4 rounded-xl border border-[var(--color-accent)]/30 bg-sky-500/10 p-3.5 text-center">
+				<div
+					class="mt-4 rounded-xl border border-[var(--color-accent)]/30 bg-sky-500/10 p-3.5 text-center"
+				>
 					<span class="text-[11px] uppercase tracking-wider text-[var(--color-ink-dim)] block">
 						Proyeksi Saldo Klaim JHT Usia Pensiun 56 Tahun ({yearsToPension} Tahun Lagi)
 					</span>
@@ -295,7 +314,10 @@
 			</div>
 
 			<p class="mt-3 text-[11px] text-[var(--color-ink-dim)] leading-relaxed">
-				💡 <strong>Insight Cerdas:</strong> Gaji bersih Anda {rupiahBrief(netTakeHomePay)}, namun Anda memiliki aset pensiun likuid di BPJS Ketenagakerjaan yang bertambah {rupiah(totalJhtMonthly)} tiap bulan tanpa membebani arus kas pribadi.
+				💡 <strong>Insight Cerdas:</strong> Gaji bersih Anda {rupiahBrief(netTakeHomePay)}, namun
+				Anda memiliki aset pensiun likuid di BPJS Ketenagakerjaan yang bertambah {rupiah(
+					totalJhtMonthly
+				)} tiap bulan tanpa membebani arus kas pribadi.
 			</p>
 		</div>
 	</div>

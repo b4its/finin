@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { Simulation, Recommendation, Twin } from '$lib/api/types';
-	import { rupiah, rupiahBrief, percent, months } from '$lib/utils/format';
+	import type { Simulation, Recommendation } from '$lib/api/types';
+	import { rupiahBrief, percent, months } from '$lib/utils/format';
 	import { twinIcon } from '$lib/utils/icons';
 
 	let {
@@ -309,10 +309,13 @@
 								Sertifikasi Komputasi Financial Twin
 							</div>
 							<p class="mt-0.5 text-[11px] text-[var(--color-ink-dim)] print:text-gray-600">
-								Kaidah Komparasi Multiverse Berdasarkan Standar FPSB Indonesia (Financial Planning Standards Board).
+								Kaidah Komparasi Multiverse Berdasarkan Standar FPSB Indonesia (Financial Planning
+								Standards Board).
 							</p>
 						</div>
-						<div class="text-right font-mono text-[10px] text-[var(--color-ink-dim)] print:text-gray-600">
+						<div
+							class="text-right font-mono text-[10px] text-[var(--color-ink-dim)] print:text-gray-600"
+						>
 							<div>VERIFIED ENGINE: SHA256-DETERMINISTIC</div>
 							<div>TIMESTAMP: {new Date().toISOString().slice(0, 19).replace('T', ' ')} UTC</div>
 						</div>

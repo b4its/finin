@@ -59,7 +59,9 @@
 </script>
 
 <div class="card p-5">
-	<div class="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-line)] pb-4">
+	<div
+		class="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-line)] pb-4"
+	>
 		<div>
 			<div class="flex items-center gap-2">
 				<span class="text-xl">🥪</span>
@@ -68,7 +70,8 @@
 				</h3>
 			</div>
 			<p class="mt-1 text-xs text-[var(--color-ink-dim)]">
-				Simulasi dampak tanggungan ganda (orang tua pensiun + anak) terhadap arus kas, dana darurat, dan target kemerdekaan finansial.
+				Simulasi dampak tanggungan ganda (orang tua pensiun + anak) terhadap arus kas, dana darurat,
+				dan target kemerdekaan finansial.
 			</p>
 		</div>
 
@@ -80,8 +83,12 @@
 	<!-- Kontrol Parameter Beban Tanggungan -->
 	<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 		<div class="space-y-1.5">
-			<span class="block text-xs font-medium text-[var(--color-ink-dim)]">Nafkah Orang Tua/Bulan</span>
-			<div class="flex items-center gap-1 rounded-lg border border-[var(--color-line)] bg-[var(--color-void-1)] px-2.5 py-1.5">
+			<span class="block text-xs font-medium text-[var(--color-ink-dim)]"
+				>Nafkah Orang Tua/Bulan</span
+			>
+			<div
+				class="flex items-center gap-1 rounded-lg border border-[var(--color-line)] bg-[var(--color-void-1)] px-2.5 py-1.5"
+			>
 				<span class="text-xs text-[var(--color-ink-dim)]">Rp</span>
 				<input
 					type="number"
@@ -90,12 +97,18 @@
 					step="100000"
 				/>
 			</div>
-			<span class="text-[10px] text-[var(--color-ink-dim)]">Uang saku, pangan, belanja harian lansia</span>
+			<span class="text-[10px] text-[var(--color-ink-dim)]"
+				>Uang saku, pangan, belanja harian lansia</span
+			>
 		</div>
 
 		<div class="space-y-1.5">
-			<span class="block text-xs font-medium text-[var(--color-ink-dim)]">Kesehatan & Obat Lansia/Bulan</span>
-			<div class="flex items-center gap-1 rounded-lg border border-[var(--color-line)] bg-[var(--color-void-1)] px-2.5 py-1.5">
+			<span class="block text-xs font-medium text-[var(--color-ink-dim)]"
+				>Kesehatan & Obat Lansia/Bulan</span
+			>
+			<div
+				class="flex items-center gap-1 rounded-lg border border-[var(--color-line)] bg-[var(--color-void-1)] px-2.5 py-1.5"
+			>
 				<span class="text-xs text-[var(--color-ink-dim)]">Rp</span>
 				<input
 					type="number"
@@ -104,12 +117,18 @@
 					step="50000"
 				/>
 			</div>
-			<span class="text-[10px] text-[var(--color-ink-dim)]">BPJS mandiri orang tua + obat rutin</span>
+			<span class="text-[10px] text-[var(--color-ink-dim)]"
+				>BPJS mandiri orang tua + obat rutin</span
+			>
 		</div>
 
 		<div class="space-y-1.5">
-			<span class="block text-xs font-medium text-[var(--color-ink-dim)]">Jumlah Anak Tanggungan</span>
-			<div class="flex items-center gap-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-void-1)] px-2.5 py-1.5">
+			<span class="block text-xs font-medium text-[var(--color-ink-dim)]"
+				>Jumlah Anak Tanggungan</span
+			>
+			<div
+				class="flex items-center gap-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-void-1)] px-2.5 py-1.5"
+			>
 				<input
 					type="number"
 					class="w-full bg-transparent font-mono text-xs font-bold text-[var(--color-ink)] focus:outline-none"
@@ -123,8 +142,12 @@
 		</div>
 
 		<div class="space-y-1.5">
-			<span class="block text-xs font-medium text-[var(--color-ink-dim)]">Biaya Pendidikan/Anak/Bulan</span>
-			<div class="flex items-center gap-1 rounded-lg border border-[var(--color-line)] bg-[var(--color-void-1)] px-2.5 py-1.5">
+			<span class="block text-xs font-medium text-[var(--color-ink-dim)]"
+				>Biaya Pendidikan/Anak/Bulan</span
+			>
+			<div
+				class="flex items-center gap-1 rounded-lg border border-[var(--color-line)] bg-[var(--color-void-1)] px-2.5 py-1.5"
+			>
 				<span class="text-xs text-[var(--color-ink-dim)]">Rp</span>
 				<input
 					type="number"
@@ -140,8 +163,12 @@
 	<!-- Dashboard Metrik & Indikator Ketahanan -->
 	<div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
 		<div class="rounded-xl border border-[var(--color-line)] bg-[var(--color-void-1)] p-3.5">
-			<span class="text-xs font-semibold text-[var(--color-ink-dim)]">Total Beban Tanggungan Bulanan</span>
-			<div class="mt-1 text-lg font-bold text-[var(--color-ink)]">{rupiah(totalSandwichBurden)}</div>
+			<span class="text-xs font-semibold text-[var(--color-ink-dim)]"
+				>Total Beban Tanggungan Bulanan</span
+			>
+			<div class="mt-1 text-lg font-bold text-[var(--color-ink)]">
+				{rupiah(totalSandwichBurden)}
+			</div>
 			<div class="mt-1 flex items-center justify-between text-[11px] text-[var(--color-ink-dim)]">
 				<span>Orang Tua: {rupiahBrief(totalParentBurden)}</span>
 				<span>Anak: {rupiahBrief(totalChildBurden)}</span>
@@ -149,7 +176,9 @@
 		</div>
 
 		<div class="rounded-xl border border-[var(--color-line)] bg-[var(--color-void-1)] p-3.5">
-			<span class="text-xs font-semibold text-[var(--color-ink-dim)]">Rasio Beban (Dependency Ratio)</span>
+			<span class="text-xs font-semibold text-[var(--color-ink-dim)]"
+				>Rasio Beban (Dependency Ratio)</span
+			>
 			<div class="mt-1 text-lg font-bold {statusInfo.color}">{percent(dependencyRatio, 1)}</div>
 			<div class="mt-1 text-[11px] text-[var(--color-ink-dim)]">
 				Batas aman perencana keuangan: &lt; 20%
@@ -157,7 +186,9 @@
 		</div>
 
 		<div class="rounded-xl border border-[var(--color-line)] bg-[var(--color-void-1)] p-3.5">
-			<span class="text-xs font-semibold text-[var(--color-ink-dim)]">Dampak Terhadap Target FIRE</span>
+			<span class="text-xs font-semibold text-[var(--color-ink-dim)]"
+				>Dampak Terhadap Target FIRE</span
+			>
 			<div class="mt-1 text-lg font-bold text-amber-400">+{fireDelayYears} Tahun</div>
 			<div class="mt-1 text-[11px] text-[var(--color-ink-dim)]">
 				Potensi penundaan usia kemerdekaan finansial
@@ -173,7 +204,11 @@
 				<h4 class="text-xs font-bold text-[var(--color-ink)]">Diagnosis Ketahanan Arus Kas:</h4>
 				<p class="mt-1 text-xs leading-relaxed text-[var(--color-ink-dim)]">{statusInfo.desc}</p>
 				<p class="mt-2 text-[11px] text-[var(--color-ink-dim)]">
-					Proyeksi kumulatif arus kas untuk tanggungan sandwich: <strong class="text-[var(--color-ink)]">{rupiahBrief(cumulative10y)}</strong> (10 tahun) dan <strong class="text-[var(--color-ink)]">{rupiahBrief(cumulative20y)}</strong> (20 tahun).
+					Proyeksi kumulatif arus kas untuk tanggungan sandwich: <strong
+						class="text-[var(--color-ink)]">{rupiahBrief(cumulative10y)}</strong
+					>
+					(10 tahun) dan
+					<strong class="text-[var(--color-ink)]">{rupiahBrief(cumulative20y)}</strong> (20 tahun).
 				</p>
 			</div>
 		</div>
@@ -185,26 +220,73 @@
 			🛡️ Strategi 3 Langkah Memutus Rantai Generasi Sandwich (Break The Chain)
 		</h4>
 		<div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3 text-xs">
-			<div class="rounded-lg border border-[var(--color-line)] bg-[var(--color-void-1)] p-3 space-y-1">
+			<div
+				class="rounded-lg border border-[var(--color-line)] bg-[var(--color-void-1)] p-3 space-y-1"
+			>
 				<div class="font-bold text-teal-400">1. Proteksi Medis Orang Tua</div>
 				<p class="text-[11px] leading-relaxed text-[var(--color-ink-dim)]">
-					Daftarkan orang tua pada <strong>BPJS Kesehatan Mandiri (Kelas 1 atau 2)</strong> secara konsisten. Guncangan biaya opname rumah sakit adalah penyebab #1 kebangkrutan sandwich generation.
+					Daftarkan orang tua pada <strong>BPJS Kesehatan Mandiri (Kelas 1 atau 2)</strong> secara konsisten.
+					Guncangan biaya opname rumah sakit adalah penyebab #1 kebangkrutan sandwich generation.
 				</p>
 			</div>
 
-			<div class="rounded-lg border border-[var(--color-line)] bg-[var(--color-void-1)] p-3 space-y-1">
+			<div
+				class="rounded-lg border border-[var(--color-line)] bg-[var(--color-void-1)] p-3 space-y-1"
+			>
 				<div class="font-bold text-blue-400">2. Asuransi Jiwa Murni Anda</div>
 				<p class="text-[11px] leading-relaxed text-[var(--color-ink-dim)]">
-					Sebagai tulang punggung dua generasi, miliki <strong>Asuransi Jiwa Murni (Term Life)</strong> dengan uang pertanggungan minimal 10x pengeluaran tahunan tanpa embel-embel investasi.
+					Sebagai tulang punggung dua generasi, miliki <strong
+						>Asuransi Jiwa Murni (Term Life)</strong
+					> dengan uang pertanggungan minimal 10x pengeluaran tahunan tanpa embel-embel investasi.
 				</p>
 			</div>
 
-			<div class="rounded-lg border border-[var(--color-line)] bg-[var(--color-void-1)] p-3 space-y-1">
+			<div
+				class="rounded-lg border border-[var(--color-line)] bg-[var(--color-void-1)] p-3 space-y-1"
+			>
 				<div class="font-bold text-emerald-400">3. Siapkan Pensiun Mandiri</div>
 				<p class="text-[11px] leading-relaxed text-[var(--color-ink-dim)]">
-					Akumulasi dana pensiun (BPJS TK JHT + SBN/Saham Dividen) agar kelak ketika Anda berusia 56+ tahun, <strong>anak Anda tidak menjadi sandwich generation jilid berikutnya</strong>.
+					Akumulasi dana pensiun (BPJS TK JHT + SBN/Saham Dividen) agar kelak ketika Anda berusia
+					56+ tahun, <strong>anak Anda tidak menjadi sandwich generation jilid berikutnya</strong>.
 				</p>
 			</div>
 		</div>
 	</div>
+
+	{#if twins.length > 0}
+		<div class="mt-4 rounded-xl border border-[var(--color-line)] bg-[var(--color-void-1)] p-4">
+			<h4 class="text-xs font-bold text-[var(--color-ink)]">
+				📊 Ketahanan Likuiditas Skenario Twin terhadap Beban Tanggungan:
+			</h4>
+			<p class="mt-1 text-[11px] text-[var(--color-ink-dim)]">
+				Berapa bulan beban tanggungan sandwich ({rupiahBrief(totalSandwichBurden)}/bln) yang dapat
+				ditopang oleh kas likuid tiap twin di Tahun ke-10:
+			</p>
+			<div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5 text-xs">
+				{#each twins as t (t.code)}
+					{@const pt = t.yearly_series.find((p) => p.year === 10)}
+					{@const cushionMonths =
+						totalSandwichBurden > 0 ? (pt?.cash ?? 0) / totalSandwichBurden : 0}
+					<div class="rounded-lg border border-[var(--color-line)] bg-[var(--color-void-2)] p-2.5">
+						<div class="flex items-center justify-between">
+							<span class="font-bold text-[var(--color-ink)]">Twin {t.code}</span>
+							<span class="text-[10px] text-[var(--color-ink-dim)]">{t.label.slice(0, 14)}...</span>
+						</div>
+						<div class="mt-1.5 flex items-baseline gap-1">
+							<span
+								class="num text-base font-extrabold {cushionMonths >= 6
+									? 'text-emerald-400'
+									: cushionMonths >= 3
+										? 'text-amber-400'
+										: 'text-rose-400'}"
+							>
+								{cushionMonths.toFixed(1)}
+							</span>
+							<span class="text-[10px] text-[var(--color-ink-dim)]">bulan</span>
+						</div>
+					</div>
+				{/each}
+			</div>
+		</div>
+	{/if}
 </div>

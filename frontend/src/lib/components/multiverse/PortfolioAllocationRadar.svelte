@@ -9,7 +9,8 @@
 
 	let allocations = $derived(
 		twins.map((t) => {
-			const pt = t.yearly_series.find((p) => p.year === year) ?? t.yearly_series[t.yearly_series.length - 1];
+			const pt =
+				t.yearly_series.find((p) => p.year === year) ?? t.yearly_series[t.yearly_series.length - 1];
 			const cash = Math.max(0, pt?.cash ?? 0);
 			const invest = Math.max(0, pt?.invest ?? 0);
 
@@ -21,7 +22,8 @@
 
 			const vehInit = (cfg.vehicle_initial_value as number) || 0;
 			const vehDeprec = (cfg.vehicle_depreciation_annual as number) || 0;
-			const vehVal = vehInit > 0 ? vehInit * Math.max(0.05, Math.pow(1 - vehDeprec / 12, year * 12)) : 0;
+			const vehVal =
+				vehInit > 0 ? vehInit * Math.max(0.05, Math.pow(1 - vehDeprec / 12, year * 12)) : 0;
 
 			const realAssets = propVal + vehVal;
 			const totalAssets = Math.max(1, cash + invest + realAssets);
@@ -43,16 +45,20 @@
 				statusLabel = 'Konsentrasi Sangat Tinggi';
 				statusColor = 'text-rose-400 bg-rose-500/10';
 				if (pReal > 0.6) {
-					recommendation = 'Kekayaan terkunci di aset fisik (properti/kendaraan). Perkuat tabungan likuid dan instrumen pasar modal.';
+					recommendation =
+						'Kekayaan terkunci di aset fisik (properti/kendaraan). Perkuat tabungan likuid dan instrumen pasar modal.';
 				} else if (pCash > 0.6) {
-					recommendation = 'Terlalu banyak kas menganggur, rentan tergerus inflasi. Alihkan porsi surplus ke obligasi SBN atau reksadana.';
+					recommendation =
+						'Terlalu banyak kas menganggur, rentan tergerus inflasi. Alihkan porsi surplus ke obligasi SBN atau reksadana.';
 				} else {
-					recommendation = 'Portofolio terkonsentrasi pada satu instrumen berisiko. Imbangi dengan aset berpendapatan tetap.';
+					recommendation =
+						'Portofolio terkonsentrasi pada satu instrumen berisiko. Imbangi dengan aset berpendapatan tetap.';
 				}
 			} else if (divScore < 70) {
 				statusLabel = 'Diversifikasi Moderat';
 				statusColor = 'text-amber-400 bg-amber-500/10';
-				recommendation = 'Cukup baik, pertimbangkan rebalancing berkala tiap 1–2 tahun untuk mengunci imbal hasil.';
+				recommendation =
+					'Cukup baik, pertimbangkan rebalancing berkala tiap 1–2 tahun untuk mengunci imbal hasil.';
 			}
 
 			return {
@@ -77,7 +83,9 @@
 </script>
 
 <div class="card p-5">
-	<div class="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-line)] pb-4">
+	<div
+		class="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-line)] pb-4"
+	>
 		<div>
 			<div class="flex items-center gap-2">
 				<span class="text-xl">🧭</span>
@@ -86,13 +94,16 @@
 				</h3>
 			</div>
 			<p class="mt-1 text-xs text-[var(--color-ink-dim)]">
-				Menganalisis keseimbangan likuiditas kas, portofolio pasar modal, dan aset riil untuk menghindari <em>single-asset concentration risk</em>.
+				Menganalisis keseimbangan likuiditas kas, portofolio pasar modal, dan aset riil untuk
+				menghindari <em>single-asset concentration risk</em>.
 			</p>
 		</div>
 
 		<div class="flex items-center gap-2">
 			<span class="text-xs font-semibold text-[var(--color-ink-dim)]">Tahun Evaluasi:</span>
-			<div class="flex rounded-lg border border-[var(--color-line)] bg-[var(--color-void-2)] p-0.5 text-xs">
+			<div
+				class="flex rounded-lg border border-[var(--color-line)] bg-[var(--color-void-2)] p-0.5 text-xs"
+			>
 				{#each [5, 10, 20] as y}
 					<button
 						class="rounded-md px-2.5 py-1 font-semibold transition"
@@ -135,12 +146,16 @@
 							Twin {item.code}: {item.label}
 						</span>
 						<span class="text-xs text-[var(--color-ink-dim)]">
-							· Total Aset: <strong class="text-[var(--color-ink)]">{rupiahBrief(item.totalAssets)}</strong>
+							· Total Aset: <strong class="text-[var(--color-ink)]"
+								>{rupiahBrief(item.totalAssets)}</strong
+							>
 						</span>
 					</div>
 
 					<div class="flex items-center gap-2">
-						<span class="text-[11px] font-semibold text-[var(--color-ink-dim)]">Skor Diversifikasi:</span>
+						<span class="text-[11px] font-semibold text-[var(--color-ink-dim)]"
+							>Skor Diversifikasi:</span
+						>
 						<span class="rounded-full px-2 py-0.5 text-[11px] font-bold {item.statusColor}">
 							{item.divScore}/100 ({item.statusLabel})
 						</span>
@@ -175,10 +190,20 @@
 				<!-- Angka Proporsi Detail & Rekomendasi -->
 				<div class="mt-2.5 flex flex-wrap items-center justify-between gap-2 text-[11px]">
 					<div class="flex flex-wrap gap-3 text-[var(--color-ink-dim)]">
-						<span>Kas: <strong class="text-sky-400">{percent(item.pCash, 0)}</strong> ({rupiahBrief(item.cash)})</span>
-						<span>Investasi: <strong class="text-indigo-400">{percent(item.pInvest, 0)}</strong> ({rupiahBrief(item.invest)})</span>
+						<span
+							>Kas: <strong class="text-sky-400">{percent(item.pCash, 0)}</strong> ({rupiahBrief(
+								item.cash
+							)})</span
+						>
+						<span
+							>Investasi: <strong class="text-indigo-400">{percent(item.pInvest, 0)}</strong>
+							({rupiahBrief(item.invest)})</span
+						>
 						{#if item.pReal > 0}
-							<span>Aset Riil: <strong class="text-emerald-400">{percent(item.pReal, 0)}</strong> ({rupiahBrief(item.realAssets)})</span>
+							<span
+								>Aset Riil: <strong class="text-emerald-400">{percent(item.pReal, 0)}</strong>
+								({rupiahBrief(item.realAssets)})</span
+							>
 						{/if}
 					</div>
 

@@ -1,9 +1,7 @@
 <script lang="ts">
 	import type { Twin } from '$lib/api/types';
 	import Modal from '$lib/components/ui/Modal.svelte';
-	import { rupiahBrief, percent, rupiah } from '$lib/utils/format';
-	import { twinIcon } from '$lib/utils/icons';
-	import { onMount } from 'svelte';
+	import { rupiahBrief, percent } from '$lib/utils/format';
 
 	let {
 		open = $bindable(false),
@@ -26,8 +24,14 @@
 	let bestTwin = $derived(twins.find((t) => t.code === bestCode) ?? twins[1] ?? twins[0]);
 	let baseline = $derived(twins.find((t) => t.code === '0') ?? twins[0]);
 
-	let bestPt10 = $derived(bestTwin?.yearly_series.find((p) => p.year === 10) ?? bestTwin?.yearly_series[bestTwin.yearly_series.length - 1]);
-	let basePt10 = $derived(baseline?.yearly_series.find((p) => p.year === 10) ?? baseline?.yearly_series[baseline.yearly_series.length - 1]);
+	let bestPt10 = $derived(
+		bestTwin?.yearly_series.find((p) => p.year === 10) ??
+			bestTwin?.yearly_series[bestTwin.yearly_series.length - 1]
+	);
+	let basePt10 = $derived(
+		baseline?.yearly_series.find((p) => p.year === 10) ??
+			baseline?.yearly_series[baseline.yearly_series.length - 1]
+	);
 
 	let nw10 = $derived(bestPt10?.net_worth ?? 0);
 	let nwReal10 = $derived(bestPt10?.net_worth_real ?? 0);
@@ -35,15 +39,17 @@
 	let delta = $derived(nw10 - baseNw10);
 	let pctAdvantage = $derived(baseNw10 > 0 ? (nw10 - baseNw10) / baseNw10 : 0);
 
-	let shareUrl = $derived(typeof window !== 'undefined' ? window.location.href : `https://finin.id/sim/${simId}`);
+	let shareUrl = $derived(
+		typeof window !== 'undefined' ? window.location.href : `https://finin.id/sim/${simId}`
+	);
 
 	let shareText = $derived(
 		`🌌 Hasil Simulasi Multiverse Finansialku di Finin!\n\n` +
-		`🏆 Persona Terpilih: Twin ${bestTwin?.code} (${bestTwin?.label})\n` +
-		`📈 Proyeksi Net Worth Th-10: ${rupiahBrief(nw10)} (Nilai Riil: ${rupiahBrief(nwReal10)})\n` +
-		`🚀 Keuntungan vs Baseline: ${delta >= 0 ? '+' : ''}${rupiahBrief(delta)} (${percent(pctAdvantage, 0)})\n` +
-		`🛡️ Dana Darurat Aman: ${(bestPt10?.emergency_months ?? 0).toFixed(1)} bulan · DSR: ${percent(bestPt10?.dsr ?? 0, 0)}\n\n` +
-		`Cek simulasi lengkap dan uji keputusan finansialmu di:\n${shareUrl}`
+			`🏆 Persona Terpilih: Twin ${bestTwin?.code} (${bestTwin?.label})\n` +
+			`📈 Proyeksi Net Worth Th-10: ${rupiahBrief(nw10)} (Nilai Riil: ${rupiahBrief(nwReal10)})\n` +
+			`🚀 Keuntungan vs Baseline: ${delta >= 0 ? '+' : ''}${rupiahBrief(delta)} (${percent(pctAdvantage, 0)})\n` +
+			`🛡️ Dana Darurat Aman: ${(bestPt10?.emergency_months ?? 0).toFixed(1)} bulan · DSR: ${percent(bestPt10?.dsr ?? 0, 0)}\n\n` +
+			`Cek simulasi lengkap dan uji keputusan finansialmu di:\n${shareUrl}`
 	);
 
 	function drawCard() {
@@ -176,7 +182,11 @@
 		// Footer
 		ctx.font = '15px system-ui, -apple-system, sans-serif';
 		ctx.fillStyle = '#64748b';
-		ctx.fillText(`Preset: ${preset.toUpperCase()} · Simulasi ID: ${simId.slice(0, 8)} · https://finin.id`, 60, 560);
+		ctx.fillText(
+			`Preset: ${preset.toUpperCase()} · Simulasi ID: ${simId.slice(0, 8)} · https://finin.id`,
+			60,
+			560
+		);
 
 		ctx.font = 'bold 15px system-ui, -apple-system, sans-serif';
 		ctx.fillStyle = '#38bdf8';
@@ -203,9 +213,7 @@
 		try {
 			canvasEl.toBlob(async (blob) => {
 				if (!blob) return;
-				await navigator.clipboard.write([
-					new ClipboardItem({ 'image/png': blob })
-				]);
+				await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
 				copiedImage = true;
 				setTimeout(() => (copiedImage = false), 2500);
 			});
@@ -230,8 +238,8 @@
 	function shareToTwitter() {
 		const tweet = encodeURIComponent(
 			`🌌 Multiverse finansialku membuktikan keputusanku di Finin!\n\n` +
-			`Twin ${bestTwin.code} (${bestTwin.label}) unggul ${rupiahBrief(delta)} di tahun ke-10.\n` +
-			`Coba uji keputusan finansialmu: ${shareUrl}\n\n#Finin #CerdasFinansial #OJK`
+				`Twin ${bestTwin.code} (${bestTwin.label}) unggul ${rupiahBrief(delta)} di tahun ke-10.\n` +
+				`Coba uji keputusan finansialmu: ${shareUrl}\n\n#Finin #CerdasFinansial #OJK`
 		);
 		window.open(`https://twitter.com/intent/tweet?text=${tweet}`, '_blank');
 	}
@@ -240,11 +248,14 @@
 <Modal bind:open title="✨ Bagikan Hasil Multiverse Finansial">
 	<div class="space-y-5">
 		<p class="text-sm text-[var(--color-ink-dim)]">
-			Bagikan temuan simulasi multiverse-mu ke WhatsApp, media sosial, atau simpan kartu persona digital sebagai pengingat tujuan finansialmu.
+			Bagikan temuan simulasi multiverse-mu ke WhatsApp, media sosial, atau simpan kartu persona
+			digital sebagai pengingat tujuan finansialmu.
 		</p>
 
 		<!-- Canvas Preview Container -->
-		<div class="relative overflow-hidden rounded-xl border border-[var(--color-line)] bg-slate-950 p-2 shadow-2xl">
+		<div
+			class="relative overflow-hidden rounded-xl border border-[var(--color-line)] bg-slate-950 p-2 shadow-2xl"
+		>
 			<canvas
 				bind:this={canvasEl}
 				class="w-full rounded-lg shadow-inner"
@@ -263,7 +274,9 @@
 		</div>
 
 		<!-- Media Sosial & Pesan Cepat -->
-		<div class="rounded-xl border border-[var(--color-line)] bg-[var(--color-void-2)] p-4 space-y-3">
+		<div
+			class="rounded-xl border border-[var(--color-line)] bg-[var(--color-void-2)] p-4 space-y-3"
+		>
 			<span class="text-xs font-semibold text-[var(--color-ink-dim)] block">Kirim Langsung:</span>
 			<div class="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
 				<button
@@ -278,10 +291,7 @@
 				>
 					🐦 Share di X / Twitter
 				</button>
-				<button
-					class="btn btn-ghost !text-xs font-semibold py-2.5"
-					onclick={copyTextToClipboard}
-				>
+				<button class="btn btn-ghost !text-xs font-semibold py-2.5" onclick={copyTextToClipboard}>
 					{copiedText ? '✓ Teks Tersalin!' : '📄 Salin Teks Ringkasan'}
 				</button>
 			</div>

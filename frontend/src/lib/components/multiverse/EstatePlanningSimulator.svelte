@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Twin, Profile } from '$lib/api/types';
 	import { rupiah, rupiahBrief, percent } from '$lib/utils/format';
-	import { twinIcon } from '$lib/utils/icons';
 
 	let { twins = [], profile }: { twins?: Twin[]; profile?: Profile } = $props();
 
@@ -23,7 +22,9 @@
 	let currentTwin = $derived(twins.find((t) => t.code === selectedTwinCode) ?? twins[0]);
 	let currentNetWorth = $derived.by(() => {
 		if (!currentTwin) return 1_000_000_000;
-		const pt = currentTwin.yearly_series.find((p) => p.year === year) ?? currentTwin.yearly_series[currentTwin.yearly_series.length - 1];
+		const pt =
+			currentTwin.yearly_series.find((p) => p.year === year) ??
+			currentTwin.yearly_series[currentTwin.yearly_series.length - 1];
 		return Math.max(0, pt?.net_worth_real ?? pt?.net_worth ?? 1_000_000_000);
 	});
 
@@ -45,7 +46,16 @@
 			// KUHPerdata Pasal 852: Suami/Istri yang hidup terlama + anak mewarisi sama rata (Golongan I)
 			const numHeirs = (hasSpouse ? 1 : 0) + totalChildren;
 			if (numHeirs === 0) {
-				return [{ role: 'Orang Tua / Saudara Kandung', count: 1, portionFraction: '1/1', portionPercent: 1.0, nominal: nw, nominalPerPerson: nw }];
+				return [
+					{
+						role: 'Orang Tua / Saudara Kandung',
+						count: 1,
+						portionFraction: '1/1',
+						portionPercent: 1.0,
+						nominal: nw,
+						nominalPerPerson: nw
+					}
+				];
 			}
 			const equalShare = 1.0 / numHeirs;
 			const list: HeirShare[] = [];
@@ -177,7 +187,9 @@
 
 <div class="card p-5">
 	<!-- Header -->
-	<div class="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-line)] pb-4">
+	<div
+		class="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-line)] pb-4"
+	>
 		<div>
 			<div class="flex items-center gap-2">
 				<span class="text-xl">📜</span>
@@ -186,20 +198,27 @@
 				</h3>
 			</div>
 			<p class="mt-1 text-xs text-[var(--color-ink-dim)]">
-				Simulasi proyeksi pembagian hak waris sesuai Kompilasi Hukum Islam (KHI/Faraidh) atau KUHPerdata, serta mitigasi risiko rekening beku perbankan.
+				Simulasi proyeksi pembagian hak waris sesuai Kompilasi Hukum Islam (KHI/Faraidh) atau
+				KUHPerdata, serta mitigasi risiko rekening beku perbankan.
 			</p>
 		</div>
 
 		<!-- Pemilihan Rezim Hukum -->
-		<div class="flex rounded-lg border border-[var(--color-line)] bg-[var(--color-void-2)] p-0.5 text-xs">
+		<div
+			class="flex rounded-lg border border-[var(--color-line)] bg-[var(--color-void-2)] p-0.5 text-xs"
+		>
 			<button
-				class="rounded-md px-3 py-1 font-semibold transition {regime === 'khi' ? 'bg-[var(--color-accent)] text-white' : 'text-[var(--color-ink-dim)] hover:text-[var(--color-ink)]'}"
+				class="rounded-md px-3 py-1 font-semibold transition {regime === 'khi'
+					? 'bg-[var(--color-accent)] text-white'
+					: 'text-[var(--color-ink-dim)] hover:text-[var(--color-ink)]'}"
 				onclick={() => (regime = 'khi')}
 			>
 				Faraidh Syariah (KHI)
 			</button>
 			<button
-				class="rounded-md px-3 py-1 font-semibold transition {regime === 'kuhperdata' ? 'bg-[var(--color-accent)] text-white' : 'text-[var(--color-ink-dim)] hover:text-[var(--color-ink)]'}"
+				class="rounded-md px-3 py-1 font-semibold transition {regime === 'kuhperdata'
+					? 'bg-[var(--color-accent)] text-white'
+					: 'text-[var(--color-ink-dim)] hover:text-[var(--color-ink)]'}"
 				onclick={() => (regime = 'kuhperdata')}
 			>
 				Hukum Perdata (KUHPerdata)
@@ -211,7 +230,10 @@
 	<div class="mt-4 flex flex-wrap items-center justify-between gap-3">
 		<div class="flex flex-wrap items-center gap-2 text-xs">
 			<span class="font-semibold text-[var(--color-ink-dim)]">Skenario Twin:</span>
-			<select class="rounded-lg border border-[var(--color-line)] bg-[var(--color-void-1)] px-2.5 py-1 text-xs font-semibold text-[var(--color-ink)]" bind:value={selectedTwinCode}>
+			<select
+				class="rounded-lg border border-[var(--color-line)] bg-[var(--color-void-1)] px-2.5 py-1 text-xs font-semibold text-[var(--color-ink)]"
+				bind:value={selectedTwinCode}
+			>
 				{#each twins as t}
 					<option value={t.code}>Twin {t.code}: {t.label}</option>
 				{/each}
@@ -220,10 +242,14 @@
 
 		<div class="flex items-center gap-2 text-xs">
 			<span class="font-semibold text-[var(--color-ink-dim)]">Tahun Evaluasi:</span>
-			<div class="flex rounded-lg border border-[var(--color-line)] bg-[var(--color-void-2)] p-0.5 text-xs">
+			<div
+				class="flex rounded-lg border border-[var(--color-line)] bg-[var(--color-void-2)] p-0.5 text-xs"
+			>
 				{#each [5, 10, 20] as y}
 					<button
-						class="rounded-md px-2.5 py-1 font-semibold transition {year === y ? 'bg-[var(--color-accent)] text-white' : 'text-[var(--color-ink-dim)]'}"
+						class="rounded-md px-2.5 py-1 font-semibold transition {year === y
+							? 'bg-[var(--color-accent)] text-white'
+							: 'text-[var(--color-ink-dim)]'}"
 						onclick={() => (year = y)}
 					>
 						Th-{y}
@@ -235,7 +261,9 @@
 
 	<!-- Parameter Ahli Waris Keluarga -->
 	<div class="mt-4 rounded-xl border border-[var(--color-line)] bg-[var(--color-void-1)] p-4">
-		<span class="text-xs font-bold text-[var(--color-ink)]">Komposisi Ahli Waris yang Ditinggalkan:</span>
+		<span class="text-xs font-bold text-[var(--color-ink)]"
+			>Komposisi Ahli Waris yang Ditinggalkan:</span
+		>
 		<div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 text-xs">
 			<label class="flex items-center gap-2 cursor-pointer">
 				<input type="checkbox" class="rounded" bind:checked={hasSpouse} />
@@ -244,7 +272,10 @@
 
 			{#if hasSpouse}
 				<div>
-					<select class="w-full rounded border border-[var(--color-line)] bg-[var(--color-void-2)] px-2 py-1 text-xs" bind:value={spouseGender}>
+					<select
+						class="w-full rounded border border-[var(--color-line)] bg-[var(--color-void-2)] px-2 py-1 text-xs"
+						bind:value={spouseGender}
+					>
 						<option value="wife">Istri (Pewaris Suami)</option>
 						<option value="husband">Suami (Pewaris Istri)</option>
 					</select>
@@ -253,12 +284,24 @@
 
 			<div>
 				<span class="block text-[11px] text-[var(--color-ink-dim)]">Anak Laki-laki:</span>
-				<input type="number" class="w-full rounded border border-[var(--color-line)] bg-[var(--color-void-2)] px-2 py-1 font-mono text-xs font-bold" min="0" max="6" bind:value={sonsCount} />
+				<input
+					type="number"
+					class="w-full rounded border border-[var(--color-line)] bg-[var(--color-void-2)] px-2 py-1 font-mono text-xs font-bold"
+					min="0"
+					max="6"
+					bind:value={sonsCount}
+				/>
 			</div>
 
 			<div>
 				<span class="block text-[11px] text-[var(--color-ink-dim)]">Anak Perempuan:</span>
-				<input type="number" class="w-full rounded border border-[var(--color-line)] bg-[var(--color-void-2)] px-2 py-1 font-mono text-xs font-bold" min="0" max="6" bind:value={daughtersCount} />
+				<input
+					type="number"
+					class="w-full rounded border border-[var(--color-line)] bg-[var(--color-void-2)] px-2 py-1 font-mono text-xs font-bold"
+					min="0"
+					max="6"
+					bind:value={daughtersCount}
+				/>
 			</div>
 
 			<label class="flex items-center gap-2 cursor-pointer">
@@ -276,7 +319,9 @@
 	<!-- Rincian Proyeksi Harta Waris -->
 	<div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
 		<!-- Ringkasan Nilai Harta Bersih -->
-		<div class="rounded-xl border border-[var(--color-line)] bg-[var(--color-void-2)] p-4 flex flex-col justify-between">
+		<div
+			class="rounded-xl border border-[var(--color-line)] bg-[var(--color-void-2)] p-4 flex flex-col justify-between"
+		>
 			<div>
 				<span class="text-xs font-semibold text-[var(--color-ink-dim)]">
 					Proyeksi Harta Waris Bersih ({currentTwin?.label ?? 'Twin'}, Th-{year}):
@@ -286,9 +331,11 @@
 				</div>
 				<p class="mt-2 text-[11px] leading-relaxed text-[var(--color-ink-dim)]">
 					{#if regime === 'khi'}
-						Berdasarkan Pasal 171–191 Kompilasi Hukum Islam (KHI). Harta peninggalan dibagi setelah pelunasan utang almarhum dan pemenuhan wasiat (maksimal 1/3 harta).
+						Berdasarkan Pasal 171–191 Kompilasi Hukum Islam (KHI). Harta peninggalan dibagi setelah
+						pelunasan utang almarhum dan pemenuhan wasiat (maksimal 1/3 harta).
 					{:else}
-						Berdasarkan Kitab Undang-Undang Hukum Perdata (KUHPerdata Pasal 852). Ahli waris Golongan I mewarisi secara proporsional sama rata.
+						Berdasarkan Kitab Undang-Undang Hukum Perdata (KUHPerdata Pasal 852). Ahli waris
+						Golongan I mewarisi secara proporsional sama rata.
 					{/if}
 				</p>
 			</div>
@@ -300,7 +347,8 @@
 					<span>Risiko Pembekuan Rekening Bank</span>
 				</div>
 				<p class="mt-1 text-[11px] leading-relaxed text-[var(--color-ink-dim)]">
-					Saat nasabah wafat, rekening bank & sekuritas dibekukan otomatis oleh perbankan hingga ada Surat Keterangan Hak Waris (SKHW) notaris (3–6 bulan).
+					Saat nasabah wafat, rekening bank & sekuritas dibekukan otomatis oleh perbankan hingga ada
+					Surat Keterangan Hak Waris (SKHW) notaris (3–6 bulan).
 				</p>
 				<div class="mt-2 flex justify-between border-t border-amber-500/20 pt-1.5 text-[11px]">
 					<span class="text-[var(--color-ink-dim)]">Kebutuhan Dana Cepat (6 bln):</span>
@@ -310,9 +358,13 @@
 		</div>
 
 		<!-- Tabel Pembagian Hak Waris Tiap Anggota Keluarga -->
-		<div class="rounded-xl border border-[var(--color-line)] bg-[var(--color-void-1)] p-4 lg:col-span-2">
+		<div
+			class="rounded-xl border border-[var(--color-line)] bg-[var(--color-void-1)] p-4 lg:col-span-2"
+		>
 			<span class="text-xs font-bold text-[var(--color-ink)]">
-				Simulasi Alokasi Warisan Tiap Ahli Waris ({regime === 'khi' ? 'KHI / Faraidh Syariah' : 'KUHPerdata Golongan I'}):
+				Simulasi Alokasi Warisan Tiap Ahli Waris ({regime === 'khi'
+					? 'KHI / Faraidh Syariah'
+					: 'KUHPerdata Golongan I'}):
 			</span>
 
 			<div class="mt-3 overflow-x-auto">
@@ -332,8 +384,11 @@
 								<td class="py-2.5 font-semibold text-[var(--color-ink)]">{heir.role}</td>
 								<td class="py-2.5">{heir.count} orang</td>
 								<td class="py-2.5 font-mono text-cyan-400">{heir.portionFraction}</td>
-								<td class="py-2.5 font-bold text-[var(--color-ink)]">{rupiahBrief(heir.nominal)}</td>
-								<td class="py-2.5 font-mono font-semibold text-emerald-400">{rupiah(heir.nominalPerPerson)}</td>
+								<td class="py-2.5 font-bold text-[var(--color-ink)]">{rupiahBrief(heir.nominal)}</td
+								>
+								<td class="py-2.5 font-mono font-semibold text-emerald-400"
+									>{rupiah(heir.nominalPerPerson)}</td
+								>
 							</tr>
 						{/each}
 					</tbody>
@@ -341,9 +396,14 @@
 			</div>
 
 			<!-- Best Practice Solusi Likuiditas Waris -->
-			<div class="mt-4 border-t border-[var(--color-line)] pt-3 text-[11px] text-[var(--color-ink-dim)]">
+			<div
+				class="mt-4 border-t border-[var(--color-line)] pt-3 text-[11px] text-[var(--color-ink-dim)]"
+			>
 				<span class="font-bold text-[var(--color-ink)]">💡 Solusi Perencanaan Waris Aman:</span>
-				Miliki <strong>Asuransi Jiwa Murni / Syariah</strong> dengan *Beneficiary Designation* setara dana darurat keluarga ({rupiahBrief(emergencyEstateLiquidityNeeded)}). Uang pertanggungan asuransi jiwa <strong>bukan objek sengketa waris</strong> dan langsung cair dalam 7–14 hari kerja tanpa proses SKHW notaris.
+				Miliki <strong>Asuransi Jiwa Murni / Syariah</strong> dengan *Beneficiary Designation*
+				setara dana darurat keluarga ({rupiahBrief(emergencyEstateLiquidityNeeded)}). Uang
+				pertanggungan asuransi jiwa <strong>bukan objek sengketa waris</strong> dan langsung cair dalam
+				7–14 hari kerja tanpa proses SKHW notaris.
 			</div>
 		</div>
 	</div>

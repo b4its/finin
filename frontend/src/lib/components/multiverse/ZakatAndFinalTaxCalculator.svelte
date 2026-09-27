@@ -10,7 +10,6 @@
 
 	let year = $state(10);
 	let goldPricePerGram = $state(1_450_000); // Acuan emas Antam 2026
-	let ricePricePerKg = $state(16_000); // Acuan beras premium per kg
 
 	// Nisab Zakat Mal: 85 gram emas per tahun
 	let nisabMalAnnual = $derived(85 * goldPricePerGram);
@@ -36,7 +35,8 @@
 	// Perhitungan Zakat Mal & Tax Alpha
 	let malStats = $derived(
 		twins.map((t) => {
-			const pt = t.yearly_series.find((p) => p.year === year) ?? t.yearly_series[t.yearly_series.length - 1];
+			const pt =
+				t.yearly_series.find((p) => p.year === year) ?? t.yearly_series[t.yearly_series.length - 1];
 			const nw = pt?.net_worth ?? 0;
 			const isNisabReached = nw >= nisabMalAnnual;
 			const zakatAnnual = isNisabReached ? nw * 0.025 : 0;
@@ -90,7 +90,9 @@
 
 <div class="card p-5">
 	<!-- Tab Bar & Header -->
-	<div class="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-line)] pb-4">
+	<div
+		class="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-line)] pb-4"
+	>
 		<div>
 			<div class="flex items-center gap-2">
 				<span class="text-xl">🌙</span>
@@ -99,26 +101,35 @@
 				</h3>
 			</div>
 			<p class="mt-1 text-xs text-[var(--color-ink-dim)]">
-				Integrasi Zakat Mal, Zakat Profesi (Fatwa MUI No. 3/2003), Tax Alpha PPh Final, dan Cash Waqf Linked Sukuk (Kemenkeu & BWI).
+				Integrasi Zakat Mal, Zakat Profesi (Fatwa MUI No. 3/2003), Tax Alpha PPh Final, dan Cash
+				Waqf Linked Sukuk (Kemenkeu & BWI).
 			</p>
 		</div>
 
 		<!-- Navigasi Mode Tab -->
-		<div class="flex rounded-lg border border-[var(--color-line)] bg-[var(--color-void-2)] p-0.5 text-xs">
+		<div
+			class="flex rounded-lg border border-[var(--color-line)] bg-[var(--color-void-2)] p-0.5 text-xs"
+		>
 			<button
-				class="rounded-md px-3 py-1 font-semibold transition {mode === 'mal' ? 'bg-[var(--color-accent)] text-white' : 'text-[var(--color-ink-dim)] hover:text-[var(--color-ink)]'}"
+				class="rounded-md px-3 py-1 font-semibold transition {mode === 'mal'
+					? 'bg-[var(--color-accent)] text-white'
+					: 'text-[var(--color-ink-dim)] hover:text-[var(--color-ink)]'}"
 				onclick={() => (mode = 'mal')}
 			>
 				Zakat Mal & PPh Final
 			</button>
 			<button
-				class="rounded-md px-3 py-1 font-semibold transition {mode === 'profesi' ? 'bg-[var(--color-accent)] text-white' : 'text-[var(--color-ink-dim)] hover:text-[var(--color-ink)]'}"
+				class="rounded-md px-3 py-1 font-semibold transition {mode === 'profesi'
+					? 'bg-[var(--color-accent)] text-white'
+					: 'text-[var(--color-ink-dim)] hover:text-[var(--color-ink)]'}"
 				onclick={() => (mode = 'profesi')}
 			>
 				Zakat Profesi (Gaji)
 			</button>
 			<button
-				class="rounded-md px-3 py-1 font-semibold transition {mode === 'cwls' ? 'bg-[var(--color-accent)] text-white' : 'text-[var(--color-ink-dim)] hover:text-[var(--color-ink)]'}"
+				class="rounded-md px-3 py-1 font-semibold transition {mode === 'cwls'
+					? 'bg-[var(--color-accent)] text-white'
+					: 'text-[var(--color-ink-dim)] hover:text-[var(--color-ink)]'}"
 				onclick={() => (mode = 'cwls')}
 			>
 				Wakaf Sukuk (CWLS)
@@ -131,10 +142,14 @@
 		<div class="mt-4 flex flex-wrap items-center justify-between gap-3">
 			<div class="flex items-center gap-2">
 				<span class="text-xs font-semibold text-[var(--color-ink-dim)]">Horizon Proyeksi:</span>
-				<div class="flex rounded-lg border border-[var(--color-line)] bg-[var(--color-void-2)] p-0.5 text-xs">
+				<div
+					class="flex rounded-lg border border-[var(--color-line)] bg-[var(--color-void-2)] p-0.5 text-xs"
+				>
 					{#each [5, 10, 20] as y}
 						<button
-							class="rounded-md px-2.5 py-1 font-semibold transition {year === y ? 'bg-[var(--color-accent)] text-white' : 'text-[var(--color-ink-dim)]'}"
+							class="rounded-md px-2.5 py-1 font-semibold transition {year === y
+								? 'bg-[var(--color-accent)] text-white'
+								: 'text-[var(--color-ink-dim)]'}"
 							onclick={() => (year = y)}
 						>
 							Th-{y}
@@ -145,7 +160,9 @@
 
 			<div class="flex items-center gap-2 text-xs">
 				<span class="text-[var(--color-ink-dim)]">Harga Emas Antam:</span>
-				<div class="flex items-center gap-1 rounded-lg border border-[var(--color-line)] bg-[var(--color-void-1)] px-2 py-1">
+				<div
+					class="flex items-center gap-1 rounded-lg border border-[var(--color-line)] bg-[var(--color-void-1)] px-2 py-1"
+				>
 					<span class="text-[var(--color-ink-dim)]">Rp</span>
 					<input
 						type="number"
@@ -168,7 +185,10 @@
 					</span>
 				</div>
 				<p class="mt-1 text-[11px] text-[var(--color-ink-dim)]">
-					Berdasarkan ketentuan BAZNAS (85 gr emas × Rp{goldPricePerGram.toLocaleString('id-ID')}/gr). Wajib ditunaikan 2,5% per tahun apabila telah mencapai haul 1 tahun qamariyah dan di atas nisab.
+					Berdasarkan ketentuan BAZNAS (85 gr emas × Rp{goldPricePerGram.toLocaleString(
+						'id-ID'
+					)}/gr). Wajib ditunaikan 2,5% per tahun apabila telah mencapai haul 1 tahun qamariyah dan
+					di atas nisab.
 				</p>
 			</div>
 
@@ -180,7 +200,8 @@
 					</span>
 				</div>
 				<p class="mt-1 text-[11px] text-[var(--color-ink-dim)]">
-					Deposito dikenakan PPh Final 20% (PP 131/2000), SBN/Sukuk 10% (PP 91/2021), sedangkan Reksa Dana 0% bukan objek pajak (UU PPh Pasal 4(3)h).
+					Deposito dikenakan PPh Final 20% (PP 131/2000), SBN/Sukuk 10% (PP 91/2021), sedangkan
+					Reksa Dana 0% bukan objek pajak (UU PPh Pasal 4(3)h).
 				</p>
 			</div>
 		</div>
@@ -199,7 +220,9 @@
 								Twin {st.code}: {st.label}
 							</span>
 							<span
-								class="rounded-full px-2 py-0.5 text-[10px] font-bold {st.isNisabReached ? 'bg-emerald-500/15 text-emerald-400' : 'bg-slate-500/15 text-slate-400'}"
+								class="rounded-full px-2 py-0.5 text-[10px] font-bold {st.isNisabReached
+									? 'bg-emerald-500/15 text-emerald-400'
+									: 'bg-slate-500/15 text-slate-400'}"
 							>
 								{st.isNisabReached ? '✓ Mencapai Nisab' : 'Belum Nisab'}
 							</span>
@@ -211,9 +234,13 @@
 								<strong class="text-[var(--color-ink)]">{rupiahBrief(st.nw)}</strong>
 							</div>
 
-							<div class="flex justify-between border-t border-dashed border-[var(--color-line)] pt-1.5 text-[var(--color-ink-dim)]">
+							<div
+								class="flex justify-between border-t border-dashed border-[var(--color-line)] pt-1.5 text-[var(--color-ink-dim)]"
+							>
 								<span>Kewajiban Zakat Mal / Th:</span>
-								<strong class={st.isNisabReached ? 'text-amber-400' : 'text-[var(--color-ink-dim)]'}>
+								<strong
+									class={st.isNisabReached ? 'text-amber-400' : 'text-[var(--color-ink-dim)]'}
+								>
 									{st.isNisabReached ? rupiah(st.zakatAnnual) : 'Rp0'}
 								</strong>
 							</div>
@@ -225,7 +252,9 @@
 								</div>
 							{/if}
 
-							<div class="flex justify-between border-t border-dashed border-[var(--color-line)] pt-1.5 text-[var(--color-ink-dim)]">
+							<div
+								class="flex justify-between border-t border-dashed border-[var(--color-line)] pt-1.5 text-[var(--color-ink-dim)]"
+							>
 								<span>Tarif PPh Final Aset:</span>
 								<span class="font-semibold text-[var(--color-ink)]">
 									{percent(st.taxRate, 0)} ({st.taxRate === 0 ? 'Bebas PPh' : 'Kena Pajak'})
@@ -241,31 +270,48 @@
 						</div>
 					</div>
 
-					<div class="mt-3 border-t border-[var(--color-line)]/50 pt-2 text-[10px] text-[var(--color-ink-dim)]">
+					<div
+						class="mt-3 border-t border-[var(--color-line)]/50 pt-2 text-[10px] text-[var(--color-ink-dim)]"
+					>
 						{#if st.isNisabReached}
-							<span>✨ Harta bersih telah melebihi nisab. Menunaikan zakat membersihkan kekayaan dan memberi keberkahan sosial.</span>
+							<span
+								>✨ Harta bersih telah melebihi nisab. Menunaikan zakat membersihkan kekayaan dan
+								memberi keberkahan sosial.</span
+							>
 						{:else}
-							<span>Fokus kumpulkan dana darurat dan akumulasi aset hingga melampaui batas nisab Rp{rupiahBrief(nisabMalAnnual)}.</span>
+							<span
+								>Fokus kumpulkan dana darurat dan akumulasi aset hingga melampaui batas nisab Rp{rupiahBrief(
+									nisabMalAnnual
+								)}.</span
+							>
 						{/if}
 					</div>
 				</div>
 			{/each}
 		</div>
 
-	<!-- TAB 2: ZAKAT PROFESI / PENGHASILAN BULANAN (FATWA MUI 3/2003) -->
+		<!-- TAB 2: ZAKAT PROFESI / PENGHASILAN BULANAN (FATWA MUI 3/2003) -->
 	{:else if mode === 'profesi'}
 		<div class="mt-4 space-y-4">
 			<div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
 				<div class="rounded-xl border border-[var(--color-line)] bg-[var(--color-void-1)] p-3.5">
-					<span class="text-xs font-semibold text-[var(--color-ink-dim)]">Gaji / Penghasilan Bulanan</span>
-					<div class="mt-1 text-lg font-bold text-[var(--color-ink)]">{rupiah(baseIncomeMonthly)}</div>
+					<span class="text-xs font-semibold text-[var(--color-ink-dim)]"
+						>Gaji / Penghasilan Bulanan</span
+					>
+					<div class="mt-1 text-lg font-bold text-[var(--color-ink)]">
+						{rupiah(baseIncomeMonthly)}
+					</div>
 					<div class="mt-0.5 text-[11px] text-[var(--color-ink-dim)]">
-						{isProfesiNisabReached ? '✓ Di atas ambang nisab BAZNAS' : '⚠️ Belum mencapai batas nisab bulanan'}
+						{isProfesiNisabReached
+							? '✓ Di atas ambang nisab BAZNAS'
+							: '⚠️ Belum mencapai batas nisab bulanan'}
 					</div>
 				</div>
 
 				<div class="rounded-xl border border-[var(--color-line)] bg-[var(--color-void-1)] p-3.5">
-					<span class="text-xs font-semibold text-[var(--color-ink-dim)]">Nisab Bulanan (BAZNAS RI)</span>
+					<span class="text-xs font-semibold text-[var(--color-ink-dim)]"
+						>Nisab Bulanan (BAZNAS RI)</span
+					>
 					<div class="mt-1 text-lg font-bold text-amber-400">{rupiah(nisabProfesiMonthly)}</div>
 					<div class="mt-0.5 text-[11px] text-[var(--color-ink-dim)]">
 						Setara 85 gr emas/12 bulan (SK BAZNAS No. 1/2024)
@@ -273,8 +319,12 @@
 				</div>
 
 				<div class="rounded-xl border border-[var(--color-line)] bg-[var(--color-void-1)] p-3.5">
-					<span class="text-xs font-semibold text-[var(--color-ink-dim)]">Pengurang PPh 21 (UU 23/2011)</span>
-					<div class="mt-1 text-lg font-bold text-emerald-400">+{rupiah(pph21TaxSavedAnnual)}/th</div>
+					<span class="text-xs font-semibold text-[var(--color-ink-dim)]"
+						>Pengurang PPh 21 (UU 23/2011)</span
+					>
+					<div class="mt-1 text-lg font-bold text-emerald-400">
+						+{rupiah(pph21TaxSavedAnnual)}/th
+					</div>
 					<div class="mt-0.5 text-[11px] text-[var(--color-ink-dim)]">
 						Estimasi hemat pajak penghasilan via bukti setor zakat
 					</div>
@@ -285,20 +335,29 @@
 			<div class="rounded-xl border border-[var(--color-line)] bg-[var(--color-void-2)] p-4">
 				<div class="flex flex-wrap items-center justify-between gap-3">
 					<div>
-						<h4 class="text-xs font-bold text-[var(--color-ink)]">Metode Kaidah Fiqih Zakat Profesi</h4>
+						<h4 class="text-xs font-bold text-[var(--color-ink)]">
+							Metode Kaidah Fiqih Zakat Profesi
+						</h4>
 						<p class="text-[11px] text-[var(--color-ink-dim)]">
-							Fatwa MUI No. 3/2003 membolehkan zakat dihitung dari penghasilan kotor (bruto) atau bersih setelah kebutuhan pokok (neto).
+							Fatwa MUI No. 3/2003 membolehkan zakat dihitung dari penghasilan kotor (bruto) atau
+							bersih setelah kebutuhan pokok (neto).
 						</p>
 					</div>
-					<div class="flex rounded-lg border border-[var(--color-line)] bg-[var(--color-void-1)] p-0.5 text-xs">
+					<div
+						class="flex rounded-lg border border-[var(--color-line)] bg-[var(--color-void-1)] p-0.5 text-xs"
+					>
 						<button
-							class="rounded-md px-3 py-1 font-semibold transition {profesiMethod === 'bruto' ? 'bg-[var(--color-accent)] text-white' : 'text-[var(--color-ink-dim)]'}"
+							class="rounded-md px-3 py-1 font-semibold transition {profesiMethod === 'bruto'
+								? 'bg-[var(--color-accent)] text-white'
+								: 'text-[var(--color-ink-dim)]'}"
 							onclick={() => (profesiMethod = 'bruto')}
 						>
 							Pendapatan Bruto (2,5%)
 						</button>
 						<button
-							class="rounded-md px-3 py-1 font-semibold transition {profesiMethod === 'neto' ? 'bg-[var(--color-accent)] text-white' : 'text-[var(--color-ink-dim)]'}"
+							class="rounded-md px-3 py-1 font-semibold transition {profesiMethod === 'neto'
+								? 'bg-[var(--color-accent)] text-white'
+								: 'text-[var(--color-ink-dim)]'}"
 							onclick={() => (profesiMethod = 'neto')}
 						>
 							Neto (Potong Biaya Pokok)
@@ -307,7 +366,9 @@
 				</div>
 
 				<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-					<div class="space-y-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-void-1)] p-3 text-xs">
+					<div
+						class="space-y-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-void-1)] p-3 text-xs"
+					>
 						<div class="flex justify-between text-[var(--color-ink-dim)]">
 							<span>Dasar Pengenaan Zakat (Bulanan):</span>
 							<strong class="text-[var(--color-ink)]">{rupiah(profesiBase)}</strong>
@@ -326,25 +387,34 @@
 						</div>
 					</div>
 
-					<div class="flex flex-col justify-between rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3 text-xs">
+					<div
+						class="flex flex-col justify-between rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3 text-xs"
+					>
 						<div>
 							<div class="flex items-center gap-1.5 font-bold text-emerald-400">
 								<span>🏛️</span>
 								<span>Fasilitas Pengurang Pajak Penghasilan (UU No. 23/2011 Ps. 22)</span>
 							</div>
 							<p class="mt-1 text-[11px] leading-relaxed text-[var(--color-ink-dim)]">
-								Zakat yang dibayarkan melalui Badan Amil Zakat Nasional (BAZNAS) atau LAZ resmi yang diakui pemerintah merupakan <strong class="text-[var(--color-ink)]">faktor pengurang penghasilan bruto</strong> dalam pelaporan SPT Tahunan PPh Orang Pribadi (Formulir 1770 S).
+								Zakat yang dibayarkan melalui Badan Amil Zakat Nasional (BAZNAS) atau LAZ resmi yang
+								diakui pemerintah merupakan <strong class="text-[var(--color-ink)]"
+									>faktor pengurang penghasilan bruto</strong
+								> dalam pelaporan SPT Tahunan PPh Orang Pribadi (Formulir 1770 S).
 							</p>
 						</div>
-						<div class="mt-2 rounded border border-emerald-500/30 bg-emerald-500/10 p-2 text-[11px] text-emerald-300">
-							💡 Dengan menyalurkan zakat {rupiah(zakatProfesiAnnual)}/th secara resmi, beban pajak PPh 21 Anda berpotensi berkurang hingga <strong>{rupiah(pph21TaxSavedAnnual)}/tahun</strong>.
+						<div
+							class="mt-2 rounded border border-emerald-500/30 bg-emerald-500/10 p-2 text-[11px] text-emerald-300"
+						>
+							💡 Dengan menyalurkan zakat {rupiah(zakatProfesiAnnual)}/th secara resmi, beban pajak
+							PPh 21 Anda berpotensi berkurang hingga
+							<strong>{rupiah(pph21TaxSavedAnnual)}/tahun</strong>.
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 
-	<!-- TAB 3: CASH WAQF LINKED SUKUK (CWLS) / SUKUK WAKAF RITEL -->
+		<!-- TAB 3: CASH WAQF LINKED SUKUK (CWLS) / SUKUK WAKAF RITEL -->
 	{:else if mode === 'cwls'}
 		<div class="mt-4 space-y-4">
 			<div class="rounded-xl border border-indigo-500/20 bg-indigo-500/5 p-4">
@@ -355,7 +425,10 @@
 							Sukuk Wakaf Ritel (Cash Waqf Linked Sukuk - CWLS)
 						</h4>
 						<p class="mt-1 text-xs text-[var(--color-ink-dim)]">
-							Inovasi instrumen sosial-investasi resmi Kementerian Keuangan RI, Bank Indonesia, dan Badan Wakaf Indonesia (BWI). Pokok dana aman 100% dijamin negara, sedangkan seluruh imbal hasil kupon dialokasikan langsung untuk kemaslahatan sosial (beasiswa, faskes duafa, renovasi madrasah).
+							Inovasi instrumen sosial-investasi resmi Kementerian Keuangan RI, Bank Indonesia, dan
+							Badan Wakaf Indonesia (BWI). Pokok dana aman 100% dijamin negara, sedangkan seluruh
+							imbal hasil kupon dialokasikan langsung untuk kemaslahatan sosial (beasiswa, faskes
+							duafa, renovasi madrasah).
 						</p>
 					</div>
 				</div>
@@ -363,11 +436,15 @@
 
 			<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
 				<!-- Input Komitmen Wakaf Uang -->
-				<div class="rounded-xl border border-[var(--color-line)] bg-[var(--color-void-1)] p-4 sm:col-span-1">
+				<div
+					class="rounded-xl border border-[var(--color-line)] bg-[var(--color-void-1)] p-4 sm:col-span-1"
+				>
 					<span class="block text-xs font-semibold text-[var(--color-ink-dim)]">
 						Nominal Wakaf Uang (CWLS)
 					</span>
-					<div class="mt-2 flex items-center gap-1 rounded-lg border border-[var(--color-line)] bg-[var(--color-void-2)] px-3 py-2">
+					<div
+						class="mt-2 flex items-center gap-1 rounded-lg border border-[var(--color-line)] bg-[var(--color-void-2)] px-3 py-2"
+					>
 						<span class="text-xs text-[var(--color-ink-dim)]">Rp</span>
 						<input
 							type="number"
@@ -389,39 +466,61 @@
 						{/each}
 					</div>
 					<p class="mt-3 text-[10px] text-[var(--color-ink-dim)]">
-						Wakaf uang temporer (tenor 2–3 tahun). Pokok 100% kembali utuh kepada wakif saat jatuh tempo.
+						Wakaf uang temporer (tenor 2–3 tahun). Pokok 100% kembali utuh kepada wakif saat jatuh
+						tempo.
 					</p>
 				</div>
 
 				<!-- Dampak Sosial & Kupon Berkelanjutan -->
-				<div class="rounded-xl border border-[var(--color-line)] bg-[var(--color-void-2)] p-4 sm:col-span-2">
-					<span class="text-xs font-bold text-[var(--color-ink)]">Dampak Sosial Kupon Wakaf (Social Yield)</span>
+				<div
+					class="rounded-xl border border-[var(--color-line)] bg-[var(--color-void-2)] p-4 sm:col-span-2"
+				>
+					<span class="text-xs font-bold text-[var(--color-ink)]"
+						>Dampak Sosial Kupon Wakaf (Social Yield)</span
+					>
 					<div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 text-xs">
 						<div class="rounded-lg border border-[var(--color-line)] bg-[var(--color-void-1)] p-3">
 							<span class="text-[var(--color-ink-dim)]">Imbal Hasil Kupon Sosial (5,8% p.a.):</span>
-							<div class="mt-1 text-base font-bold text-teal-400">{rupiah(cwlsAnnualYield)} / tahun</div>
-							<div class="text-[10px] text-[var(--color-ink-dim)]">({rupiah(cwlsAnnualYield / 12)} / bulan dialirkan ke nazhir)</div>
+							<div class="mt-1 text-base font-bold text-teal-400">
+								{rupiah(cwlsAnnualYield)} / tahun
+							</div>
+							<div class="text-[10px] text-[var(--color-ink-dim)]">
+								({rupiah(cwlsAnnualYield / 12)} / bulan dialirkan ke nazhir)
+							</div>
 						</div>
 
 						<div class="rounded-lg border border-[var(--color-line)] bg-[var(--color-void-1)] p-3">
 							<span class="text-[var(--color-ink-dim)]">Pemberian Beasiswa Pelajar Dhuafa:</span>
-							<div class="mt-1 text-base font-bold text-amber-400">{scholarshipBeneficiaries} Anak / Tahun</div>
-							<div class="text-[10px] text-[var(--color-ink-dim)]">Biaya beasiswa penuh standar Rp2,5 jt/siswa</div>
+							<div class="mt-1 text-base font-bold text-amber-400">
+								{scholarshipBeneficiaries} Anak / Tahun
+							</div>
+							<div class="text-[10px] text-[var(--color-ink-dim)]">
+								Biaya beasiswa penuh standar Rp2,5 jt/siswa
+							</div>
 						</div>
 					</div>
 
 					<div class="mt-3 space-y-1.5 text-[11px] text-[var(--color-ink-dim)]">
 						<div class="flex items-center gap-2">
 							<span class="text-emerald-400">✓</span>
-							<span><strong>100% Risk-Free Pokok:</strong> Dijamin penuh oleh Surat Berharga Syariah Negara (SBSN).</span>
+							<span
+								><strong>100% Risk-Free Pokok:</strong> Dijamin penuh oleh Surat Berharga Syariah Negara
+								(SBSN).</span
+							>
 						</div>
 						<div class="flex items-center gap-2">
 							<span class="text-emerald-400">✓</span>
-							<span><strong>Sertifikat Wakaf Uang (SWU):</strong> Diterbitkan secara resmi oleh Kementerian Agama & BWI.</span>
+							<span
+								><strong>Sertifikat Wakaf Uang (SWU):</strong> Diterbitkan secara resmi oleh Kementerian
+								Agama & BWI.</span
+							>
 						</div>
 						<div class="flex items-center gap-2">
 							<span class="text-emerald-400">✓</span>
-							<span><strong>Amal Jariah Abadi:</strong> Pahala kemanfaatan sosial terus mengalir tanpa mengurangi modal finansial Anda.</span>
+							<span
+								><strong>Amal Jariah Abadi:</strong> Pahala kemanfaatan sosial terus mengalir tanpa mengurangi
+								modal finansial Anda.</span
+							>
 						</div>
 					</div>
 				</div>

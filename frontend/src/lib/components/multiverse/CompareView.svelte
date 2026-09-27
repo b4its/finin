@@ -141,7 +141,9 @@
 </script>
 
 <div class="card p-4">
-	<div class="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-line)] pb-3">
+	<div
+		class="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-line)] pb-3"
+	>
 		<div>
 			<h3 class="text-sm font-bold text-[var(--color-ink)]">
 				Analisis Komparasi Multiverse (Tahun ke-{year})
@@ -152,15 +154,21 @@
 		</div>
 
 		<div class="flex items-center gap-2">
-			<div class="flex rounded-lg border border-[var(--color-line)] bg-[var(--color-void-2)] p-0.5 text-xs">
+			<div
+				class="flex rounded-lg border border-[var(--color-line)] bg-[var(--color-void-2)] p-0.5 text-xs"
+			>
 				<button
-					class="rounded-md px-2.5 py-1 font-semibold transition {viewMode === 'pair' ? 'bg-[var(--color-accent)] text-white' : 'text-[var(--color-ink-dim)]'}"
+					class="rounded-md px-2.5 py-1 font-semibold transition {viewMode === 'pair'
+						? 'bg-[var(--color-accent)] text-white'
+						: 'text-[var(--color-ink-dim)]'}"
 					onclick={() => (viewMode = 'pair')}
 				>
 					⚔️ Duel Head-to-Head
 				</button>
 				<button
-					class="rounded-md px-2.5 py-1 font-semibold transition {viewMode === 'matrix' ? 'bg-[var(--color-accent)] text-white' : 'text-[var(--color-ink-dim)]'}"
+					class="rounded-md px-2.5 py-1 font-semibold transition {viewMode === 'matrix'
+						? 'bg-[var(--color-accent)] text-white'
+						: 'text-[var(--color-ink-dim)]'}"
 					onclick={() => (viewMode = 'matrix')}
 				>
 					📊 Matriks Seluruh Twin
@@ -233,8 +241,8 @@
 			</svg>
 		</div>
 		<p class="mt-1 text-xs text-[var(--color-ink-dim)]">
-			Area di atas garis = <strong style="color:{b?.color}">{b?.label}</strong> lebih tinggi. Di bawah
-			= lebih rendah, dibanding {a?.label}.
+			Area di atas garis = <strong style="color:{b?.color}">{b?.label}</strong> lebih tinggi. Di
+			bawah = lebih rendah, dibanding {a?.label}.
 		</p>
 
 		<div class="mt-4 overflow-x-auto rounded-xl border border-[var(--color-line)]">
@@ -340,19 +348,29 @@
 								<td class="num px-3 py-2 text-right text-cyan-400">
 									{rupiahBrief(pt?.invest ?? 0)}
 								</td>
-								<td class="num px-3 py-2 text-right {((pt?.debt ?? 0) > 0) ? 'text-rose-400' : 'text-slate-500'}">
+								<td
+									class="num px-3 py-2 text-right {(pt?.debt ?? 0) > 0
+										? 'text-rose-400'
+										: 'text-slate-500'}"
+								>
 									{rupiahBrief(pt?.debt ?? 0)}
 								</td>
 								<td class="num px-3 py-2 text-right font-semibold">
 									{months(pt?.emergency_months ?? 0)}
 								</td>
 								<td class="num px-3 py-2 text-right">
-									<span class="{((pt?.dsr ?? 0) > 0.3) ? 'text-amber-400 font-bold' : 'text-[var(--color-ink-dim)]'}">
+									<span
+										class={(pt?.dsr ?? 0) > 0.3
+											? 'text-amber-400 font-bold'
+											: 'text-[var(--color-ink-dim)]'}
+									>
 										{percent(pt?.dsr ?? 0, 1)}
 									</span>
 								</td>
 								<td class="px-3 py-2 text-center">
-									<span class="rounded-full bg-[var(--color-void-2)] px-2 py-0.5 font-bold text-[10px] text-[var(--color-ink)]">
+									<span
+										class="rounded-full bg-[var(--color-void-2)] px-2 py-0.5 font-bold text-[10px] text-[var(--color-ink)]"
+									>
 										{Math.round((t.score ?? 0) * 100)}
 									</span>
 								</td>

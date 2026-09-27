@@ -27,7 +27,7 @@
 
 	// Estimasi dampak majemuk tahun ke-10 (asumsi return moderat riil ~4%/tahun)
 	let projectedGainY10 = $derived.by(() => {
-		const monthlySurplus = extraIncome;
+		const monthlySurplus = extraIncome + expenseCutPct * 5_000_000;
 		const r = 0.04 / 12; // return riil bulanan
 		const n = 120; // 10 tahun (120 bulan)
 
@@ -88,8 +88,26 @@
 			</div>
 		</div>
 
+		<!-- Pilihan Penghematan Pengeluaran -->
+		<div>
+			<span class="mb-1.5 block font-semibold text-[var(--color-ink-dim)]"
+				>✂️ Penghematan Pengeluaran Bulanan (Gaya Hidup):</span
+			>
+			<div class="flex flex-wrap gap-1.5">
+				{#each EXPENSE_OPTIONS as opt}
+					<button
+						class="chip text-xs"
+						class:active={expenseCutPct === opt.value}
+						onclick={() => (expenseCutPct = opt.value)}
+					>
+						{opt.label}
+					</button>
+				{/each}
+			</div>
+		</div>
+
 		<!-- Hasil Proyeksi Nilai Tambah -->
-		{#if extraIncome > 0 || extraSavings > 0}
+		{#if extraIncome > 0 || extraSavings > 0 || expenseCutPct > 0}
 			<div
 				class="rounded-xl border border-emerald-500/50 bg-emerald-500/10 p-3.5 text-left transition-all"
 			>

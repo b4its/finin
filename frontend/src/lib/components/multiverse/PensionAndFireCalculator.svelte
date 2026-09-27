@@ -22,9 +22,7 @@
 	);
 
 	// Multiplier gaya hidup FIRE
-	let expenseMultiplier = $derived(
-		fireMode === 'lean' ? 0.7 : fireMode === 'fat' ? 1.4 : 1.0
-	);
+	let expenseMultiplier = $derived(fireMode === 'lean' ? 0.7 : fireMode === 'fat' ? 1.4 : 1.0);
 
 	// Tahun menuju pensiun
 	let yearsToRetire = $derived(Math.max(1, targetRetirementAge - currentAge));
@@ -61,7 +59,8 @@
 			let fireAchievedAge: number | null = null;
 
 			for (const pt of t.yearly_series) {
-				const expAtPtYear = baseMonthlyExpense * expenseMultiplier * Math.pow(1 + inflationAnnual, pt.year);
+				const expAtPtYear =
+					baseMonthlyExpense * expenseMultiplier * Math.pow(1 + inflationAnnual, pt.year);
 				const targetAtPtYear = (expAtPtYear * 12) / safeWithdrawalRate;
 				if (pt.net_worth >= targetAtPtYear) {
 					fireAchievedYear = pt.year;
@@ -83,9 +82,8 @@
 			const monthlyPassiveCashflow = (totalRetirementAssets * safeWithdrawalRate) / 12;
 
 			// Coverage ratio terhadap pengeluaran pensiun
-			const coverageRatio = monthlyExpenseAtRetirement > 0
-				? monthlyPassiveCashflow / monthlyExpenseAtRetirement
-				: 1.0;
+			const coverageRatio =
+				monthlyExpenseAtRetirement > 0 ? monthlyPassiveCashflow / monthlyExpenseAtRetirement : 1.0;
 
 			const isFunded = coverageRatio >= 1.0;
 
@@ -107,7 +105,9 @@
 </script>
 
 <div class="card p-5">
-	<div class="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-line)] pb-4">
+	<div
+		class="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-line)] pb-4"
+	>
 		<div>
 			<div class="flex items-center gap-2">
 				<span class="text-xl">🌅</span>
@@ -116,27 +116,36 @@
 				</h3>
 			</div>
 			<p class="mt-1 text-xs text-[var(--color-ink-dim)]">
-				Evaluasi kapan tiap Twin mencapai kemandirian finansial dan proyeksi arus kas pasif hari tua berbanding acuan Permenaker 4/2022 (Usia 56 Th).
+				Evaluasi kapan tiap Twin mencapai kemandirian finansial dan proyeksi arus kas pasif hari tua
+				berbanding acuan Permenaker 4/2022 (Usia 56 Th).
 			</p>
 		</div>
 
 		<div class="flex flex-wrap items-center gap-3">
 			<!-- Pilihan Tipe FIRE -->
-			<div class="flex rounded-lg border border-[var(--color-line)] bg-[var(--color-void-2)] p-0.5 text-xs">
+			<div
+				class="flex rounded-lg border border-[var(--color-line)] bg-[var(--color-void-2)] p-0.5 text-xs"
+			>
 				<button
-					class="rounded-md px-2.5 py-1 font-semibold transition {fireMode === 'lean' ? 'bg-[var(--color-accent)] text-white' : 'text-[var(--color-ink-dim)]'}"
+					class="rounded-md px-2.5 py-1 font-semibold transition {fireMode === 'lean'
+						? 'bg-[var(--color-accent)] text-white'
+						: 'text-[var(--color-ink-dim)]'}"
 					onclick={() => (fireMode = 'lean')}
 				>
 					Lean (70%)
 				</button>
 				<button
-					class="rounded-md px-2.5 py-1 font-semibold transition {fireMode === 'standard' ? 'bg-[var(--color-accent)] text-white' : 'text-[var(--color-ink-dim)]'}"
+					class="rounded-md px-2.5 py-1 font-semibold transition {fireMode === 'standard'
+						? 'bg-[var(--color-accent)] text-white'
+						: 'text-[var(--color-ink-dim)]'}"
 					onclick={() => (fireMode = 'standard')}
 				>
 					Standar (100%)
 				</button>
 				<button
-					class="rounded-md px-2.5 py-1 font-semibold transition {fireMode === 'fat' ? 'bg-[var(--color-accent)] text-white' : 'text-[var(--color-ink-dim)]'}"
+					class="rounded-md px-2.5 py-1 font-semibold transition {fireMode === 'fat'
+						? 'bg-[var(--color-accent)] text-white'
+						: 'text-[var(--color-ink-dim)]'}"
 					onclick={() => (fireMode = 'fat')}
 				>
 					Fat FIRE (140%)
@@ -150,13 +159,20 @@
 		<div class="flex flex-wrap items-center justify-between gap-2 text-xs">
 			<div>
 				<span class="font-bold text-[var(--color-ink)]">Target Usia Pensiun Anda:</span>
-				<span class="ml-1.5 font-extrabold text-[var(--color-accent)]">{targetRetirementAge} Tahun</span>
-				<span class="text-[var(--color-ink-dim)]">({yearsToRetire} tahun lagi dari usia saat ini {currentAge} th)</span>
+				<span class="ml-1.5 font-extrabold text-[var(--color-accent)]"
+					>{targetRetirementAge} Tahun</span
+				>
+				<span class="text-[var(--color-ink-dim)]"
+					>({yearsToRetire} tahun lagi dari usia saat ini {currentAge} th)</span
+				>
 			</div>
 			<div class="flex items-center gap-2">
 				{#each [45, 50, 55, 60] as age}
 					<button
-						class="rounded-md border border-[var(--color-line)] px-2 py-0.5 text-[11px] font-semibold transition hover:border-[var(--color-accent)] {targetRetirementAge === age ? 'bg-[var(--color-accent)] text-white' : 'bg-[var(--color-void-2)] text-[var(--color-ink-dim)]'}"
+						class="rounded-md border border-[var(--color-line)] px-2 py-0.5 text-[11px] font-semibold transition hover:border-[var(--color-accent)] {targetRetirementAge ===
+						age
+							? 'bg-[var(--color-accent)] text-white'
+							: 'bg-[var(--color-void-2)] text-[var(--color-ink-dim)]'}"
 						onclick={() => (targetRetirementAge = age)}
 					>
 						Usia {age}
@@ -177,7 +193,9 @@
 		</div>
 
 		<!-- Metrik Kebutuhan Finansial -->
-		<div class="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-3 text-xs border-t border-[var(--color-line)] pt-3">
+		<div
+			class="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-3 text-xs border-t border-[var(--color-line)] pt-3"
+		>
 			<div class="flex justify-between sm:flex-col sm:justify-start">
 				<span class="text-[var(--color-ink-dim)]">Pengeluaran Hari Tua:</span>
 				<strong class="text-[var(--color-ink)]">{rupiah(monthlyExpenseAtRetirement)}/bln</strong>
@@ -207,7 +225,9 @@
 							Twin {st.code}: {st.label}
 						</span>
 						<span
-							class="rounded-full px-2 py-0.5 text-[10px] font-bold {st.isFunded ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'}"
+							class="rounded-full px-2 py-0.5 text-[10px] font-bold {st.isFunded
+								? 'bg-emerald-500/15 text-emerald-400'
+								: 'bg-rose-500/15 text-rose-400'}"
 						>
 							{percent(st.coverageRatio, 0)} Aman
 						</span>
@@ -225,9 +245,13 @@
 							{/if}
 						</div>
 
-						<div class="flex justify-between text-[var(--color-ink-dim)] border-t border-dashed border-[var(--color-line)] pt-1.5">
+						<div
+							class="flex justify-between text-[var(--color-ink-dim)] border-t border-dashed border-[var(--color-line)] pt-1.5"
+						>
 							<span>Total Aset di Usia {targetRetirementAge}:</span>
-							<strong class="text-[var(--color-ink)]">{rupiahBrief(st.totalRetirementAssets)}</strong>
+							<strong class="text-[var(--color-ink)]"
+								>{rupiahBrief(st.totalRetirementAssets)}</strong
+							>
 						</div>
 
 						<div class="flex justify-between text-[var(--color-ink-dim)]">
@@ -237,7 +261,9 @@
 							</strong>
 						</div>
 
-						<div class="flex justify-between text-[var(--color-ink-dim)] border-t border-dashed border-[var(--color-line)] pt-1.5">
+						<div
+							class="flex justify-between text-[var(--color-ink-dim)] border-t border-dashed border-[var(--color-line)] pt-1.5"
+						>
 							<span>Status Arus Kas:</span>
 							<span class="font-semibold {st.isFunded ? 'text-emerald-400' : 'text-rose-400'}">
 								{st.isFunded ? '✓ Mandiri Finansial Penuh' : '⚠️ Defisit vs Pengeluaran'}
@@ -246,11 +272,19 @@
 					</div>
 				</div>
 
-				<div class="mt-3 border-t border-[var(--color-line)]/50 pt-2 text-[10px] text-[var(--color-ink-dim)]">
+				<div
+					class="mt-3 border-t border-[var(--color-line)]/50 pt-2 text-[10px] text-[var(--color-ink-dim)]"
+				>
 					{#if st.isFunded}
-						<span>✨ Portofolio aset dan jaminan sosial cukup untuk mendanai gaya hidup pensiun tanpa harus bekerja aktif.</span>
+						<span
+							>✨ Portofolio aset dan jaminan sosial cukup untuk mendanai gaya hidup pensiun tanpa
+							harus bekerja aktif.</span
+						>
 					{:else}
-						<span>Tingkatkan alokasi investasi bulanan atau tunda usia pensiun untuk menutup selisih pengeluaran.</span>
+						<span
+							>Tingkatkan alokasi investasi bulanan atau tunda usia pensiun untuk menutup selisih
+							pengeluaran.</span
+						>
 					{/if}
 				</div>
 			</div>
