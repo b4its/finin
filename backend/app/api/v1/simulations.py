@@ -1,0 +1,330 @@
+"""Endpoint simulasi: create, get, recompute, narrative (SSE), recommendation."""
+
+from __future__ import annotations
+
+import json
+import uuid
+
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.db import get_session
+from app.engine.assumptions import load_assumptions
+from app.engine.runner import FullSimulation, run_full_simulation
+from app.llm.narrator import narrator
+from app.models.simulation import Recommendation, Simulation, Twin
+from app.schemas.input import RecomputeRequest, SimulationRequest
+from app.schemas.output import RecommendationOut, SimulationResponse
+
+router = APIRouter()
+
+
+def _twin_to_dict(t) -> dict:  # noqa: ANN001
+    return {
+        "code": t.cfg.code,
+        "label": t.cfg.label,
+        "color": t.cfg.color,
+        "dash": t.cfg.dash,
+        "icon": t.cfg.icon,
+        "description": t.cfg.description,
+        "config": _cfg_to_dict(t.cfg),
+        "yearly_series": t.series,
+        "summary": t.summary,
+        "flags": t.flags,
+        "stress": t.stress,
+        "score": round(t.score, 4),
+        "score_breakdown": t.score_breakdown,
+        "deleted_by_hard_rule": t.deleted_by_hard_rule,
+    }
+
+
+def _cfg_to_dict(cfg) -> dict:  # noqa: ANN001
+    return {
+        "code": cfg.code,
+        "label": cfg.label,
+        "description": cfg.description,
+        "_color": cfg.color,
+        "_dash": cfg.dash,
+        "_icon": cfg.icon,
+        "role": cfg.meta.get("role", "decision"),
+        "study": cfg.study,
+        "emergency_first": cfg.emergency_first,
+        "monthly_invest": cfg.monthly_invest,
+        "instrument": cfg.instrument,
+        "loan_kind": cfg.loan.kind if cfg.loan else None,
+        "loan_principal": cfg.loan.principal if cfg.loan else 0,
+        "meta": cfg.meta,
+    }
+
+
+def _full_to_response(sim_id: str, full: FullSimulation, a) -> dict:  # noqa: ANN001
+    return {
+        "id": sim_id,
+        "engine_version": a.engine_version,
+        "assumption_code": a.code,
+        "assumption_as_of": a.as_of,
+        "preset": full.preset,
+        "horizon_months": full.horizon_months,
+        "twins": [_twin_to_dict(t) for t in full.twins],
+        "robust": full.robust,
+        "robust_reason": full.robust_reason,
+        "preset_winners": full.preset_winners,
+        "assumptions": a.to_dict(full.preset),
+        "market_context": a.market_context,
+        "flags": full.input_flags,
+    }
+
+
+def _best_twin(full: FullSimulation):  # noqa: ANN201
+    candidates = [t for t in full.twins if t.cfg.code != "0"]
+    if not candidates:
+        candidates = full.twins
+    return max(candidates, key=lambda t: t.score)
+
+
+def _enriched_snapshot(a, full: FullSimulation) -> dict:  # noqa: ANN001
+    """Snapshot asumsi + metadata agar GET bisa mereproduksi respons lengkap."""
+    snap = a.to_dict(full.preset)
+    snap["_meta"] = {
+        "horizon_months": full.horizon_months,
+        "robust_reason": full.robust_reason,
+        "preset_winners": full.preset_winners,
+        "input_flags": full.input_flags,
+    }
+    return snap
+
+
+async def _persist(session: AsyncSession, sim: Simulation, full: FullSimulation) -> None:
+    session.add(sim)
+    await session.flush()
+    for t in full.twins:
+        ps: dict = dict(full.preset_scores.get(t.cfg.code) or {})
+        ps["_breakdown"] = t.score_breakdown
+        session.add(
+            Twin(
+                simulation_id=sim.id,
+                code=t.cfg.code,
+                label=t.cfg.label,
+                config=_cfg_to_dict(t.cfg),
+                yearly_series=t.series,
+                summary=t.summary,
+                flags=t.flags,
+                stress=t.stress,
+                preset_scores=ps,
+                score=round(t.score, 4),
+            )
+        )
+    await session.commit()
+
+
+@router.post("", response_model=SimulationResponse, status_code=201)
+async def create_simulation(payload: SimulationRequest, session: AsyncSession = Depends(get_session)) -> dict:
+    a = load_assumptions()
+    full = run_full_simulation(payload, a)
+    sim = Simulation(
+        input=payload.model_dump(mode="json"),
+        assumption_code=a.code,
+        assumptions_snapshot=_enriched_snapshot(a, full),
+        preset=payload.preset,
+        engine_version=a.engine_version,
+        robust=full.robust,
+    )
+    await _persist(session, sim, full)
+    return _full_to_response(str(sim.id), full, a)
+
+
+async def _load_simulation(session: AsyncSession, sim_id: str) -> Simulation:
+    try:
+        uid = uuid.UUID(sim_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail={"code": "NOT_FOUND", "message": "ID tidak valid"}) from e
+    sim = await session.get(Simulation, uid)
+    if sim is None:
+        raise HTTPException(
+            status_code=404, detail={"code": "NOT_FOUND", "message": "Simulasi tidak ditemukan"}
+        )
+    return sim
+
+
+def _stored_to_response(sim: Simulation, twins: list[Twin]) -> dict:
+    a = load_assumptions(sim.assumption_code)
+    snapshot = sim.assumptions_snapshot
+    meta = snapshot.get("_meta", {}) if isinstance(snapshot, dict) else {}
+    return {
+        "id": str(sim.id),
+        "engine_version": sim.engine_version,
+        "assumption_code": sim.assumption_code,
+        "assumption_as_of": a.as_of,
+        "preset": sim.preset,
+        "horizon_months": meta.get("horizon_months", 240),
+        "twins": [
+            {
+                "code": t.code,
+                "label": t.label,
+                "color": t.config.get("_color", "#94A3B8"),
+                "dash": t.config.get("_dash", "solid"),
+                "icon": t.config.get("_icon", "circle"),
+                "description": t.config.get("description", ""),
+                "config": t.config,
+                "yearly_series": t.yearly_series,
+                "summary": t.summary,
+                "flags": t.flags,
+                "stress": t.stress or [],
+                "score": float(t.score) if t.score is not None else 0.0,
+                "score_breakdown": (t.preset_scores or {}).get("_breakdown", {}),
+                "deleted_by_hard_rule": False,
+            }
+            for t in twins
+        ],
+        "robust": bool(sim.robust),
+        "robust_reason": meta.get("robust_reason", ""),
+        "preset_winners": meta.get("preset_winners", {}),
+        "assumptions": snapshot,
+        "market_context": a.market_context,
+        "flags": meta.get("input_flags", []),
+    }
+
+
+@router.get("/{sim_id}", response_model=SimulationResponse)
+async def get_simulation(sim_id: str, session: AsyncSession = Depends(get_session)) -> dict:
+    sim = await _load_simulation(session, sim_id)
+    result = await session.execute(select(Twin).where(Twin.simulation_id == sim.id).order_by(Twin.code))
+    twins = list(result.scalars().all())
+    return _stored_to_response(sim, twins)
+
+
+@router.post("/{sim_id}/recompute", response_model=SimulationResponse)
+async def recompute(
+    sim_id: str, payload: RecomputeRequest, session: AsyncSession = Depends(get_session)
+) -> dict:
+    sim = await _load_simulation(session, sim_id)
+    base_req = SimulationRequest.model_validate(sim.input)
+    new_req = base_req.model_copy(
+        update={
+            "preset": payload.preset or base_req.preset,
+            "assumption_overrides": {**base_req.assumption_overrides, **payload.assumption_overrides},
+        }
+    )
+    a = load_assumptions()
+    full = run_full_simulation(new_req, a)
+
+    # ganti twin lama
+    result = await session.execute(select(Twin).where(Twin.simulation_id == sim.id))
+    for old in result.scalars().all():
+        await session.delete(old)
+    sim.preset = new_req.preset
+    sim.assumptions_snapshot = _enriched_snapshot(a, full)
+    sim.robust = full.robust
+    await session.flush()
+    for tr in full.twins:
+        ps: dict = dict(full.preset_scores.get(tr.cfg.code) or {})
+        ps["_breakdown"] = tr.score_breakdown
+        session.add(
+            Twin(
+                simulation_id=sim.id,
+                code=tr.cfg.code,
+                label=tr.cfg.label,
+                config=_cfg_to_dict(tr.cfg),
+                yearly_series=tr.series,
+                summary=tr.summary,
+                flags=tr.flags,
+                stress=tr.stress,
+                preset_scores=ps,
+                score=round(tr.score, 4),
+            )
+        )
+    await session.commit()
+    return _full_to_response(str(sim.id), full, a)
+
+
+@router.get("/{sim_id}/narrative")
+async def narrative(sim_id: str, session: AsyncSession = Depends(get_session)) -> StreamingResponse:
+    sim = await _load_simulation(session, sim_id)
+    result = await session.execute(select(Twin).where(Twin.simulation_id == sim.id).order_by(Twin.code))
+    twins = list(result.scalars().all())
+
+    twin_dicts = [
+        {
+            "code": t.code,
+            "label": t.label,
+            "description": t.config.get("description", ""),
+            "summary": t.summary,
+            "yearly_series": t.yearly_series,
+            "flags": t.flags,
+        }
+        for t in twins
+    ]
+
+    async def gen():
+        chunks = await narrator.narrate(twin_dicts)
+        # cache ke DB
+        by_twin: dict[str, list] = {}
+        for c in chunks:
+            by_twin.setdefault(str(c["twin"]), []).append(c)
+        for t in twins:
+            if str(t.code) in by_twin:
+                t.narrative = {"chunks": by_twin[str(t.code)]}
+        await session.commit()
+        for c in chunks:
+            yield f"data: {json.dumps(c, ensure_ascii=False)}\n\n"
+        yield f"data: {json.dumps({'done': True})}\n\n"
+
+    return StreamingResponse(
+        gen(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+@router.get("/{sim_id}/recommendation", response_model=RecommendationOut)
+async def recommendation(sim_id: str, session: AsyncSession = Depends(get_session)) -> dict:
+    sim = await _load_simulation(session, sim_id)
+    result = await session.execute(select(Twin).where(Twin.simulation_id == sim.id).order_by(Twin.code))
+    twins = list(result.scalars().all())
+    twin_dicts = [
+        {
+            "code": t.code,
+            "label": t.label,
+            "description": t.config.get("description", ""),
+            "summary": t.summary,
+            "yearly_series": t.yearly_series,
+            "flags": t.flags,
+            "meta": t.config.get("meta", {}),
+        }
+        for t in twins
+    ]
+    candidates = [t for t in twin_dicts if t["code"] != "0"] or twin_dicts
+    best = max(candidates, key=lambda t: t["summary"].get("year_10", {}).get("net_worth_real", 0))
+    others = [t for t in candidates if t is not best]
+
+    rec = await narrator.recommend(best, others, bool(sim.robust))
+
+    stored = await session.get(Recommendation, sim.id)
+    if stored is None:
+        stored = Recommendation(
+            simulation_id=sim.id,
+            best_twin=best["code"],
+            first_step=rec["first_step"],
+            rationale=rec["rationale"],
+            score_breakdown={"best": best["code"]},
+            source=rec["source"],
+        )
+        session.add(stored)
+    else:
+        stored.best_twin = best["code"]
+        stored.first_step = rec["first_step"]
+        stored.rationale = rec["rationale"]
+        stored.source = rec["source"]
+    await session.commit()
+
+    return {
+        "simulation_id": str(sim.id),
+        "best_twin": best["code"],
+        "best_label": best["label"],
+        "first_step": rec["first_step"],
+        "rationale": rec["rationale"],
+        "score_breakdown": {"best": best["code"], "score": best["summary"].get("year_10", {})},
+        "source": rec["source"],
+    }
