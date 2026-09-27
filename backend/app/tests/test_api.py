@@ -88,7 +88,44 @@ async def test_templates(client: AsyncClient):
     r = await client.get("/api/v1/templates")
     assert r.status_code == 200
     types = {t["type"] for t in r.json()["templates"]}
-    assert types == {"loan_vs_save", "study_vs_work", "emergency_vs_invest"}
+    assert types == {"loan_vs_save", "study_vs_work", "emergency_vs_invest", "kpr_vs_rent"}
+
+
+async def test_simulation_kpr_vs_rent(client: AsyncClient):
+    payload = {
+        "profile": {
+            "age": 28,
+            "income_type": "salary",
+            "income_monthly": 15_000_000,
+            "expense_monthly": 6_000_000,
+            "dependents_monthly": 1_000_000,
+            "savings": 150_000_000,
+        },
+        "decisions": [
+            {
+                "type": "kpr_vs_rent",
+                "kpr": {
+                    "property_price": 500_000_000,
+                    "down_payment_pct": 0.20,
+                    "interest_rate_annual": 0.08,
+                    "tenor_years": 15,
+                    "property_appreciation_annual": 0.04,
+                },
+                "rent": {
+                    "rent_monthly": 2_500_000,
+                    "invest_instrument": "bond",
+                },
+            }
+        ],
+        "preset": "moderat",
+    }
+    r = await client.post("/api/v1/simulations", json=payload)
+    assert r.status_code == 201
+    data = r.json()
+    twin_codes = {t["code"] for t in data["twins"]}
+    assert "0" in twin_codes
+    assert "G" in twin_codes
+    assert "H" in twin_codes
 
 
 async def test_regulatory_check_above_cap(client: AsyncClient):
@@ -255,9 +292,7 @@ async def test_manual_assumption_override(client: AsyncClient):
 
 async def test_recompute_does_not_break_best_twin(client: AsyncClient):
     created = (await client.post("/api/v1/simulations", json=SAMPLE)).json()
-    rc = await client.post(
-        f"/api/v1/simulations/{created['id']}/recompute", json={"preset": "konservatif"}
-    )
+    rc = await client.post(f"/api/v1/simulations/{created['id']}/recompute", json={"preset": "konservatif"})
     assert rc.status_code == 200
     assert rc.json()["preset"] == "konservatif"
     assert rc.json()["best_twin"] != "0"

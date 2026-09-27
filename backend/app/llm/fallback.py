@@ -72,6 +72,14 @@ def recommendation_fallback(best: dict, others: list[dict], robust: bool) -> dic
         first_step = "Tulis rencana 12 bulan: daftar kursus atau kampus, biaya, dan target penghasilan."
     elif best.get("code") in ("E", "F"):
         first_step = "Hitung pengeluaran bulanan, lalu isi dana darurat sampai target beberapa bulan."
+    elif best.get("code") == "G":
+        first_step = (
+            "Kunci tabungan DP di instrumen berisiko rendah dan pastikan cicilan KPR di bawah 30% gaji."
+        )
+    elif best.get("code") == "H":
+        first_step = (
+            "Siapkan rekening autodebet investasi bulanan untuk menyalurkan selisih biaya sewa vs cicilan."
+        )
 
     alasan = (
         f"{label} menghasilkan nilai riil tahun ke-10 sekitar {rp_brief(nw10)} "

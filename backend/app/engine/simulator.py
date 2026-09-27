@@ -88,6 +88,8 @@ def simulate(
     r_cash = monthly_rate(rates.get("savings", 0.01))
 
     cash = profile.savings
+    if cfg.initial_dp > 0:
+        cash = max(0.0, cash - cfg.initial_dp)
     invest = 0.0
 
     # utang berjalan pengguna (di semua twin, ceteris paribus)
@@ -127,7 +129,8 @@ def simulate(
             use_min=use_min_income,
         )
 
-        extra_cost = cfg.study_cost + cfg.upskill_monthly
+        rent_cost = (cfg.rent_monthly * (1 + infl) ** m) if cfg.rent_monthly > 0 else 0.0
+        extra_cost = cfg.study_cost + cfg.upskill_monthly + rent_cost
         if shock is not None and shock.start_month <= m < shock.start_month + max(shock.duration_months, 1):
             income *= shock.income_multiplier
             extra_cost += shock.extra_cost
@@ -181,8 +184,15 @@ def simulate(
         invest *= 1 + r_inv
         cash *= 1 + r_cash
 
+        property_val = (
+            cfg.property_initial_value * (1 + cfg.property_appreciation_annual / 12) ** m
+            if cfg.property_initial_value > 0
+            else 0.0
+        )
+
         debt_balance = sum(ls.balance for ls in loans if not ls.closed)
-        net_worth = cash + invest - debt_balance
+        total_invest = max(invest, 0.0) + property_val
+        net_worth = cash + total_invest - debt_balance
         real = net_worth / (1 + assumptions.get("inflation", 0.03)) ** (m / 12.0)
 
         monthly_debt_payment = sum(ls.loan.scheduled_payment for ls in loans if not ls.closed)
@@ -196,7 +206,7 @@ def simulate(
             living=living,
             paid_debt=paid_total,
             cash=max(cash, 0.0),
-            invest=max(invest, 0.0),
+            invest=total_invest,
             debt=debt_balance,
             net_worth=net_worth,
             net_worth_real=real,

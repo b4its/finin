@@ -70,6 +70,30 @@ def regulatory_flags_for_input(profile: Profile, decisions: list[Decision], rule
                     ruleset=ruleset,
                 )
             )
+        if dec.type == "kpr_vs_rent" and dec.kpr is not None:
+            from app.engine.loans import Loan
+
+            dp = dec.kpr.property_price * dec.kpr.down_payment_pct
+            principal = dec.kpr.property_price - dp
+            kpr_l = Loan(
+                kind="kpr",
+                principal=principal,
+                tenor_months=dec.kpr.tenor_years * 12,
+                annual_rate=dec.kpr.interest_rate_annual,
+                ruleset=ruleset,
+            )
+            if profile.income_monthly > 0:
+                tot = kpr_l.scheduled_payment + profile.existing_debt.monthly_payment
+                dsr = tot / profile.income_monthly
+                if dsr > ruleset.get("dsr_cap", 0.30):
+                    flags.append(
+                        Flag(
+                            "orange",
+                            "DSR_OVER_30",
+                            f"Cicilan KPR Rp{tot:,.0f}/bulan ≈ {dsr:.0%} penghasilan, "
+                            f"melebihi batas kemampuan bayar OJK {ruleset.get('dsr_cap', 0.30):.0%}.",
+                        )
+                    )
     # DSR utang berjalan
     if profile.income_monthly > 0 and profile.existing_debt.monthly_payment > 0:
         f = check_dsr(profile.existing_debt.monthly_payment, profile.income_monthly, ruleset)

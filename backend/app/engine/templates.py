@@ -22,6 +22,8 @@ TWIN_STYLE = {
     "D": {"color": "#FBBF24", "dash": "longdash", "icon": "briefcase"},
     "E": {"color": "#22D3EE", "dash": "solid", "icon": "shield"},
     "F": {"color": "#C084FC", "dash": "dashed", "icon": "trending-up"},
+    "G": {"color": "#10B981", "dash": "solid", "icon": "home"},
+    "H": {"color": "#EC4899", "dash": "dashed", "icon": "key"},
 }
 
 STYLE_FALLBACK = {"color": "#94A3B8", "dash": "solid", "icon": "circle"}
@@ -57,6 +59,11 @@ class TwinConfig:
     study_cost: float = 0.0
     # biaya kursus bulanan
     upskill_monthly: float = 0.0
+    # properti & KPR vs sewa
+    property_initial_value: float = 0.0
+    property_appreciation_annual: float = 0.0
+    initial_dp: float = 0.0
+    rent_monthly: float = 0.0
     meta: dict[str, Any] = field(default_factory=dict)
 
 
@@ -191,30 +198,87 @@ def twins_for_decision(
         )
         return [twin_c, twin_d]
 
-    # emergency_vs_invest
-    assert dec.emergency is not None
-    e_style = _style("E")
-    f_style = _style("F")
-    twin_e = TwinConfig(
-        code="E",
-        label="Si Siaga",
-        description=f"Mengumpulkan dana darurat {dec.emergency.target_months} bulan pengeluaran dulu sebelum investasi.",
-        emergency_first=True,
-        emergency_target_months=dec.emergency.target_months,
-        monthly_invest=dec.emergency.invest_monthly,
-        meta={"target_months": dec.emergency.target_months},
-        **e_style,
+    if dec.type == "emergency_vs_invest":
+        assert dec.emergency is not None
+        e_style = _style("E")
+        f_style = _style("F")
+        twin_e = TwinConfig(
+            code="E",
+            label="Si Siaga",
+            description=f"Mengumpulkan dana darurat {dec.emergency.target_months} bulan pengeluaran dulu sebelum investasi.",
+            emergency_first=True,
+            emergency_target_months=dec.emergency.target_months,
+            monthly_invest=dec.emergency.invest_monthly,
+            meta={"target_months": dec.emergency.target_months},
+            **e_style,
+        )
+        twin_f = TwinConfig(
+            code="F",
+            label="Si Agresif",
+            description=f"Langsung investasi Rp{dec.emergency.invest_monthly:,.0f}/bulan tanpa membangun dana darurat.",
+            emergency_first=False,
+            monthly_invest=dec.emergency.invest_monthly,
+            meta={"invest_monthly": dec.emergency.invest_monthly},
+            **f_style,
+        )
+        return [twin_e, twin_f]
+
+    # kpr_vs_rent
+    assert dec.kpr is not None and dec.rent is not None
+    g_style = _style("G")
+    h_style = _style("H")
+
+    dp_amount = dec.kpr.property_price * dec.kpr.down_payment_pct
+    loan_principal = dec.kpr.property_price - dp_amount
+    tenor_months = dec.kpr.tenor_years * 12
+    kpr_loan = Loan(
+        kind="kpr",
+        principal=loan_principal,
+        tenor_months=tenor_months,
+        annual_rate=dec.kpr.interest_rate_annual,
+        ruleset=ruleset,
     )
-    twin_f = TwinConfig(
-        code="F",
-        label="Si Agresif",
-        description=f"Langsung investasi Rp{dec.emergency.invest_monthly:,.0f}/bulan tanpa membangun dana darurat.",
-        emergency_first=False,
-        monthly_invest=dec.emergency.invest_monthly,
-        meta={"invest_monthly": dec.emergency.invest_monthly},
-        **f_style,
+
+    twin_g = TwinConfig(
+        code="G",
+        label="Si Pemilik Rumah",
+        description=(
+            f"Membeli rumah Rp{dec.kpr.property_price:,.0f} (DP {dec.kpr.down_payment_pct:.0%}, "
+            f"KPR {dec.kpr.tenor_years} th bunga {dec.kpr.interest_rate_annual:.1%}/th)."
+        ),
+        loan=kpr_loan,
+        property_initial_value=dec.kpr.property_price,
+        property_appreciation_annual=dec.kpr.property_appreciation_annual,
+        initial_dp=dp_amount,
+        monthly_invest=0.0,
+        meta={
+            "property_price": dec.kpr.property_price,
+            "dp_amount": dp_amount,
+            "tenor_years": dec.kpr.tenor_years,
+            "interest_rate": dec.kpr.interest_rate_annual,
+        },
+        **g_style,
     )
-    return [twin_e, twin_f]
+
+    invest_diff = max(0.0, kpr_loan.scheduled_payment - dec.rent.rent_monthly)
+    twin_h = TwinConfig(
+        code="H",
+        label="Si Pengontrak & Investor",
+        description=(
+            f"Sewa rumah Rp{dec.rent.rent_monthly:,.0f}/bulan, menahan DP, dan investasi "
+            f"selisih cicilan Rp{invest_diff:,.0f}/bulan ke {dec.rent.invest_instrument}."
+        ),
+        rent_monthly=dec.rent.rent_monthly,
+        monthly_invest=invest_diff,
+        instrument=dec.rent.invest_instrument,
+        meta={
+            "rent_monthly": dec.rent.rent_monthly,
+            "monthly_invest": invest_diff,
+            "instrument": dec.rent.invest_instrument,
+        },
+        **h_style,
+    )
+    return [twin_g, twin_h]
 
 
 def build_twins(
@@ -287,6 +351,36 @@ def decision_templates() -> list[dict]:
                     "max": 6,
                 },
                 {"key": "emergency.invest_monthly", "label": "Investasi/bulan", "type": "currency"},
+            ],
+        },
+        {
+            "type": "kpr_vs_rent",
+            "title": "Beli Rumah KPR vs Sewa & Investasi",
+            "twin_a": {"code": "G", "label": "Si Pemilik Rumah", **_style("G")},
+            "twin_b": {"code": "H", "label": "Si Pengontrak & Investor", **_style("H")},
+            "fields": [
+                {"key": "kpr.property_price", "label": "Harga properti", "type": "currency"},
+                {
+                    "key": "kpr.down_payment_pct",
+                    "label": "Uang muka (DP)",
+                    "type": "percent",
+                    "min": 0.05,
+                    "max": 0.50,
+                },
+                {
+                    "key": "kpr.interest_rate_annual",
+                    "label": "Suku bunga KPR/tahun",
+                    "type": "percent",
+                    "min": 0.03,
+                    "max": 0.15,
+                },
+                {"key": "kpr.tenor_years", "label": "Tenor KPR (tahun)", "type": "int", "min": 5, "max": 30},
+                {"key": "rent.rent_monthly", "label": "Biaya sewa/bulan", "type": "currency"},
+                {
+                    "key": "rent.invest_instrument",
+                    "label": "Instrumen investasi selisih",
+                    "type": "instrument",
+                },
             ],
         },
     ]

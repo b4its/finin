@@ -302,3 +302,53 @@ def test_variable_income_uses_min_for_stress(assumptions):
     ip = IncomeProfile("variable", 5_500_000, 4_000_000, 7_000_000)
     assert ip.base == 5_500_000
     assert ip.base_min == 4_000_000
+
+
+def test_kpr_vs_rent_twins():
+    from app.engine.regulatory import ruleset_from_assumptions
+    from app.engine.simulator import simulate
+    from app.engine.templates import twins_for_decision
+    from app.schemas.input import Decision, KprDecision, Profile, RentDecision
+
+    prof = Profile(
+        age=30,
+        income_type="salary",
+        income_monthly=15_000_000,
+        expense_monthly=5_000_000,
+        dependents_monthly=1_000_000,
+        savings=120_000_000,
+    )
+    ip = IncomeProfile("salary", 15_000_000)
+    rs = ruleset_from_assumptions(None)
+    dec = Decision(
+        type="kpr_vs_rent",
+        kpr=KprDecision(
+            property_price=400_000_000,
+            down_payment_pct=0.20,
+            interest_rate_annual=0.08,
+            tenor_years=15,
+            property_appreciation_annual=0.04,
+        ),
+        rent=RentDecision(
+            rent_monthly=2_000_000,
+            invest_instrument="bond",
+        ),
+    )
+    twins = twins_for_decision(dec, prof, ip, rs, 0.05, {})
+    assert len(twins) == 2
+    g, h = twins[0], twins[1]
+    assert g.code == "G"
+    assert g.initial_dp == 80_000_000
+    assert g.property_initial_value == 400_000_000
+    assert g.loan is not None
+    assert g.loan.principal == 320_000_000
+
+    assert h.code == "H"
+    assert h.rent_monthly == 2_000_000
+    assert h.monthly_invest > 0
+
+    res_g = simulate(g, prof, ip, {"inflation": 0.03, "returns": {"bond": 0.068}}, rs, months=120)
+    res_h = simulate(h, prof, ip, {"inflation": 0.03, "returns": {"bond": 0.068}}, rs, months=120)
+
+    assert res_g.at_year(10).net_worth > 0
+    assert res_h.at_year(10).net_worth > 0
