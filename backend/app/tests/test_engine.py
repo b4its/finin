@@ -739,4 +739,59 @@ def test_rental_property_vs_dividend(assumptions):
     assert res_v.at_year(20).net_worth > 0
 
 
+def test_electric_vehicle_vs_ice(assumptions):
+    from app.engine.regulatory import ruleset_from_assumptions
+    from app.schemas.input import EvVehicleDecision, IceVehicleDecision
+
+    prof = Profile(
+        age=26,
+        income_type="salary",
+        income_monthly=12_000_000,
+        expense_monthly=5_000_000,
+        dependents_monthly=0,
+        savings=40_000_000,
+        existing_debt=ExistingDebt(),
+    )
+    ip = IncomeProfile("salary", 12_000_000)
+    rs = ruleset_from_assumptions(None)
+    dec = Decision(
+        type="electric_vehicle_vs_ice",
+        ev_vehicle=EvVehicleDecision(
+            vehicle_price=28_000_000,
+            government_subsidy=7_000_000,
+            down_payment_pct=0.20,
+            loan_interest_rate_annual=0.09,
+            loan_tenor_months=36,
+            monthly_fuel_cost_savings=500_000,
+            annual_tax_pkb_savings=400_000,
+        ),
+        ice_vehicle=IceVehicleDecision(
+            vehicle_price=22_000_000,
+            down_payment_pct=0.20,
+            loan_interest_rate_annual=0.09,
+            loan_tenor_months=36,
+            invest_instrument="bond",
+        ),
+    )
+    twins = twins_for_decision(dec, prof, ip, rs, 0.05, {})
+    assert len(twins) == 2
+    twin_w, twin_x = twins[0], twins[1]
+    assert twin_w.code == "W"
+    assert twin_w.initial_dp == pytest.approx((28_000_000 - 7_000_000) * 0.20)
+    assert twin_w.loan is not None
+    assert twin_w.business_profit_monthly > 500_000  # includes PKB savings
+
+    assert twin_x.code == "X"
+    assert twin_x.initial_dp == pytest.approx(22_000_000 * 0.20)
+    assert twin_x.loan is not None
+
+    res_w = simulate(twin_w, prof, ip, {"inflation": 0.03, "returns": {"bond": 0.068}}, rs, months=120)
+    res_x = simulate(twin_x, prof, ip, {"inflation": 0.03, "returns": {"bond": 0.068}}, rs, months=120)
+
+    assert res_w.at_year(5).net_worth > 0
+    assert res_x.at_year(5).net_worth > 0
+    assert res_w.at_year(10).net_worth > 0
+    assert res_x.at_year(10).net_worth > 0
+
+
 

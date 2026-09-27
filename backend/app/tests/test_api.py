@@ -100,6 +100,7 @@ async def test_templates(client: AsyncClient):
         "haji_furoda_vs_reguler",
         "career_corporate_vs_freelance",
         "rental_property_vs_dividend",
+        "electric_vehicle_vs_ice",
     }
 
 
@@ -696,6 +697,50 @@ async def test_api_rental_property_vs_dividend(client: AsyncClient):
     assert "0" in codes
     assert "U" in codes
     assert "V" in codes
+
+
+async def test_api_electric_vehicle_vs_ice(client: AsyncClient):
+    payload = {
+        "profile": {
+            "age": 26,
+            "income_type": "salary",
+            "income_monthly": 12_000_000,
+            "expense_monthly": 5_000_000,
+            "dependents_monthly": 0,
+            "savings": 40_000_000,
+            "existing_debt": {"principal": 0, "monthly_payment": 0},
+        },
+        "decisions": [
+            {
+                "type": "electric_vehicle_vs_ice",
+                "ev_vehicle": {
+                    "vehicle_price": 28_000_000,
+                    "government_subsidy": 7_000_000,
+                    "down_payment_pct": 0.20,
+                    "loan_interest_rate_annual": 0.09,
+                    "loan_tenor_months": 36,
+                    "monthly_fuel_cost_savings": 500_000,
+                    "annual_tax_pkb_savings": 400_000,
+                },
+                "ice_vehicle": {
+                    "vehicle_price": 22_000_000,
+                    "down_payment_pct": 0.20,
+                    "loan_interest_rate_annual": 0.09,
+                    "loan_tenor_months": 36,
+                    "invest_instrument": "bond",
+                },
+            }
+        ],
+        "preset": "moderat",
+    }
+    r = await client.post("/api/v1/simulations", json=payload)
+    assert r.status_code == 201
+    body = r.json()
+    codes = [t["code"] for t in body["twins"]]
+    assert "0" in codes
+    assert "W" in codes
+    assert "X" in codes
+
 
 
 

@@ -183,6 +183,24 @@ class DividendInvestDecision(BaseModel):
     invest_instrument: Instrument = "stock"
 
 
+class EvVehicleDecision(BaseModel):
+    vehicle_price: float = Field(..., ge=15_000_000)
+    government_subsidy: float = Field(7_000_000, ge=0)
+    down_payment_pct: float = Field(0.20, ge=0.05, le=0.50)
+    loan_interest_rate_annual: float = Field(0.09, ge=0.01, le=0.25)
+    loan_tenor_months: int = Field(36, ge=12, le=60)
+    monthly_fuel_cost_savings: float = Field(500_000, ge=50_000)
+    annual_tax_pkb_savings: float = Field(500_000, ge=0)
+
+
+class IceVehicleDecision(BaseModel):
+    vehicle_price: float = Field(..., ge=10_000_000)
+    down_payment_pct: float = Field(0.20, ge=0.05, le=0.50)
+    loan_interest_rate_annual: float = Field(0.09, ge=0.01, le=0.25)
+    loan_tenor_months: int = Field(36, ge=12, le=60)
+    invest_instrument: Instrument = "bond"
+
+
 class Decision(BaseModel):
     type: Literal[
         "loan_vs_save",
@@ -196,6 +214,7 @@ class Decision(BaseModel):
         "haji_furoda_vs_reguler",
         "career_corporate_vs_freelance",
         "rental_property_vs_dividend",
+        "electric_vehicle_vs_ice",
     ]
     loan: LoanDecision | None = None
     save: SaveDecision | None = None
@@ -218,6 +237,8 @@ class Decision(BaseModel):
     career_freelance: CareerFreelanceDecision | None = None
     rental_property: RentalPropertyDecision | None = None
     dividend_invest: DividendInvestDecision | None = None
+    ev_vehicle: EvVehicleDecision | None = None
+    ice_vehicle: IceVehicleDecision | None = None
 
     @model_validator(mode="after")
     def _require_payload(self) -> Decision:
@@ -260,6 +281,12 @@ class Decision(BaseModel):
         ):
             raise ValueError(
                 "rental_property_vs_dividend butuh 'rental_property' dan 'dividend_invest'"
+            )
+        if self.type == "electric_vehicle_vs_ice" and (
+            self.ev_vehicle is None or self.ice_vehicle is None
+        ):
+            raise ValueError(
+                "electric_vehicle_vs_ice butuh 'ev_vehicle' dan 'ice_vehicle'"
             )
         return self
 

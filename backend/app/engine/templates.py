@@ -38,6 +38,8 @@ TWIN_STYLE = {
     "T": {"color": "#F59E0B", "dash": "dashed", "icon": "laptop"},
     "U": {"color": "#8B5CF6", "dash": "solid", "icon": "building-2"},
     "V": {"color": "#10B981", "dash": "dashed", "icon": "chart-line"},
+    "W": {"color": "#06B6D4", "dash": "solid", "icon": "zap"},
+    "X": {"color": "#F97316", "dash": "dashed", "icon": "fuel"},
 }
 
 STYLE_FALLBACK = {"color": "#94A3B8", "dash": "solid", "icon": "circle"}
@@ -734,6 +736,98 @@ def twins_for_decision(
         )
         return [twin_u, twin_v]
 
+    if (
+        dec.type == "electric_vehicle_vs_ice"
+        and dec.ev_vehicle
+        and dec.ice_vehicle
+    ):
+        w_style = _style("W")
+        x_style = _style("X")
+
+        # Twin W: EV (Kendaraan Listrik dengan Subsidi Insentif Pemerintah)
+        ev_eff_price = max(0.0, dec.ev_vehicle.vehicle_price - dec.ev_vehicle.government_subsidy)
+        ev_dp = ev_eff_price * dec.ev_vehicle.down_payment_pct
+        ev_principal = ev_eff_price - ev_dp
+        ev_loan = (
+            Loan(
+                kind="annuity",
+                principal=ev_principal,
+                tenor_months=dec.ev_vehicle.loan_tenor_months,
+                annual_rate=dec.ev_vehicle.loan_interest_rate_annual,
+                ruleset=ruleset,
+            )
+            if ev_principal > 0
+            else None
+        )
+
+        monthly_pkb_saved = dec.ev_vehicle.annual_tax_pkb_savings / 12.0
+        total_monthly_op_savings = dec.ev_vehicle.monthly_fuel_cost_savings + monthly_pkb_saved
+
+        twin_w = TwinConfig(
+            code="W",
+            label="Si Pengadopsi Kendaraan Listrik (EV)",
+            description=(
+                f"Beli kendaraan listrik EV Rp{dec.ev_vehicle.vehicle_price:,.0f} "
+                f"(subsidi insentif Rp{dec.ev_vehicle.government_subsidy:,.0f}, DP Rp{ev_dp:,.0f}), "
+                f"efisiensi biaya operasional & PKB 0% hemat Rp{total_monthly_op_savings:,.0f}/bln."
+            ),
+            loan=ev_loan,
+            vehicle_initial_value=ev_eff_price,
+            vehicle_depreciation_annual=0.12,
+            initial_dp=ev_dp,
+            business_profit_monthly=total_monthly_op_savings,
+            monthly_invest=0.0,
+            meta={
+                "vehicle_price": dec.ev_vehicle.vehicle_price,
+                "subsidy": dec.ev_vehicle.government_subsidy,
+                "effective_price": ev_eff_price,
+                "monthly_savings": total_monthly_op_savings,
+            },
+            **w_style,
+        )
+
+        # Twin X: ICE (Kendaraan Bensin Konvensional)
+        ice_dp = dec.ice_vehicle.vehicle_price * dec.ice_vehicle.down_payment_pct
+        ice_principal = dec.ice_vehicle.vehicle_price - ice_dp
+        ice_loan = (
+            Loan(
+                kind="annuity",
+                principal=ice_principal,
+                tenor_months=dec.ice_vehicle.loan_tenor_months,
+                annual_rate=dec.ice_vehicle.loan_interest_rate_annual,
+                ruleset=ruleset,
+            )
+            if ice_principal > 0
+            else None
+        )
+
+        ev_pay = ev_loan.scheduled_payment if ev_loan else 0.0
+        ice_pay = ice_loan.scheduled_payment if ice_loan else 0.0
+        invest_diff = max(0.0, ev_pay - ice_pay)
+
+        twin_x = TwinConfig(
+            code="X",
+            label="Si Pengendara Bensin Konvensional (ICE)",
+            description=(
+                f"Beli kendaraan bensin ICE Rp{dec.ice_vehicle.vehicle_price:,.0f} (DP Rp{ice_dp:,.0f}), "
+                f"biaya operasional bensin normal, alokasikan selisih dana Rp{invest_diff:,.0f}/bln "
+                f"ke {dec.ice_vehicle.invest_instrument}."
+            ),
+            loan=ice_loan,
+            vehicle_initial_value=dec.ice_vehicle.vehicle_price,
+            vehicle_depreciation_annual=0.10,
+            initial_dp=ice_dp,
+            monthly_invest=invest_diff,
+            instrument=dec.ice_vehicle.invest_instrument,
+            meta={
+                "vehicle_price": dec.ice_vehicle.vehicle_price,
+                "monthly_invest": invest_diff,
+                "instrument": dec.ice_vehicle.invest_instrument,
+            },
+            **x_style,
+        )
+        return [twin_w, twin_x]
+
     return []
 
 
@@ -1113,6 +1207,46 @@ def decision_templates() -> list[dict]:
                 {
                     "key": "dividend_invest.invest_instrument",
                     "label": "Instrumen investasi dividen pembanding",
+                    "type": "instrument",
+                },
+            ],
+        },
+        {
+            "type": "electric_vehicle_vs_ice",
+            "title": "Kendaraan Listrik (EV Subsidi OJK/Kemenperin) vs Bensin Konvensional (ICE)",
+            "twin_a": {"code": "W", "label": "Si Pengadopsi Kendaraan Listrik (EV)", **_style("W")},
+            "twin_b": {"code": "X", "label": "Si Pengendara Bensin Konvensional (ICE)", **_style("X")},
+            "fields": [
+                {
+                    "key": "ev_vehicle.vehicle_price",
+                    "label": "Harga kendaraan listrik (EV)",
+                    "type": "currency",
+                },
+                {
+                    "key": "ev_vehicle.government_subsidy",
+                    "label": "Subsidi/insentif PPN DTP pemerintah",
+                    "type": "currency",
+                },
+                {
+                    "key": "ev_vehicle.down_payment_pct",
+                    "label": "Uang muka (DP EV)",
+                    "type": "percent",
+                    "min": 0.05,
+                    "max": 0.50,
+                },
+                {
+                    "key": "ev_vehicle.monthly_fuel_cost_savings",
+                    "label": "Penghematan biaya energi (PLN vs BBM)/bulan",
+                    "type": "currency",
+                },
+                {
+                    "key": "ice_vehicle.vehicle_price",
+                    "label": "Harga beli kendaraan bensin pembanding",
+                    "type": "currency",
+                },
+                {
+                    "key": "ice_vehicle.invest_instrument",
+                    "label": "Instrumen investasi selisih cicilan",
                     "type": "instrument",
                 },
             ],
