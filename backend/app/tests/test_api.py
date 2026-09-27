@@ -101,6 +101,7 @@ async def test_templates(client: AsyncClient):
         "career_corporate_vs_freelance",
         "rental_property_vs_dividend",
         "electric_vehicle_vs_ice",
+        "health_bpjs_vs_private",
     }
 
 
@@ -740,6 +741,59 @@ async def test_api_electric_vehicle_vs_ice(client: AsyncClient):
     assert "0" in codes
     assert "W" in codes
     assert "X" in codes
+
+
+@pytest.mark.asyncio
+async def test_api_health_bpjs_vs_private_and_monte_carlo(client):
+    payload = {
+        "profile": {
+            "age": 29,
+            "income_type": "salary",
+            "income_monthly": 15_000_000,
+            "expense_monthly": 7_000_000,
+            "dependents_monthly": 1_500_000,
+            "savings": 50_000_000,
+            "existing_debt": {"principal": 0, "monthly_payment": 0},
+        },
+        "decisions": [
+            {
+                "type": "health_bpjs_vs_private",
+                "health_bpjs": {
+                    "class_level": 1,
+                    "monthly_premium": 150_000,
+                    "invest_instrument": "bond",
+                },
+                "health_private": {
+                    "monthly_premium": 1_500_000,
+                    "annual_limit": 2_000_000_000,
+                    "coverage_ratio_catastrophic": 0.95,
+                },
+            }
+        ],
+        "preset": "moderat",
+    }
+    r = await client.post("/api/v1/simulations", json=payload)
+    assert r.status_code == 201
+    body = r.json()
+    sim_id = body["id"]
+    codes = [t["code"] for t in body["twins"]]
+    assert "0" in codes
+    assert "Y" in codes
+    assert "Z" in codes
+
+    # Test Monte Carlo endpoint
+    mc_r = await client.get(f"/api/v1/simulations/{sim_id}/monte-carlo?twin_code=Y&runs=100")
+    assert mc_r.status_code == 200
+    mc_body = mc_r.json()
+    assert mc_body["twin_code"] == "Y"
+    assert mc_body["runs"] == 100
+    assert len(mc_body["yearly_percentiles"]) == 21
+    assert "metrics" in mc_body
+    assert "var_95_nominal_y10" in mc_body["metrics"]
+
+    # Test 404 for invalid twin code
+    bad_r = await client.get(f"/api/v1/simulations/{sim_id}/monte-carlo?twin_code=INVALID")
+    assert bad_r.status_code == 404
 
 
 

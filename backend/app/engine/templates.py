@@ -40,6 +40,8 @@ TWIN_STYLE = {
     "V": {"color": "#10B981", "dash": "dashed", "icon": "chart-line"},
     "W": {"color": "#06B6D4", "dash": "solid", "icon": "zap"},
     "X": {"color": "#F97316", "dash": "dashed", "icon": "fuel"},
+    "Y": {"color": "#14B8A6", "dash": "solid", "icon": "shield-check"},
+    "Z": {"color": "#6366F1", "dash": "dashed", "icon": "heart-pulse"},
 }
 
 STYLE_FALLBACK = {"color": "#94A3B8", "dash": "solid", "icon": "circle"}
@@ -91,6 +93,8 @@ class TwinConfig:
     unitlink_acq_y1: float = 0.60
     unitlink_acq_y2: float = 0.30
     unitlink_acq_y3: float = 0.15
+    # proteksi kesehatan: porsi biaya guncangan medis darurat yang ditanggung asuransi
+    health_emergency_coverage_pct: float = 0.0
     meta: dict[str, Any] = field(default_factory=dict)
 
 
@@ -828,6 +832,56 @@ def twins_for_decision(
         )
         return [twin_w, twin_x]
 
+    if (
+        dec.type == "health_bpjs_vs_private"
+        and dec.health_bpjs
+        and dec.health_private
+    ):
+        y_style = _style("Y")
+        z_style = _style("Z")
+
+        bpjs_prem = dec.health_bpjs.monthly_premium
+        pvt_prem = dec.health_private.monthly_premium
+        invest_diff = max(0.0, pvt_prem - bpjs_prem)
+
+        twin_y = TwinConfig(
+            code="Y",
+            label="Si Peserta BPJS Terpadu & Dana Darurat",
+            description=(
+                f"Mengandalkan BPJS Kesehatan KRIS (iuran Rp{bpjs_prem:,.0f}/bln), "
+                f"mengalokasikan selisih premi Rp{invest_diff:,.0f}/bln ke {dec.health_bpjs.invest_instrument}."
+            ),
+            insurance_monthly=bpjs_prem,
+            monthly_invest=invest_diff,
+            instrument=dec.health_bpjs.invest_instrument,
+            health_emergency_coverage_pct=0.0,
+            meta={
+                "bpjs_monthly_premium": bpjs_prem,
+                "invest_diff": invest_diff,
+                "instrument": dec.health_bpjs.invest_instrument,
+            },
+            **y_style,
+        )
+
+        twin_z = TwinConfig(
+            code="Z",
+            label="Si Pemilik Asuransi Swasta Murni (Cashless VIP)",
+            description=(
+                f"Proteksi asuransi swasta murni Rp{pvt_prem:,.0f}/bln "
+                f"(limit Rp{dec.health_private.annual_limit:,.0f}/thn, proteksi syok medis darurat {dec.health_private.coverage_ratio_catastrophic:.0%})."
+            ),
+            insurance_monthly=pvt_prem,
+            monthly_invest=0.0,
+            health_emergency_coverage_pct=dec.health_private.coverage_ratio_catastrophic,
+            meta={
+                "private_monthly_premium": pvt_prem,
+                "annual_limit": dec.health_private.annual_limit,
+                "coverage_pct": dec.health_private.coverage_ratio_catastrophic,
+            },
+            **z_style,
+        )
+        return [twin_y, twin_z]
+
     return []
 
 
@@ -1248,6 +1302,41 @@ def decision_templates() -> list[dict]:
                     "key": "ice_vehicle.invest_instrument",
                     "label": "Instrumen investasi selisih cicilan",
                     "type": "instrument",
+                },
+            ],
+        },
+        {
+            "type": "health_bpjs_vs_private",
+            "title": "BPJS Kesehatan Terpadu (KRIS) vs Asuransi Kesehatan Swasta Murni (Cashless VIP)",
+            "twin_a": {"code": "Y", "label": "Si Peserta BPJS Terpadu & Dana Darurat", **_style("Y")},
+            "twin_b": {"code": "Z", "label": "Si Pemilik Asuransi Swasta Murni (Cashless VIP)", **_style("Z")},
+            "fields": [
+                {
+                    "key": "health_bpjs.monthly_premium",
+                    "label": "Iuran bulanan BPJS Kesehatan (PPU/Mandiri)",
+                    "type": "currency",
+                },
+                {
+                    "key": "health_bpjs.invest_instrument",
+                    "label": "Instrumen investasi selisih premi",
+                    "type": "instrument",
+                },
+                {
+                    "key": "health_private.monthly_premium",
+                    "label": "Premi bulanan asuransi swasta murni",
+                    "type": "currency",
+                },
+                {
+                    "key": "health_private.annual_limit",
+                    "label": "Limit tahunan klaim medis (on-bill)",
+                    "type": "currency",
+                },
+                {
+                    "key": "health_private.coverage_ratio_catastrophic",
+                    "label": "Tingkat perlindungan syok medis darurat",
+                    "type": "percent",
+                    "min": 0.50,
+                    "max": 1.00,
                 },
             ],
         },

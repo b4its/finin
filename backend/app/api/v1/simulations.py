@@ -384,3 +384,41 @@ async def export_simulation_json(sim_id: str, session: AsyncSession = Depends(ge
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
+
+@router.get("/{sim_id}/monte-carlo")
+async def get_simulation_monte_carlo(
+    sim_id: str,
+    twin_code: str = "0",
+    runs: int = 500,
+    preset: str | None = None,
+    session: AsyncSession = Depends(get_session),
+) -> dict:
+    """Simulasi stokastik Monte Carlo (P1 PRD §6) untuk mengevaluasi pita probabilitas (P10-P90)."""
+    from app.engine.monte_carlo import run_monte_carlo
+    from app.engine.runner import income_profile_from
+
+    sim = await _load_simulation(session, sim_id)
+    req = SimulationRequest.model_validate(sim.input)
+    a = load_assumptions(sim.assumption_code)
+    full = run_full_simulation(req, a)
+
+    target_twin = next((t for t in full.twins if t.cfg.code == twin_code), None)
+    if target_twin is None:
+        raise HTTPException(status_code=404, detail=f"Twin dengan kode '{twin_code}' tidak ditemukan")
+
+    clamped_runs = max(50, min(runs, 1000))
+    preset_name = preset or full.preset
+    inc_profile = income_profile_from(req.profile)
+
+    mc_result = run_monte_carlo(
+        cfg=target_twin.cfg,
+        profile=req.profile,
+        income_profile=inc_profile,
+        assumptions=a,
+        ruleset=a.ruleset(),
+        preset_name=preset_name,
+        runs=clamped_runs,
+        horizon_months=req.horizon_months,
+    )
+    return mc_result.to_dict()
+

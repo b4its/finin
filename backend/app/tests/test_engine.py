@@ -20,6 +20,8 @@ from app.schemas.input import (
     SimulationRequest,
     StudyDecision,
     WorkDecision,
+    HealthBPJSDecision,
+    HealthPrivateDecision,
 )
 
 
@@ -792,6 +794,61 @@ def test_electric_vehicle_vs_ice(assumptions):
     assert res_x.at_year(5).net_worth > 0
     assert res_w.at_year(10).net_worth > 0
     assert res_x.at_year(10).net_worth > 0
+
+
+def test_health_bpjs_vs_private_template(assumptions):
+    prof = Profile(
+        age=28,
+        income_type="salary",
+        income_monthly=12_000_000,
+        expense_monthly=6_000_000,
+        dependents_monthly=1_000_000,
+        savings=30_000_000,
+        existing_debt=ExistingDebt(),
+    )
+    ip = IncomeProfile(income_type="salary", income_monthly=12_000_000)
+    rs = assumptions.ruleset()
+    dec = Decision(
+        type="health_bpjs_vs_private",
+        health_bpjs=HealthBPJSDecision(
+            class_level=1,
+            monthly_premium=150_000,
+            invest_instrument="bond",
+        ),
+        health_private=HealthPrivateDecision(
+            monthly_premium=1_500_000,
+            annual_limit=2_000_000_000,
+            coverage_ratio_catastrophic=0.95,
+        ),
+    )
+    twins = twins_for_decision(dec, prof, ip, rs, 0.05, {})
+    assert len(twins) == 2
+    twin_y, twin_z = twins[0], twins[1]
+    assert twin_y.code == "Y"
+    assert twin_y.insurance_monthly == 150_000
+    assert twin_y.monthly_invest == 1_350_000  # 1.5jt - 150rb selisih premi diinvestasikan
+    assert twin_y.health_emergency_coverage_pct == 0.0
+
+    assert twin_z.code == "Z"
+    assert twin_z.insurance_monthly == 1_500_000
+    assert twin_z.monthly_invest == 0.0
+    assert twin_z.health_emergency_coverage_pct == 0.95
+
+    # Test simulasi dengan shock biaya darurat
+    shock_medis = Shock(
+        code="emergency_cost_2x",
+        label="Biaya darurat",
+        start_month=24,
+        duration_months=1,
+        extra_cost=14_000_000,
+    )
+    res_y = simulate(twin_y, prof, ip, {"inflation": 0.03, "returns": {"bond": 0.068}}, rs, months=60, shock=shock_medis)
+    res_z = simulate(twin_z, prof, ip, {"inflation": 0.03, "returns": {"bond": 0.068}}, rs, months=60, shock=shock_medis)
+
+    # Twin Z menanggung biaya shock darurat yang 95% diserap asuransi
+    assert res_y.at_year(3).net_worth > 0
+    assert res_z.at_year(3).net_worth > 0
+
 
 
 

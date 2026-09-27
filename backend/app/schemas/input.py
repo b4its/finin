@@ -201,6 +201,18 @@ class IceVehicleDecision(BaseModel):
     invest_instrument: Instrument = "bond"
 
 
+class HealthBPJSDecision(BaseModel):
+    class_level: int = Field(1, ge=1, le=3)
+    monthly_premium: float = Field(150_000.0, ge=35_000, le=2_000_000)
+    invest_instrument: Instrument = "bond"
+
+
+class HealthPrivateDecision(BaseModel):
+    monthly_premium: float = Field(1_500_000.0, ge=200_000, le=15_000_000)
+    annual_limit: float = Field(2_000_000_000.0, ge=100_000_000)
+    coverage_ratio_catastrophic: float = Field(0.95, ge=0.50, le=1.00)
+
+
 class Decision(BaseModel):
     type: Literal[
         "loan_vs_save",
@@ -215,6 +227,7 @@ class Decision(BaseModel):
         "career_corporate_vs_freelance",
         "rental_property_vs_dividend",
         "electric_vehicle_vs_ice",
+        "health_bpjs_vs_private",
     ]
     loan: LoanDecision | None = None
     save: SaveDecision | None = None
@@ -239,6 +252,8 @@ class Decision(BaseModel):
     dividend_invest: DividendInvestDecision | None = None
     ev_vehicle: EvVehicleDecision | None = None
     ice_vehicle: IceVehicleDecision | None = None
+    health_bpjs: HealthBPJSDecision | None = None
+    health_private: HealthPrivateDecision | None = None
 
     @model_validator(mode="after")
     def _require_payload(self) -> Decision:
@@ -287,6 +302,12 @@ class Decision(BaseModel):
         ):
             raise ValueError(
                 "electric_vehicle_vs_ice butuh 'ev_vehicle' dan 'ice_vehicle'"
+            )
+        if self.type == "health_bpjs_vs_private" and (
+            self.health_bpjs is None or self.health_private is None
+        ):
+            raise ValueError(
+                "health_bpjs_vs_private butuh 'health_bpjs' dan 'health_private'"
             )
         return self
 

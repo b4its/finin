@@ -133,7 +133,10 @@ def simulate(
         extra_cost = cfg.study_cost + cfg.upskill_monthly + rent_cost + cfg.insurance_monthly
         if shock is not None and shock.start_month <= m < shock.start_month + max(shock.duration_months, 1):
             income *= shock.income_multiplier
-            extra_cost += shock.extra_cost
+            shock_cost = shock.extra_cost
+            if cfg.health_emergency_coverage_pct > 0 and shock_cost > 0:
+                shock_cost *= max(0.0, 1.0 - cfg.health_emergency_coverage_pct)
+            extra_cost += shock_cost
 
         living = (
             (profile.expense_monthly) * (1 + infl) ** m
