@@ -80,6 +80,14 @@ def recommendation_fallback(best: dict, others: list[dict], robust: bool) -> dic
         first_step = (
             "Siapkan rekening autodebet investasi bulanan untuk menyalurkan selisih biaya sewa vs cicilan."
         )
+    elif best.get("code") == "I":
+        first_step = (
+            "Siapkan rekening autodebet cicilan kendaraan dan disiplin bayar sebelum jatuh tempo agar skor SLIK OJK tetap prima."
+        )
+    elif best.get("code") == "J":
+        first_step = (
+            "Cari unit kendaraan bekas terinspeksi, dan langsung alihkan selisih cicilan bulanan ke reksadana/saham tiap tanggal gajian."
+        )
 
     alasan = (
         f"{label} menghasilkan nilai riil tahun ke-10 sekitar {rp_brief(nw10)} "

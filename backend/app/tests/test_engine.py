@@ -387,3 +387,54 @@ def test_compute_milestones():
     assert milestones["net_worth_100m"] == 20
     assert milestones["net_worth_1b"] is None
 
+
+def test_vehicle_lease_vs_cash():
+    from app.engine.regulatory import ruleset_from_assumptions
+    from app.engine.templates import twins_for_decision
+    from app.schemas.input import VehicleCashDecision, VehicleLeaseDecision
+
+    prof = Profile(
+        age=24,
+        income_type="salary",
+        income_monthly=8_000_000,
+        expense_monthly=4_000_000,
+        dependents_monthly=0,
+        savings=20_000_000,
+        existing_debt=ExistingDebt(),
+    )
+    ip = IncomeProfile("salary", 8_000_000)
+    rs = ruleset_from_assumptions(None)
+    dec = Decision(
+        type="vehicle_lease_vs_cash",
+        vehicle_lease=VehicleLeaseDecision(
+            vehicle_price=25_000_000,
+            down_payment_pct=0.20,
+            interest_rate_annual=0.12,
+            tenor_months=36,
+            depreciation_annual=0.12,
+        ),
+        vehicle_cash=VehicleCashDecision(
+            used_vehicle_price=10_000_000,
+            invest_instrument="stock",
+        ),
+    )
+    twins = twins_for_decision(dec, prof, ip, rs, 0.05, {})
+    assert len(twins) == 2
+    twin_i, twin_j = twins[0], twins[1]
+    assert twin_i.code == "I"
+    assert twin_i.initial_dp == 5_000_000
+    assert twin_i.loan is not None
+    assert twin_i.loan.principal == 20_000_000
+
+    assert twin_j.code == "J"
+    assert twin_j.initial_dp == 10_000_000
+    assert twin_j.loan is None
+    assert twin_j.monthly_invest > 0
+
+    res_i = simulate(twin_i, prof, ip, {"inflation": 0.03, "returns": {"stock": 0.10}}, rs, months=60)
+    res_j = simulate(twin_j, prof, ip, {"inflation": 0.03, "returns": {"stock": 0.10}}, rs, months=60)
+
+    assert res_i.at_year(3).net_worth > 0
+    assert res_j.at_year(3).net_worth > 0
+
+

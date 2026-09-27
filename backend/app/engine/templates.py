@@ -24,6 +24,8 @@ TWIN_STYLE = {
     "F": {"color": "#C084FC", "dash": "dashed", "icon": "trending-up"},
     "G": {"color": "#10B981", "dash": "solid", "icon": "home"},
     "H": {"color": "#EC4899", "dash": "dashed", "icon": "key"},
+    "I": {"color": "#F97316", "dash": "solid", "icon": "car"},
+    "J": {"color": "#06B6D4", "dash": "dashed", "icon": "bike"},
 }
 
 STYLE_FALLBACK = {"color": "#94A3B8", "dash": "solid", "icon": "circle"}
@@ -64,6 +66,9 @@ class TwinConfig:
     property_appreciation_annual: float = 0.0
     initial_dp: float = 0.0
     rent_monthly: float = 0.0
+    # kendaraan kredit vs tunai
+    vehicle_initial_value: float = 0.0
+    vehicle_depreciation_annual: float = 0.0
     meta: dict[str, Any] = field(default_factory=dict)
 
 
@@ -223,62 +228,123 @@ def twins_for_decision(
         )
         return [twin_e, twin_f]
 
-    # kpr_vs_rent
-    assert dec.kpr is not None and dec.rent is not None
-    g_style = _style("G")
-    h_style = _style("H")
+    if dec.type == "kpr_vs_rent":
+        assert dec.kpr is not None and dec.rent is not None
+        g_style = _style("G")
+        h_style = _style("H")
 
-    dp_amount = dec.kpr.property_price * dec.kpr.down_payment_pct
-    loan_principal = dec.kpr.property_price - dp_amount
-    tenor_months = dec.kpr.tenor_years * 12
-    kpr_loan = Loan(
-        kind="kpr",
-        principal=loan_principal,
-        tenor_months=tenor_months,
-        annual_rate=dec.kpr.interest_rate_annual,
-        ruleset=ruleset,
-    )
+        dp_amount = dec.kpr.property_price * dec.kpr.down_payment_pct
+        loan_principal = dec.kpr.property_price - dp_amount
+        tenor_months = dec.kpr.tenor_years * 12
+        kpr_loan = Loan(
+            kind="kpr",
+            principal=loan_principal,
+            tenor_months=tenor_months,
+            annual_rate=dec.kpr.interest_rate_annual,
+            ruleset=ruleset,
+        )
 
-    twin_g = TwinConfig(
-        code="G",
-        label="Si Pemilik Rumah",
-        description=(
-            f"Membeli rumah Rp{dec.kpr.property_price:,.0f} (DP {dec.kpr.down_payment_pct:.0%}, "
-            f"KPR {dec.kpr.tenor_years} th bunga {dec.kpr.interest_rate_annual:.1%}/th)."
-        ),
-        loan=kpr_loan,
-        property_initial_value=dec.kpr.property_price,
-        property_appreciation_annual=dec.kpr.property_appreciation_annual,
-        initial_dp=dp_amount,
-        monthly_invest=0.0,
-        meta={
-            "property_price": dec.kpr.property_price,
-            "dp_amount": dp_amount,
-            "tenor_years": dec.kpr.tenor_years,
-            "interest_rate": dec.kpr.interest_rate_annual,
-        },
-        **g_style,
-    )
+        twin_g = TwinConfig(
+            code="G",
+            label="Si Pemilik Rumah",
+            description=(
+                f"Membeli rumah Rp{dec.kpr.property_price:,.0f} (DP {dec.kpr.down_payment_pct:.0%}, "
+                f"KPR {dec.kpr.tenor_years} th bunga {dec.kpr.interest_rate_annual:.1%}/th)."
+            ),
+            loan=kpr_loan,
+            property_initial_value=dec.kpr.property_price,
+            property_appreciation_annual=dec.kpr.property_appreciation_annual,
+            initial_dp=dp_amount,
+            monthly_invest=0.0,
+            meta={
+                "property_price": dec.kpr.property_price,
+                "dp_amount": dp_amount,
+                "tenor_years": dec.kpr.tenor_years,
+                "interest_rate": dec.kpr.interest_rate_annual,
+            },
+            **g_style,
+        )
 
-    invest_diff = max(0.0, kpr_loan.scheduled_payment - dec.rent.rent_monthly)
-    twin_h = TwinConfig(
-        code="H",
-        label="Si Pengontrak & Investor",
-        description=(
-            f"Sewa rumah Rp{dec.rent.rent_monthly:,.0f}/bulan, menahan DP, dan investasi "
-            f"selisih cicilan Rp{invest_diff:,.0f}/bulan ke {dec.rent.invest_instrument}."
-        ),
-        rent_monthly=dec.rent.rent_monthly,
-        monthly_invest=invest_diff,
-        instrument=dec.rent.invest_instrument,
-        meta={
-            "rent_monthly": dec.rent.rent_monthly,
-            "monthly_invest": invest_diff,
-            "instrument": dec.rent.invest_instrument,
-        },
-        **h_style,
-    )
-    return [twin_g, twin_h]
+        invest_diff = max(0.0, kpr_loan.scheduled_payment - dec.rent.rent_monthly)
+        twin_h = TwinConfig(
+            code="H",
+            label="Si Pengontrak & Investor",
+            description=(
+                f"Sewa rumah Rp{dec.rent.rent_monthly:,.0f}/bulan, menahan DP, dan investasi "
+                f"selisih cicilan Rp{invest_diff:,.0f}/bulan ke {dec.rent.invest_instrument}."
+            ),
+            rent_monthly=dec.rent.rent_monthly,
+            monthly_invest=invest_diff,
+            instrument=dec.rent.invest_instrument,
+            meta={
+                "rent_monthly": dec.rent.rent_monthly,
+                "monthly_invest": invest_diff,
+                "instrument": dec.rent.invest_instrument,
+            },
+            **h_style,
+        )
+        return [twin_g, twin_h]
+
+    if dec.type == "vehicle_lease_vs_cash":
+        assert dec.vehicle_lease is not None and dec.vehicle_cash is not None
+        i_style = _style("I")
+        j_style = _style("J")
+
+        dp_amount = dec.vehicle_lease.vehicle_price * dec.vehicle_lease.down_payment_pct
+        principal = dec.vehicle_lease.vehicle_price - dp_amount
+        lease_loan = Loan(
+            kind="annuity",
+            principal=principal,
+            tenor_months=dec.vehicle_lease.tenor_months,
+            annual_rate=dec.vehicle_lease.interest_rate_annual,
+            ruleset=ruleset,
+        )
+
+        twin_i = TwinConfig(
+            code="I",
+            label="Si Pengkredit Leasing",
+            description=(
+                f"Beli kendaraan baru Rp{dec.vehicle_lease.vehicle_price:,.0f} via leasing OJK "
+                f"(DP {dec.vehicle_lease.down_payment_pct:.0%}, tenor {dec.vehicle_lease.tenor_months} bln, "
+                f"bunga {dec.vehicle_lease.interest_rate_annual:.1%}/th)."
+            ),
+            loan=lease_loan,
+            vehicle_initial_value=dec.vehicle_lease.vehicle_price,
+            vehicle_depreciation_annual=dec.vehicle_lease.depreciation_annual,
+            initial_dp=dp_amount,
+            monthly_invest=0.0,
+            meta={
+                "vehicle_price": dec.vehicle_lease.vehicle_price,
+                "dp_amount": dp_amount,
+                "tenor_months": dec.vehicle_lease.tenor_months,
+                "interest_rate": dec.vehicle_lease.interest_rate_annual,
+            },
+            **i_style,
+        )
+
+        invest_diff = max(0.0, lease_loan.scheduled_payment)
+        twin_j = TwinConfig(
+            code="J",
+            label="Si Pembeli Bekas & Investor",
+            description=(
+                f"Beli kendaraan bekas layak Rp{dec.vehicle_cash.used_vehicle_price:,.0f} tunai (bebas cicilan), "
+                f"investasikan selisih cicilan Rp{invest_diff:,.0f}/bln ke {dec.vehicle_cash.invest_instrument}."
+            ),
+            vehicle_initial_value=dec.vehicle_cash.used_vehicle_price,
+            vehicle_depreciation_annual=0.10,
+            initial_dp=dec.vehicle_cash.used_vehicle_price,
+            monthly_invest=invest_diff,
+            instrument=dec.vehicle_cash.invest_instrument,
+            meta={
+                "used_vehicle_price": dec.vehicle_cash.used_vehicle_price,
+                "monthly_invest": invest_diff,
+                "instrument": dec.vehicle_cash.invest_instrument,
+            },
+            **j_style,
+        )
+        return [twin_i, twin_j]
+
+    return []
 
 
 def build_twins(
@@ -379,6 +445,42 @@ def decision_templates() -> list[dict]:
                 {
                     "key": "rent.invest_instrument",
                     "label": "Instrumen investasi selisih",
+                    "type": "instrument",
+                },
+            ],
+        },
+        {
+            "type": "vehicle_lease_vs_cash",
+            "title": "Kredit Kendaraan (Leasing OJK) vs Bekas Tunai",
+            "twin_a": {"code": "I", "label": "Si Pengkredit Leasing", **_style("I")},
+            "twin_b": {"code": "J", "label": "Si Pembeli Bekas & Investor", **_style("J")},
+            "fields": [
+                {"key": "vehicle_lease.vehicle_price", "label": "Harga kendaraan baru", "type": "currency"},
+                {
+                    "key": "vehicle_lease.down_payment_pct",
+                    "label": "Uang muka (DP)",
+                    "type": "percent",
+                    "min": 0.10,
+                    "max": 0.50,
+                },
+                {
+                    "key": "vehicle_lease.interest_rate_annual",
+                    "label": "Bunga leasing/tahun",
+                    "type": "percent",
+                    "min": 0.05,
+                    "max": 0.25,
+                },
+                {
+                    "key": "vehicle_lease.tenor_months",
+                    "label": "Tenor leasing (bulan)",
+                    "type": "int",
+                    "min": 12,
+                    "max": 60,
+                },
+                {"key": "vehicle_cash.used_vehicle_price", "label": "Harga beli bekas tunai", "type": "currency"},
+                {
+                    "key": "vehicle_cash.invest_instrument",
+                    "label": "Instrumen investasi selisih cicilan",
                     "type": "instrument",
                 },
             ],

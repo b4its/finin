@@ -94,6 +94,30 @@ def regulatory_flags_for_input(profile: Profile, decisions: list[Decision], rule
                             f"melebihi batas kemampuan bayar OJK {ruleset.get('dsr_cap', 0.30):.0%}.",
                         )
                     )
+        if dec.type == "vehicle_lease_vs_cash" and dec.vehicle_lease is not None:
+            from app.engine.loans import Loan
+
+            dp = dec.vehicle_lease.vehicle_price * dec.vehicle_lease.down_payment_pct
+            principal = dec.vehicle_lease.vehicle_price - dp
+            lease_l = Loan(
+                kind="annuity",
+                principal=principal,
+                tenor_months=dec.vehicle_lease.tenor_months,
+                annual_rate=dec.vehicle_lease.interest_rate_annual,
+                ruleset=ruleset,
+            )
+            if profile.income_monthly > 0:
+                tot = lease_l.scheduled_payment + profile.existing_debt.monthly_payment
+                dsr = tot / profile.income_monthly
+                if dsr > ruleset.get("dsr_cap", 0.30):
+                    flags.append(
+                        Flag(
+                            "orange",
+                            "DSR_OVER_30",
+                            f"Cicilan kredit kendaraan Rp{tot:,.0f}/bulan ≈ {dsr:.0%} penghasilan, "
+                            f"melebihi batas kemampuan bayar OJK {ruleset.get('dsr_cap', 0.30):.0%}.",
+                        )
+                    )
     # DSR utang berjalan
     if profile.income_monthly > 0 and profile.existing_debt.monthly_payment > 0:
         f = check_dsr(profile.existing_debt.monthly_payment, profile.income_monthly, ruleset)

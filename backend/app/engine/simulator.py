@@ -190,8 +190,14 @@ def simulate(
             else 0.0
         )
 
+        vehicle_val = (
+            cfg.vehicle_initial_value * max(0.05, (1 - cfg.vehicle_depreciation_annual / 12) ** m)
+            if cfg.vehicle_initial_value > 0
+            else 0.0
+        )
+
         debt_balance = sum(ls.balance for ls in loans if not ls.closed)
-        total_invest = max(invest, 0.0) + property_val
+        total_invest = max(invest, 0.0) + property_val + vehicle_val
         net_worth = cash + total_invest - debt_balance
         real = net_worth / (1 + assumptions.get("inflation", 0.03)) ** (m / 12.0)
 

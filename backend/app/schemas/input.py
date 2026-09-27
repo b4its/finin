@@ -91,8 +91,27 @@ class RentDecision(BaseModel):
     invest_instrument: Instrument = "bond"
 
 
+class VehicleLeaseDecision(BaseModel):
+    vehicle_price: float = Field(..., ge=0)
+    down_payment_pct: float = Field(0.20, ge=0.05, le=0.80)
+    interest_rate_annual: float = Field(0.12, ge=0.01, le=0.35)
+    tenor_months: int = Field(36, ge=6, le=72)
+    depreciation_annual: float = Field(0.12, ge=0.02, le=0.30)
+
+
+class VehicleCashDecision(BaseModel):
+    used_vehicle_price: float = Field(..., ge=0)
+    invest_instrument: Instrument = "stock"
+
+
 class Decision(BaseModel):
-    type: Literal["loan_vs_save", "study_vs_work", "emergency_vs_invest", "kpr_vs_rent"]
+    type: Literal[
+        "loan_vs_save",
+        "study_vs_work",
+        "emergency_vs_invest",
+        "kpr_vs_rent",
+        "vehicle_lease_vs_cash",
+    ]
     loan: LoanDecision | None = None
     save: SaveDecision | None = None
     study: StudyDecision | None = None
@@ -100,6 +119,8 @@ class Decision(BaseModel):
     emergency: EmergencyDecision | None = None
     kpr: KprDecision | None = None
     rent: RentDecision | None = None
+    vehicle_lease: VehicleLeaseDecision | None = None
+    vehicle_cash: VehicleCashDecision | None = None
 
     @model_validator(mode="after")
     def _require_payload(self) -> Decision:
@@ -111,6 +132,8 @@ class Decision(BaseModel):
             raise ValueError("emergency_vs_invest butuh 'emergency'")
         if self.type == "kpr_vs_rent" and (self.kpr is None or self.rent is None):
             raise ValueError("kpr_vs_rent butuh 'kpr' dan 'rent'")
+        if self.type == "vehicle_lease_vs_cash" and (self.vehicle_lease is None or self.vehicle_cash is None):
+            raise ValueError("vehicle_lease_vs_cash butuh 'vehicle_lease' dan 'vehicle_cash'")
         return self
 
 

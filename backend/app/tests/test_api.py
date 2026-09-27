@@ -88,7 +88,13 @@ async def test_templates(client: AsyncClient):
     r = await client.get("/api/v1/templates")
     assert r.status_code == 200
     types = {t["type"] for t in r.json()["templates"]}
-    assert types == {"loan_vs_save", "study_vs_work", "emergency_vs_invest", "kpr_vs_rent"}
+    assert types == {
+        "loan_vs_save",
+        "study_vs_work",
+        "emergency_vs_invest",
+        "kpr_vs_rent",
+        "vehicle_lease_vs_cash",
+    }
 
 
 async def test_simulation_kpr_vs_rent(client: AsyncClient):
@@ -413,4 +419,43 @@ async def test_export_csv_and_json(client: AsyncClient):
     assert "twins" in json_data
     assert "input" in json_data
     assert "exported_at" in json_data
+
+
+async def test_api_vehicle_lease_vs_cash(client: AsyncClient):
+    payload = {
+        "profile": {
+            "age": 25,
+            "income_type": "salary",
+            "income_monthly": 10_000_000,
+            "expense_monthly": 4_500_000,
+            "dependents_monthly": 0,
+            "savings": 25_000_000,
+            "existing_debt": {"principal": 0, "monthly_payment": 0},
+        },
+        "decisions": [
+            {
+                "type": "vehicle_lease_vs_cash",
+                "vehicle_lease": {
+                    "vehicle_price": 30_000_000,
+                    "down_payment_pct": 0.20,
+                    "interest_rate_annual": 0.12,
+                    "tenor_months": 36,
+                    "depreciation_annual": 0.15,
+                },
+                "vehicle_cash": {
+                    "used_vehicle_price": 12_000_000,
+                    "invest_instrument": "stock",
+                },
+            }
+        ],
+        "preset": "moderat",
+    }
+    r = await client.post("/api/v1/simulations", json=payload)
+    assert r.status_code == 201
+    body = r.json()
+    codes = [t["code"] for t in body["twins"]]
+    assert "0" in codes
+    assert "I" in codes
+    assert "J" in codes
+
 
