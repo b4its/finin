@@ -12,7 +12,9 @@
 	import PitchModal from '$lib/components/multiverse/PitchModal.svelte';
 	import MilestoneTracker from '$lib/components/multiverse/MilestoneTracker.svelte';
 	import FinancialHealthScorecard from '$lib/components/multiverse/FinancialHealthScorecard.svelte';
+	import PurchasingPowerHorizon from '$lib/components/multiverse/PurchasingPowerHorizon.svelte';
 	import ScenarioSandbox from '$lib/components/multiverse/ScenarioSandbox.svelte';
+	import ShareModal from '$lib/components/multiverse/ShareModal.svelte';
 	import Disclaimer from '$lib/components/ui/Disclaimer.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
@@ -35,6 +37,7 @@
 	let focusedTwin = $state<string | null>(null);
 	let reportOpen = $state(false);
 	let pitchOpen = $state(false);
+	let shareOpen = $state(false);
 	let exportMenuOpen = $state(false);
 
 	onMount(async () => {
@@ -119,6 +122,13 @@
 				>
 					⚡ Presentasi Juri
 				</button>
+				<button
+					class="btn btn-ghost !py-1.5 !px-3 text-xs font-semibold text-sky-400"
+					onclick={() => (shareOpen = true)}
+					title="Bagikan kartu persona dan hasil simulasi ke WhatsApp / medsos"
+				>
+					✨ Bagikan Hasil
+				</button>
 				<div class="relative inline-block">
 					<button
 						class="btn btn-ghost !py-1.5 !px-3 text-xs"
@@ -202,6 +212,7 @@
 				<CompareView twins={result.twins} {year} />
 				<MilestoneTracker twins={result.twins} />
 				<FinancialHealthScorecard twins={result.twins} />
+				<PurchasingPowerHorizon twins={result.twins} />
 				<StressTestPanel twins={result.twins} bind:active={activeShock} />
 				<ScenarioSandbox />
 			</div>
@@ -241,12 +252,24 @@
 				/>
 
 				<div class="rounded-xl border border-[var(--color-line)] bg-[var(--color-void-2)] p-4">
-					<p class="text-xs text-[var(--color-ink-dim)]">Bagikan hasil ini</p>
+					<div class="flex items-center justify-between">
+						<p class="text-xs font-semibold text-[var(--color-ink)]">Bagikan Hasil Multiverse</p>
+						<span class="text-xs">✨</span>
+					</div>
+					<p class="mt-1 text-xs text-[var(--color-ink-dim)]">
+						Unduh kartu persona digital atau bagikan proyeksi ke WhatsApp & X.
+					</p>
 					<button
-						class="btn btn-ghost mt-2 w-full !text-xs"
+						class="btn btn-primary mt-3 w-full !text-xs font-semibold"
+						onclick={() => (shareOpen = true)}
+					>
+						✨ Buka Menu Berbagi & Kartu Persona
+					</button>
+					<button
+						class="btn btn-ghost mt-1.5 w-full !text-xs text-[var(--color-ink-dim)]"
 						onclick={() => navigator.clipboard?.writeText(window.location.href)}
 					>
-						Salin link simulasi
+						Salin link URL
 					</button>
 				</div>
 			</div>
@@ -402,4 +425,11 @@
 {#if result}
 	<ReportModal bind:open={reportOpen} simulation={result} recommendation={sim.recommendation} />
 	<PitchModal bind:open={pitchOpen} simulation={result} recommendation={sim.recommendation} />
+	<ShareModal
+		bind:open={shareOpen}
+		twins={result.twins}
+		{bestCode}
+		simId={result.id}
+		preset={preset ?? result.preset}
+	/>
 {/if}
