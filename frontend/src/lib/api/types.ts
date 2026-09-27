@@ -257,6 +257,17 @@ export interface HajiRegulerSpec {
 	invest_instrument: string;
 }
 
+export interface CareerCorporateSpec {
+	salary_growth_annual: number;
+	bonus_months_annual: number;
+}
+
+export interface CareerFreelanceSpec {
+	revenue_multiplier: number;
+	emergency_target_months: number;
+	bpjs_mandiri_monthly: number;
+}
+
 export interface Decision {
 	type: string;
 	loan?: LoanSpec;
@@ -276,4 +287,6 @@ export interface Decision {
 	child_education_diy?: ChildEducationDiySpec;
 	haji_furoda?: HajiFurodaSpec;
 	haji_reguler?: HajiRegulerSpec;
+	career_corporate?: CareerCorporateSpec;
+	career_freelance?: CareerFreelanceSpec;
 }

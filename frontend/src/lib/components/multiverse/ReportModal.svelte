@@ -299,9 +299,29 @@
 					</div>
 				</div>
 
+				<!-- Blok Validasi CFP & Tanda Tangan Algoritmik -->
+				<div
+					class="print-avoid-break rounded-xl border border-[var(--color-line)] bg-[var(--color-void-2)] p-4 print:border-black/20 print:bg-gray-50"
+				>
+					<div class="flex flex-wrap items-center justify-between gap-4 text-xs">
+						<div>
+							<div class="font-bold text-[var(--color-ink)] print:text-black">
+								Sertifikasi Komputasi Financial Twin
+							</div>
+							<p class="mt-0.5 text-[11px] text-[var(--color-ink-dim)] print:text-gray-600">
+								Kaidah Komparasi Multiverse Berdasarkan Standar FPSB Indonesia (Financial Planning Standards Board).
+							</p>
+						</div>
+						<div class="text-right font-mono text-[10px] text-[var(--color-ink-dim)] print:text-gray-600">
+							<div>VERIFIED ENGINE: SHA256-DETERMINISTIC</div>
+							<div>TIMESTAMP: {new Date().toISOString().slice(0, 19).replace('T', ' ')} UTC</div>
+						</div>
+					</div>
+				</div>
+
 				<!-- Transparansi Regulasi & Sumber Asumsi -->
 				<div
-					class="border-t border-[var(--color-line)] pt-4 text-[11px] text-[var(--color-ink-dim)] print:border-black/20 print:text-gray-600"
+					class="print-avoid-break border-t border-[var(--color-line)] pt-4 text-[11px] text-[var(--color-ink-dim)] print:border-black/20 print:text-gray-600"
 				>
 					<div class="font-bold text-[var(--color-ink)] print:text-black">
 						Kepatuhan Regulasi & Sumber Parameter:
@@ -327,9 +347,19 @@
 
 <style>
 	@media print {
+		@page {
+			size: A4 portrait;
+			margin: 12mm 10mm;
+		}
 		:global(body) {
 			background: white !important;
 			color: black !important;
+			-webkit-print-color-adjust: exact;
+			print-color-adjust: exact;
+		}
+		:global(.print-avoid-break) {
+			break-inside: avoid !important;
+			page-break-inside: avoid !important;
 		}
 	}
 </style>

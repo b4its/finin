@@ -22,6 +22,8 @@ const ICONS: Record<string, string> = {
 	'shield-alert': '🛡️', // Si Unit Link Pendidikan
 	kaaba: '🕋', // Si Haji Khusus / Furoda
 	moon: '🌙', // Si Haji Reguler & Sukuk Syariah
+	building: '🏢', // Si Pegawai Korporat
+	laptop: '💻', // Si Freelancer & Solopreneur
 	circle: '●'
 };
 
@@ -48,7 +50,9 @@ export function twinIconLabel(name: string): string {
 		store: 'usaha waralaba franchise',
 		'shield-alert': 'asuransi proteksi unitlink',
 		kaaba: 'haji furoda khusus',
-		moon: 'haji reguler dan investasi syariah'
+		moon: 'haji reguler dan investasi syariah',
+		building: 'pegawai korporat tetap',
+		laptop: 'freelancer dan solopreneur'
 	};
 	return labels[name] ?? 'twin';
 }

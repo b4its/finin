@@ -218,7 +218,7 @@
 				<FinancialHealthScorecard twins={result.twins} />
 				<PortfolioAllocationRadar twins={result.twins} />
 				<PurchasingPowerHorizon twins={result.twins} />
-				<ZakatAndFinalTaxCalculator twins={result.twins} />
+				<ZakatAndFinalTaxCalculator twins={result.twins} profile={sim.input.profile} />
 				<PensionAndFireCalculator twins={result.twins} profile={sim.input.profile} />
 				<TaxAndBPJSBreakdown initialGross={sim.input.profile.income_monthly || 10000000} />
 				<StressTestPanel twins={result.twins} bind:active={activeShock} />

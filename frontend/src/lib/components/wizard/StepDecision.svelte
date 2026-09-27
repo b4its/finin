@@ -50,6 +50,12 @@
 			title: 'Haji Furoda vs Haji Reguler & Sukuk',
 			icon: '🕋',
 			twins: 'Q & R'
+		},
+		{
+			type: 'career_corporate_vs_freelance',
+			title: 'Karier: Korporat vs Freelancer',
+			icon: '💼',
+			twins: 'S & T'
 		}
 	];
 
@@ -177,6 +183,19 @@
 				haji_reguler: {
 					bpkh_initial_deposit: 25_000_000,
 					invest_instrument: 'bond'
+				}
+			};
+		if (type === 'career_corporate_vs_freelance')
+			return {
+				type,
+				career_corporate: {
+					salary_growth_annual: 0.06,
+					bonus_months_annual: 2.0
+				},
+				career_freelance: {
+					revenue_multiplier: 1.4,
+					emergency_target_months: 9,
+					bpjs_mandiri_monthly: 350_000
 				}
 			};
 		return { type, emergency: { target_months: 6, invest_monthly: 1_000_000 } };
@@ -751,6 +770,92 @@
 				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
 					Mendaftar nomor porsi haji reguler BPKH (Rp25jt). Sisa ratusan juta tabungan dan alokasi cicilan diinvestasikan
 					penuh ke instrumen syariah (Sukuk/Reksadana Syariah) yang terus bertumbuh selama masa tunggu antrean.
+				</p>
+			</div>
+		</div>
+	{/if}
+
+	{#if selected.includes('career_corporate_vs_freelance')}
+		{@const d = decisionOf('career_corporate_vs_freelance')!}
+		{@const corp = d.career_corporate!}
+		{@const free = d.career_freelance!}
+		<div class="card space-y-4 p-4">
+			<p class="text-sm font-semibold">💼 Karier: Pekerja Korporat (Tetap & BPJS PPU) vs Freelancer / Solopreneur</p>
+			<div>
+				<p class="mb-3 text-sm font-semibold text-blue-400">
+					Skenario S — Si Pegawai Korporat (Gaji Tetap, Bonus & BPJS TK/Kes PPU)
+				</p>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+					<PercentInput
+						bind:value={corp.salary_growth_annual}
+						label="Kenaikan Gaji Tahunan Korporat"
+						step={1}
+						max={30}
+						help="Kenaikan gaji berkala tahunan (rerata 5-8% di korporasi RI)."
+					/>
+					<label class="block">
+						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]"
+							>Bonus Tahunan (Bulan Gaji)</span
+						>
+						<input
+							class="input num"
+							type="number"
+							min="0"
+							max="12"
+							step="0.5"
+							value={corp.bonus_months_annual}
+							oninput={(e) =>
+								(corp.bonus_months_annual = parseFloat((e.target as HTMLInputElement).value) || 0)}
+						/>
+						<span class="mt-1 block text-xs text-[var(--color-ink-dim)]">Bonus performa tahunan / THR / insentif kerja.</span>
+					</label>
+				</div>
+			</div>
+
+			<div class="border-t border-[var(--color-line)] pt-4">
+				<p class="mb-3 text-sm font-semibold text-purple-400">
+					Skenario T — Si Freelancer & Solopreneur (Penghasilan Variabel, Pajak NPPN & Mandiri)
+				</p>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+					<label class="block">
+						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]"
+							>Pengali Pendapatan Awal (Multiplier)</span
+						>
+						<input
+							class="input num"
+							type="number"
+							min="0.5"
+							max="5"
+							step="0.1"
+							value={free.revenue_multiplier}
+							oninput={(e) =>
+								(free.revenue_multiplier = parseFloat((e.target as HTMLInputElement).value) || 1.0)}
+						/>
+						<span class="mt-1 block text-xs text-[var(--color-ink-dim)]">Kelipatan omset kotor dibanding gaji korporat (cth: 1.4x).</span>
+					</label>
+					<label class="block">
+						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]"
+							>Target Dana Darurat (Bulan)</span
+						>
+						<input
+							class="input num"
+							type="number"
+							min="3"
+							max="24"
+							value={free.emergency_target_months}
+							oninput={(e) =>
+								(free.emergency_target_months = parseInt((e.target as HTMLInputElement).value) || 6)}
+						/>
+						<span class="mt-1 block text-xs text-[var(--color-ink-dim)]">Rekomendasi CFP untuk pekerja lepas: 9–12 bulan.</span>
+					</label>
+					<CurrencyInput
+						bind:value={free.bpjs_mandiri_monthly}
+						label="Iuran BPJS Mandiri (BPU & Kes)"
+						help="Total iuran mandiri bulanan BPJS Kesehatan + Ketenagakerjaan BPU."
+					/>
+				</div>
+				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
+					Pekerja lepas memikul iuran asuransi mandiri dan ketidakpastian arus kas musiman. Pajak dihitung dengan Norma Penghitungan Penghasilan Neto (NPPN 50%) sesuai PMK No. 168/2023.
 				</p>
 			</div>
 		</div>
