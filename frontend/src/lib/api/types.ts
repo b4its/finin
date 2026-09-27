@@ -72,6 +72,8 @@ export interface Simulation {
 	assumptions: AssumptionsSnapshot;
 	market_context: { label: string; source: string }[];
 	flags: Flag[];
+	best_twin: string;
+	sensitivity_drivers: string[];
 }
 
 export interface AssumptionsSnapshot {
@@ -91,6 +93,7 @@ export interface AssumptionsSnapshot {
 	regulatory: Regulatory;
 	sources: Record<string, { label: string; url: string; as_of: string; kind: string }>;
 	market_context: { label: string; source: string }[];
+	overrides?: Record<string, unknown>;
 }
 
 export interface Regulatory {

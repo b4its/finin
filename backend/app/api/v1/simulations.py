@@ -10,12 +10,12 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.v1.serialization import cfg_to_dict, enriched_snapshot, preset_scores_for
 from app.core.db import get_session
 from app.engine.assumptions import load_assumptions
 from app.engine.runner import FullSimulation, run_full_simulation
 from app.llm.narrator import narrator
 from app.models.simulation import Recommendation, Simulation, Twin
-from app.api.v1.serialization import cfg_to_dict, enriched_snapshot, preset_scores_for
 from app.schemas.input import RecomputeRequest, SimulationRequest
 from app.schemas.output import RecommendationOut, SimulationResponse
 
@@ -41,8 +41,6 @@ def _twin_to_dict(t) -> dict:  # noqa: ANN001
     }
 
 
-
-
 def _full_to_response(sim_id: str, full: FullSimulation, a) -> dict:  # noqa: ANN001
     return {
         "id": sim_id,
@@ -55,14 +53,12 @@ def _full_to_response(sim_id: str, full: FullSimulation, a) -> dict:  # noqa: AN
         "robust": full.robust,
         "robust_reason": full.robust_reason,
         "preset_winners": full.preset_winners,
-        "assumptions": a.to_dict(full.preset),
+        "assumptions": enriched_snapshot(a, full),
         "market_context": a.market_context,
         "flags": full.input_flags,
         "best_twin": full.best_twin,
         "sensitivity_drivers": full.sensitivity_drivers,
     }
-
-
 
 
 async def _persist(session: AsyncSession, sim: Simulation, full: FullSimulation) -> None:

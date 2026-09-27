@@ -26,6 +26,7 @@
 	let detailOpen = $state(false);
 	let preset = $state<string | null>(null);
 	let activeShock = $state<string | null>(null);
+	let assumptionOverrides = $state<Record<string, unknown>>({});
 	let focusedTwin = $state<string | null>(null);
 
 	onMount(async () => {
@@ -174,7 +175,11 @@
 		</div>
 
 		<div class="mt-6">
-			<AssumptionPanel assumptions={result.assumptions} />
+				<AssumptionPanel
+					assumptions={result.assumptions}
+					bind:overrides={assumptionOverrides}
+					onRecompute={(ov) => sim.recompute(preset ?? result.preset, ov)}
+				/>
 		</div>
 	{/if}
 

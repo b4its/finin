@@ -85,6 +85,14 @@ class SimulationStore {
 				assumption_overrides: overrides
 			});
 			this.result = res;
+			// Hitung ulang mengubah angka, jadi narasi & rekomendasi harus segar.
+			this.narrative = {};
+			this.recommendation = null;
+			this.streamNarration(res.id);
+			api
+				.recommendation(res.id)
+				.then((r) => (this.recommendation = r))
+				.catch(() => (this.recommendation = null));
 		} catch (e) {
 			this.errorMsg = String(e);
 		} finally {

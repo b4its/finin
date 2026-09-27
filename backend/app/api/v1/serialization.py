@@ -31,6 +31,11 @@ def cfg_to_dict(cfg) -> dict:  # noqa: ANN001
 def enriched_snapshot(a, full: FullSimulation) -> dict:  # noqa: ANN001
     """Snapshot asumsi + metadata agar GET bisa mereproduksi respons lengkap."""
     snap = a.to_dict(full.preset)
+    # Refleksikan nilai efektif (setelah override manual) agar UI menampilkan
+    # angka yang benar-benar dipakai engine.
+    if full.effective_values:
+        snap["values"] = full.effective_values
+    snap["overrides"] = full.overrides
     snap["_meta"] = {
         "horizon_months": full.horizon_months,
         "robust_reason": full.robust_reason,

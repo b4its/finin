@@ -3,9 +3,20 @@
 	import type { AssumptionsSnapshot } from '$lib/api/types';
 	import { percent, dateID, isStale } from '$lib/utils/format';
 
-	let { assumptions }: { assumptions: AssumptionsSnapshot } = $props();
+	let {
+		assumptions,
+		overrides = $bindable({} as Record<string, unknown>),
+		onRecompute
+	}: {
+		assumptions: AssumptionsSnapshot;
+		overrides?: Record<string, unknown>;
+		onRecompute?: (overrides: Record<string, unknown>) => void;
+	} = $props();
+
 	let open = $state(false);
+	let edit = $state(false);
 	let fresh = $state<AssumptionsSnapshot | null>(null);
+	let dirty = $state(false);
 
 	let current = $derived(fresh ?? assumptions);
 	let stale = $derived(isStale(current.as_of));
@@ -26,6 +37,48 @@
 		{ key: 'moderat', label: 'Moderat' },
 		{ key: 'optimis', label: 'Optimis' }
 	];
+
+	// Parameter yang boleh diedit manual.
+	const editable = [
+		{ key: 'inflation', label: 'Inflasi', group: '', hint: '2–6%/th' },
+		{ key: 'salary_growth', label: 'Kenaikan gaji', group: '', hint: '1–12%/th' },
+		{ key: 's2_salary_premium', label: 'Premi gaji S2', group: '', hint: '5–35%' },
+		{ key: 'savings', label: 'Tabungan bank', returns: true, hint: '0–6%/th' },
+		{ key: 'deposit', label: 'Deposito', returns: true, hint: '0–6%/th' },
+		{ key: 'money_market', label: 'Reksa dana pasar uang', returns: true, hint: '1–8%/th' },
+		{ key: 'bond', label: 'SBN ritel', returns: true, hint: '3–10%/th' },
+		{ key: 'stock', label: 'Reksa dana indeks saham', returns: true, hint: '0–15%/th' }
+	];
+
+	function overrideValue(key: string, returns: boolean | undefined, fallback: number): number {
+		if (returns) {
+			const r = overrides.returns as Record<string, number> | undefined;
+			return r?.[key] ?? fallback;
+		}
+		const v = overrides[key];
+		return typeof v === 'number' ? v : fallback;
+	}
+
+	function setOverride(key: string, returns: boolean | undefined, value: number) {
+		if (returns) {
+			const r = { ...((overrides.returns as Record<string, number>) ?? {}) };
+			r[key] = value;
+			overrides = { ...overrides, returns: r };
+		} else {
+			overrides = { ...overrides, [key]: value };
+		}
+		dirty = true;
+	}
+
+	function resetOverrides() {
+		overrides = {};
+		dirty = false;
+	}
+
+	function apply() {
+		onRecompute?.(overrides);
+		dirty = false;
+	}
 </script>
 
 <div class="card overflow-hidden">
@@ -68,6 +121,60 @@
 					{/if}
 				{/each}
 			</div>
+
+			{#if onRecompute}
+				<div class="mt-4 flex items-center justify-between">
+					<h4 class="text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-dim)]">
+						Edit manual
+					</h4>
+					<button class="chip" class:active={edit} onclick={() => (edit = !edit)}>
+						{edit ? 'Tutup editor' : 'Ubah asumsi'}
+					</button>
+				</div>
+				{#if edit}
+					<div class="mt-2 space-y-3 rounded-xl border border-[var(--color-line)] p-3">
+						<p class="text-xs text-[var(--color-ink-dim)]">
+							Geser nilai lalu tekan “Hitung ulang” untuk melihat dampaknya. Ini untuk eksplorasi —
+							nilai default tetap jadi acuan.
+						</p>
+						{#each editable as e}
+							{@const base = e.returns
+								? (current.values.returns?.[e.key] ?? 0)
+								: ((current.values[e.key] as number) ?? 0)}
+							{@const val = overrideValue(e.key, e.returns, base)}
+							{@const overridden = Math.abs(val - base) > 1e-9}
+							<label class="block">
+								<div class="flex items-center justify-between text-xs">
+									<span class={overridden ? 'font-semibold text-[var(--color-accent)]' : ''}
+										>{e.label}{#if e.returns} (imbal){/if}</span
+									>
+									<span class="num">{percent(val)}</span>
+								</div>
+								<input
+									type="range"
+									min="0"
+									max="0.2"
+									step="0.001"
+									value={val}
+									oninput={(ev) =>
+										setOverride(e.key, e.returns, parseFloat((ev.target as HTMLInputElement).value))}
+									class="mt-1 w-full accent-[var(--color-accent)]"
+									aria-label={`${e.label} ${percent(val)}`}
+								/>
+								<span class="text-[0.65rem] text-[var(--color-ink-dim)]">{e.hint}</span>
+							</label>
+						{/each}
+						<div class="flex flex-wrap gap-2 pt-1">
+							<button class="btn btn-primary !py-1.5 !text-xs" onclick={apply} disabled={!dirty}>
+								Hitung ulang dengan asumsi ini
+							</button>
+							<button class="btn btn-ghost !py-1.5 !text-xs" onclick={resetOverrides}>
+								Reset ke default
+							</button>
+						</div>
+					</div>
+				{/if}
+			{/if}
 
 			<h4
 				class="mb-2 mt-4 text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-dim)]"

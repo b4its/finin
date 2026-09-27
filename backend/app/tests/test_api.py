@@ -229,6 +229,40 @@ async def test_two_decisions_four_twins(client: AsyncClient):
     assert codes == ["0", "A", "B", "C", "D"]
 
 
+async def test_manual_assumption_override(client: AsyncClient):
+    """Edit manual asumsi harus mengubah hasil & tercermin di snapshot."""
+    created = (await client.post("/api/v1/simulations", json=SAMPLE)).json()
+    base_nw = [t["summary"]["year_10"]["net_worth"] for t in created["twins"] if t["code"] == "B"][0]
+
+    rc = await client.post(
+        f"/api/v1/simulations/{created['id']}/recompute",
+        json={"assumption_overrides": {"inflation": 0.06, "returns": {"stock": 0.03}}},
+    )
+    assert rc.status_code == 200
+    body = rc.json()
+    assert body["assumptions"]["values"]["inflation"] == 0.06
+    assert body["assumptions"]["values"]["returns"]["stock"] == 0.03
+    assert body["assumptions"]["overrides"] == {"inflation": 0.06, "returns": {"stock": 0.03}}
+    new_nw = [t["summary"]["year_10"]["net_worth"] for t in body["twins"] if t["code"] == "B"][0]
+    # Inflasi lebih tinggi -> nilai riil lebih rendah (nominal berbeda juga)
+    assert new_nw != base_nw
+
+    # GET harus mempertahankan override
+    got = (await client.get(f"/api/v1/simulations/{created['id']}")).json()
+    assert got["assumptions"]["values"]["inflation"] == 0.06
+    assert got["assumptions"]["overrides"]["inflation"] == 0.06
+
+
+async def test_recompute_does_not_break_best_twin(client: AsyncClient):
+    created = (await client.post("/api/v1/simulations", json=SAMPLE)).json()
+    rc = await client.post(
+        f"/api/v1/simulations/{created['id']}/recompute", json={"preset": "konservatif"}
+    )
+    assert rc.status_code == 200
+    assert rc.json()["preset"] == "konservatif"
+    assert rc.json()["best_twin"] != "0"
+
+
 async def test_get_round_trips_full_response(client: AsyncClient):
     """GET harus mengembalikan metadata yang sama seperti POST (reproducible)."""
     payload: dict = dict(SAMPLE)
@@ -276,14 +310,26 @@ async def test_tenor_boundary_via_api(client: AsyncClient):
     """Tenor tepat 6 bulan pakai cap 0,3%; tenor 7 bulan pindah ke 0,2%."""
     at6 = await client.post(
         "/api/v1/regulatory/check",
-        json={"kind": "pinjol", "amount": 1_000_000, "tenor_months": 6, "rate_daily": 0.003, "income_monthly": 10_000_000},
+        json={
+            "kind": "pinjol",
+            "amount": 1_000_000,
+            "tenor_months": 6,
+            "rate_daily": 0.003,
+            "income_monthly": 10_000_000,
+        },
     )
     assert at6.json()["rate_cap_daily"] == 0.003
     assert all(f["code"] != "ABOVE_OJK_CAP" for f in at6.json()["flags"])
 
     at7 = await client.post(
         "/api/v1/regulatory/check",
-        json={"kind": "pinjol", "amount": 1_000_000, "tenor_months": 7, "rate_daily": 0.003, "income_monthly": 10_000_000},
+        json={
+            "kind": "pinjol",
+            "amount": 1_000_000,
+            "tenor_months": 7,
+            "rate_daily": 0.003,
+            "income_monthly": 10_000_000,
+        },
     )
     assert at7.json()["rate_cap_daily"] == 0.002
     assert any(f["code"] == "ABOVE_OJK_CAP" for f in at7.json()["flags"])
@@ -292,8 +338,11 @@ async def test_tenor_boundary_via_api(client: AsyncClient):
 async def test_edge_income_zero(client: AsyncClient):
     payload = {
         "profile": {
-            "age": 20, "income_type": "allowance", "income_monthly": 0,
-            "expense_monthly": 500_000, "savings": 0,
+            "age": 20,
+            "income_type": "allowance",
+            "income_monthly": 0,
+            "expense_monthly": 500_000,
+            "savings": 0,
             "existing_debt": {"principal": 0, "monthly_payment": 0},
         },
         "decisions": [

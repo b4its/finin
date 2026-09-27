@@ -41,6 +41,8 @@ class FullSimulation:
     horizon_months: int
     best_twin: str = "0"
     sensitivity_drivers: list[str] = field(default_factory=list)
+    effective_values: dict = field(default_factory=dict)
+    overrides: dict = field(default_factory=dict)
 
 
 def income_profile_from(profile: Profile) -> IncomeProfile:
@@ -199,4 +201,6 @@ def run_full_simulation(request: SimulationRequest, assumptions: Assumptions | N
         horizon_months=request.horizon_months,
         best_twin=best,
         sensitivity_drivers=sens.get("drivers", []),
+        effective_values=merged,
+        overrides=dict(request.assumption_overrides or {}),
     )
