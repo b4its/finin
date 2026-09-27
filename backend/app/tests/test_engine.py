@@ -6,7 +6,7 @@ import pytest
 
 from app.engine.assumptions import load_assumptions, monthly_rate
 from app.engine.income import IncomeProfile
-from app.engine.loans import annuity_payment, flat_monthly_payment
+from app.engine.loans import Loan, LoanState, annuity_payment, apply_month, flat_monthly_payment
 from app.engine.runner import run_full_simulation
 from app.engine.simulator import Shock, simulate
 from app.engine.templates import build_twins
@@ -57,6 +57,42 @@ def test_flat_payment_with_lock_cap():
     # bunga ekstrem -> cicilan = (pokok + pokok)/tenor
     p = flat_monthly_payment(1_000_000, 0.5, 6)
     assert abs(p - (2_000_000 / 6)) < 1.0
+
+
+def test_annuity_charges_real_interest():
+    """Anuitas harus mengenakan bunga nyata: total terbayar > pokok."""
+    loan = Loan(kind="annuity", principal=120_000_000, tenor_months=60, annual_rate=0.12)
+    st = LoanState(loan=loan)
+    total_paid = 0.0
+    for _ in range(60):
+        paid, _, _ = apply_month(st, income_available=10_000_000, cash_available=0)
+        total_paid += paid
+    # 12%/th, 5 tahun -> bunga ~30%; total harus jelas > pokok
+    assert total_paid > 120_000_000 * 1.2
+    assert st.closed
+    assert abs(st.balance) < 1.0
+
+
+def test_flat_loan_total_equals_principal_plus_fee():
+    """Flat: total terbayar = pokok + manfaat (lock cap)."""
+    from app.engine.regulatory import total_fee
+
+    loan = Loan(kind="pinjol", principal=2_000_000, tenor_months=3, rate_daily=0.003)
+    st = LoanState(loan=loan)
+    total_paid = 0.0
+    for _ in range(3):
+        paid, _, _ = apply_month(st, income_available=5_000_000, cash_available=0)
+        total_paid += paid
+    expected = 2_000_000 + total_fee(2_000_000, 0.003, 3)
+    assert abs(total_paid - expected) < 1.0
+    assert st.closed
+
+
+def test_annuity_payment_formula_manual():
+    p = annuity_payment(50_000_000, 0.10, 36)
+    i = 0.10 / 12
+    manual = 50_000_000 * i / (1 - (1 + i) ** -36)
+    assert abs(p - manual) < 1e-6
 
 
 def test_monthly_rate_conversion():
