@@ -15,6 +15,7 @@ from app.engine.assumptions import load_assumptions
 from app.engine.runner import FullSimulation, run_full_simulation
 from app.llm.narrator import narrator
 from app.models.simulation import Recommendation, Simulation, Twin
+from app.api.v1.serialization import cfg_to_dict, enriched_snapshot, preset_scores_for
 from app.schemas.input import RecomputeRequest, SimulationRequest
 from app.schemas.output import RecommendationOut, SimulationResponse
 
@@ -29,7 +30,7 @@ def _twin_to_dict(t) -> dict:  # noqa: ANN001
         "dash": t.cfg.dash,
         "icon": t.cfg.icon,
         "description": t.cfg.description,
-        "config": _cfg_to_dict(t.cfg),
+        "config": cfg_to_dict(t.cfg),
         "yearly_series": t.series,
         "summary": t.summary,
         "flags": t.flags,
@@ -40,23 +41,6 @@ def _twin_to_dict(t) -> dict:  # noqa: ANN001
     }
 
 
-def _cfg_to_dict(cfg) -> dict:  # noqa: ANN001
-    return {
-        "code": cfg.code,
-        "label": cfg.label,
-        "description": cfg.description,
-        "_color": cfg.color,
-        "_dash": cfg.dash,
-        "_icon": cfg.icon,
-        "role": cfg.meta.get("role", "decision"),
-        "study": cfg.study,
-        "emergency_first": cfg.emergency_first,
-        "monthly_invest": cfg.monthly_invest,
-        "instrument": cfg.instrument,
-        "loan_kind": cfg.loan.kind if cfg.loan else None,
-        "loan_principal": cfg.loan.principal if cfg.loan else 0,
-        "meta": cfg.meta,
-    }
 
 
 def _full_to_response(sim_id: str, full: FullSimulation, a) -> dict:  # noqa: ANN001
@@ -74,40 +58,24 @@ def _full_to_response(sim_id: str, full: FullSimulation, a) -> dict:  # noqa: AN
         "assumptions": a.to_dict(full.preset),
         "market_context": a.market_context,
         "flags": full.input_flags,
+        "best_twin": full.best_twin,
+        "sensitivity_drivers": full.sensitivity_drivers,
     }
 
 
-def _best_twin(full: FullSimulation):  # noqa: ANN201
-    candidates = [t for t in full.twins if t.cfg.code != "0"]
-    if not candidates:
-        candidates = full.twins
-    return max(candidates, key=lambda t: t.score)
-
-
-def _enriched_snapshot(a, full: FullSimulation) -> dict:  # noqa: ANN001
-    """Snapshot asumsi + metadata agar GET bisa mereproduksi respons lengkap."""
-    snap = a.to_dict(full.preset)
-    snap["_meta"] = {
-        "horizon_months": full.horizon_months,
-        "robust_reason": full.robust_reason,
-        "preset_winners": full.preset_winners,
-        "input_flags": full.input_flags,
-    }
-    return snap
 
 
 async def _persist(session: AsyncSession, sim: Simulation, full: FullSimulation) -> None:
     session.add(sim)
     await session.flush()
     for t in full.twins:
-        ps: dict = dict(full.preset_scores.get(t.cfg.code) or {})
-        ps["_breakdown"] = t.score_breakdown
+        ps = preset_scores_for(full, t.cfg.code)
         session.add(
             Twin(
                 simulation_id=sim.id,
                 code=t.cfg.code,
                 label=t.cfg.label,
-                config=_cfg_to_dict(t.cfg),
+                config=cfg_to_dict(t.cfg),
                 yearly_series=t.series,
                 summary=t.summary,
                 flags=t.flags,
@@ -126,7 +94,7 @@ async def create_simulation(payload: SimulationRequest, session: AsyncSession = 
     sim = Simulation(
         input=payload.model_dump(mode="json"),
         assumption_code=a.code,
-        assumptions_snapshot=_enriched_snapshot(a, full),
+        assumptions_snapshot=enriched_snapshot(a, full),
         preset=payload.preset,
         engine_version=a.engine_version,
         robust=full.robust,
@@ -174,7 +142,7 @@ def _stored_to_response(sim: Simulation, twins: list[Twin]) -> dict:
                 "stress": t.stress or [],
                 "score": float(t.score) if t.score is not None else 0.0,
                 "score_breakdown": (t.preset_scores or {}).get("_breakdown", {}),
-                "deleted_by_hard_rule": False,
+                "deleted_by_hard_rule": bool((t.preset_scores or {}).get("_deleted_by_hard_rule", False)),
             }
             for t in twins
         ],
@@ -184,6 +152,8 @@ def _stored_to_response(sim: Simulation, twins: list[Twin]) -> dict:
         "assumptions": snapshot,
         "market_context": a.market_context,
         "flags": meta.get("input_flags", []),
+        "best_twin": meta.get("best_twin", "0"),
+        "sensitivity_drivers": meta.get("sensitivity_drivers", []),
     }
 
 
@@ -215,18 +185,17 @@ async def recompute(
     for old in result.scalars().all():
         await session.delete(old)
     sim.preset = new_req.preset
-    sim.assumptions_snapshot = _enriched_snapshot(a, full)
+    sim.assumptions_snapshot = enriched_snapshot(a, full)
     sim.robust = full.robust
     await session.flush()
     for tr in full.twins:
-        ps: dict = dict(full.preset_scores.get(tr.cfg.code) or {})
-        ps["_breakdown"] = tr.score_breakdown
+        ps = preset_scores_for(full, tr.cfg.code)
         session.add(
             Twin(
                 simulation_id=sim.id,
                 code=tr.cfg.code,
                 label=tr.cfg.label,
-                config=_cfg_to_dict(tr.cfg),
+                config=cfg_to_dict(tr.cfg),
                 yearly_series=tr.series,
                 summary=tr.summary,
                 flags=tr.flags,
@@ -292,14 +261,22 @@ async def recommendation(sim_id: str, session: AsyncSession = Depends(get_sessio
             "yearly_series": t.yearly_series,
             "flags": t.flags,
             "meta": t.config.get("meta", {}),
+            "score": float(t.score) if t.score is not None else 0.0,
+            "score_breakdown": (t.preset_scores or {}).get("_breakdown", {}),
         }
         for t in twins
     ]
+    meta = (sim.assumptions_snapshot or {}).get("_meta", {})
+    # Gunakan twin terbaik yang sama dengan scoring engine (bukan definisi lain).
+    best_code = meta.get("best_twin")
     candidates = [t for t in twin_dicts if t["code"] != "0"] or twin_dicts
-    best = max(candidates, key=lambda t: t["summary"].get("year_10", {}).get("net_worth_real", 0))
-    others = [t for t in candidates if t is not best]
+    best = next((t for t in candidates if t["code"] == best_code), None)
+    if best is None:
+        best = max(candidates, key=lambda t: t.get("score", 0.0))
+    others = [t for t in candidates if t["code"] != best["code"]]
 
     rec = await narrator.recommend(best, others, bool(sim.robust))
+    breakdown = best.get("score_breakdown", {})
 
     stored = await session.get(Recommendation, sim.id)
     if stored is None:
@@ -308,7 +285,7 @@ async def recommendation(sim_id: str, session: AsyncSession = Depends(get_sessio
             best_twin=best["code"],
             first_step=rec["first_step"],
             rationale=rec["rationale"],
-            score_breakdown={"best": best["code"]},
+            score_breakdown=breakdown,
             source=rec["source"],
         )
         session.add(stored)
@@ -316,6 +293,7 @@ async def recommendation(sim_id: str, session: AsyncSession = Depends(get_sessio
         stored.best_twin = best["code"]
         stored.first_step = rec["first_step"]
         stored.rationale = rec["rationale"]
+        stored.score_breakdown = breakdown
         stored.source = rec["source"]
     await session.commit()
 
@@ -325,6 +303,6 @@ async def recommendation(sim_id: str, session: AsyncSession = Depends(get_sessio
         "best_label": best["label"],
         "first_step": rec["first_step"],
         "rationale": rec["rationale"],
-        "score_breakdown": {"best": best["code"], "score": best["summary"].get("year_10", {})},
+        "score_breakdown": breakdown,
         "source": rec["source"],
     }

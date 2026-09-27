@@ -118,12 +118,16 @@ def rank_twins(
     # aturan keras + baseline tidak boleh menjadi rekomendasi.
     # Baseline ("0") = "tanpa perubahan"; rekomendasi harus berupa aksi konkret.
     excluded = {c: hard_rule_excluded(summaries[c]) for c in results}
+    for c, is_excluded in excluded.items():
+        if is_excluded:
+            breakdowns[c]["deleted_by_hard_rule"] = True
     candidates = [c for c in results if not excluded[c] and c != "0"]
     if not candidates:
         # semua twin keputusan melanggar -> jatuh ke semua twin keputusan
         candidates = [c for c in results if c != "0"]
         for c in candidates:
             breakdowns[c]["hard_rule_overridden"] = True
+            breakdowns[c]["deleted_by_hard_rule"] = False
     if not candidates:
         # hanya baseline tersedia
         candidates = list(results.keys())

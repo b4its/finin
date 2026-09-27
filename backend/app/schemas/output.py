@@ -77,6 +77,8 @@ class SimulationResponse(BaseModel):
     assumptions: dict[str, Any] = {}
     market_context: list[dict[str, Any]] = []
     flags: list[FlagOut] = []
+    best_twin: str = "0"
+    sensitivity_drivers: list[str] = []
 
 
 class RecommendationOut(BaseModel):

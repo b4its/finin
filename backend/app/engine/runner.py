@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from app.engine.assumptions import Assumptions, load_assumptions
 from app.engine.income import IncomeProfile
@@ -39,6 +39,8 @@ class FullSimulation:
     assumptions: Assumptions
     preset: str
     horizon_months: int
+    best_twin: str = "0"
+    sensitivity_drivers: list[str] = field(default_factory=list)
 
 
 def income_profile_from(profile: Profile) -> IncomeProfile:
@@ -177,9 +179,13 @@ def run_full_simulation(request: SimulationRequest, assumptions: Assumptions | N
                 stress=stress_map.get(cfg.code, []),
                 score=bd.get("total", 0.0),
                 score_breakdown=bd,
-                deleted_by_hard_rule=(bd.get("hard_rule_overridden", False) and cfg.code != best),
+                deleted_by_hard_rule=bool(bd.get("deleted_by_hard_rule", False)),
             )
         )
+
+    # Simpan skor per preset juga di breakdown agar bisa ditampilkan.
+    for tr in twin_results:
+        tr.score_breakdown["preset_scores"] = sens["preset_scores"].get(tr.cfg.code, {})
 
     return FullSimulation(
         twins=twin_results,
@@ -191,4 +197,6 @@ def run_full_simulation(request: SimulationRequest, assumptions: Assumptions | N
         assumptions=a,
         preset=request.preset,
         horizon_months=request.horizon_months,
+        best_twin=best,
+        sensitivity_drivers=sens.get("drivers", []),
     )

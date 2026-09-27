@@ -240,10 +240,36 @@ async def test_get_round_trips_full_response(client: AsyncClient):
     assert got["robust_reason"] == created["robust_reason"]
     assert got["preset_winners"] == created["preset_winners"]
     assert got["preset"] == created["preset"]
+    assert got["best_twin"] == created["best_twin"]
+    assert got["sensitivity_drivers"] == created["sensitivity_drivers"]
     # warna & score_breakdown ikut tersimpan
     assert [t["color"] for t in got["twins"]] == [t["color"] for t in created["twins"]]
     assert all(t["score_breakdown"] for t in got["twins"])
     assert [t["code"] for t in got["twins"]] == [t["code"] for t in created["twins"]]
+    # deleted_by_hard_rule konsisten antara POST dan GET
+    assert [t["deleted_by_hard_rule"] for t in got["twins"]] == [
+        t["deleted_by_hard_rule"] for t in created["twins"]
+    ]
+
+
+async def test_best_twin_consistent_across_endpoints(client: AsyncClient):
+    """POST, GET, dan recommendation harus sepakat soal twin terbaik."""
+    created = (await client.post("/api/v1/simulations", json=SAMPLE)).json()
+    sim_id = created["id"]
+    got = (await client.get(f"/api/v1/simulations/{sim_id}")).json()
+    rec = (await client.get(f"/api/v1/simulations/{sim_id}/recommendation")).json()
+
+    # best_twin bukan baseline dan bukan twin yang dilarang aturan keras
+    assert created["best_twin"] != "0"
+    assert got["best_twin"] == created["best_twin"]
+    assert rec["best_twin"] == created["best_twin"]
+
+    # skor best_twin = skor tertinggi di antara kandidat keputusan
+    candidates = [t for t in got["twins"] if t["code"] != "0" and not t["deleted_by_hard_rule"]]
+    top = max(candidates, key=lambda t: t["score"])
+    assert top["code"] == created["best_twin"]
+    # breakdown tersedia & berisi komponen berbobot
+    assert "components" in rec["score_breakdown"]
 
 
 async def test_tenor_boundary_via_api(client: AsyncClient):

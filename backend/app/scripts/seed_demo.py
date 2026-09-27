@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import asyncio
 
-from app.api.v1.simulations import _cfg_to_dict
+from app.api.v1.serialization import cfg_to_dict, enriched_snapshot, preset_scores_for
 from app.core.db import SessionLocal
 from app.engine.assumptions import load_assumptions
 from app.engine.runner import run_full_simulation
@@ -121,7 +121,7 @@ async def main() -> None:
             sim = Simulation(
                 input=req.model_dump(mode="json"),
                 assumption_code=a.code,
-                assumptions_snapshot=a.to_dict(req.preset),
+                assumptions_snapshot=enriched_snapshot(a, full),
                 preset=req.preset,
                 engine_version=a.engine_version,
                 robust=full.robust,
@@ -147,17 +147,18 @@ async def main() -> None:
                 by_twin.setdefault(str(c["twin"]), []).append(c)
 
             for t in full.twins:
+                ps = preset_scores_for(full, t.cfg.code)
                 session.add(
                     Twin(
                         simulation_id=sim.id,
                         code=t.cfg.code,
                         label=t.cfg.label,
-                        config=_cfg_to_dict(t.cfg),
+                        config=cfg_to_dict(t.cfg),
                         yearly_series=t.series,
                         summary=t.summary,
                         flags=t.flags,
                         stress=t.stress,
-                        preset_scores=full.preset_scores.get(t.cfg.code),
+                        preset_scores=ps,
                         score=round(t.score, 4),
                         narrative={"chunks": by_twin.get(str(t.cfg.code), [])},
                     )
