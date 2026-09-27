@@ -244,6 +244,19 @@ export interface ChildEducationDiySpec {
 	invest_instrument: string;
 }
 
+export interface HajiFurodaSpec {
+	total_cost: number;
+	savings_used: number;
+	financing_amount: number;
+	financing_rate_annual: number;
+	tenor_months: number;
+}
+
+export interface HajiRegulerSpec {
+	bpkh_initial_deposit: number;
+	invest_instrument: string;
+}
+
 export interface Decision {
 	type: string;
 	loan?: LoanSpec;
@@ -261,4 +274,6 @@ export interface Decision {
 	passive_invest?: PassiveInvestSpec;
 	child_education_unitlink?: ChildEducationUnitLinkSpec;
 	child_education_diy?: ChildEducationDiySpec;
+	haji_furoda?: HajiFurodaSpec;
+	haji_reguler?: HajiRegulerSpec;
 }

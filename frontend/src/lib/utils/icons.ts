@@ -20,6 +20,8 @@ const ICONS: Record<string, string> = {
 	gem: '💎', // Si Intim & Modal Keluarga
 	store: '🏪', // Si Pebisnis Waralaba
 	'shield-alert': '🛡️', // Si Unit Link Pendidikan
+	kaaba: '🕋', // Si Haji Khusus / Furoda
+	moon: '🌙', // Si Haji Reguler & Sukuk Syariah
 	circle: '●'
 };
 
@@ -44,7 +46,9 @@ export function twinIconLabel(name: string): string {
 		party: 'pesta resepsi pernikahan akbar',
 		gem: 'nikah intim dan modal keluarga',
 		store: 'usaha waralaba franchise',
-		'shield-alert': 'asuransi proteksi unitlink'
+		'shield-alert': 'asuransi proteksi unitlink',
+		kaaba: 'haji furoda khusus',
+		moon: 'haji reguler dan investasi syariah'
 	};
 	return labels[name] ?? 'twin';
 }

@@ -44,6 +44,12 @@
 			title: 'Pendidikan Anak: Unit Link vs Tabungan Mandiri',
 			icon: '🎓',
 			twins: 'O & P'
+		},
+		{
+			type: 'haji_furoda_vs_reguler',
+			title: 'Haji Furoda vs Haji Reguler & Sukuk',
+			icon: '🕋',
+			twins: 'Q & R'
 		}
 	];
 
@@ -156,6 +162,21 @@
 				child_education_diy: {
 					term_life_premium_monthly: 250_000,
 					invest_instrument: 'stock'
+				}
+			};
+		if (type === 'haji_furoda_vs_reguler')
+			return {
+				type,
+				haji_furoda: {
+					total_cost: 250_000_000,
+					savings_used: 50_000_000,
+					financing_amount: 200_000_000,
+					financing_rate_annual: 0.09,
+					tenor_months: 36
+				},
+				haji_reguler: {
+					bpkh_initial_deposit: 25_000_000,
+					invest_instrument: 'bond'
 				}
 			};
 		return { type, emergency: { target_months: 6, invest_monthly: 1_000_000 } };
@@ -665,6 +686,71 @@
 				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
 					Memisahkan proteksi jiwa dengan asuransi murni (tanpa embel-embel investasi). Sisa alokasi dana
 					diinvestasikan 100% secara langsung ke instrumen pasar modal tanpa potongan biaya akuisisi PAYDI.
+				</p>
+			</div>
+		</div>
+	{/if}
+
+	{#if selected.includes('haji_furoda_vs_reguler')}
+		{@const d = decisionOf('haji_furoda_vs_reguler')!}
+		{@const furoda = d.haji_furoda!}
+		{@const reguler = d.haji_reguler!}
+		<div class="card space-y-4 p-4">
+			<p class="text-sm font-semibold">🕋 Haji Khusus / Furoda vs Haji Reguler BPKH + Investasi Sukuk</p>
+			<div>
+				<p class="mb-3 text-sm font-semibold text-amber-400">
+					Skenario Q — Si Haji Khusus / Furoda (Berangkat Instan Tanpa Antre)
+				</p>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+					<CurrencyInput bind:value={furoda.total_cost} label="Total Biaya Paket Haji Furoda" />
+					<CurrencyInput bind:value={furoda.savings_used} label="Porsi Tunai Tabungan" />
+					<CurrencyInput bind:value={furoda.financing_amount} label="Pembiayaan Bank Syariah" />
+				</div>
+				<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+					<label class="block">
+						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]"
+							>Tenor Pembiayaan Syariah (bulan)</span
+						>
+						<input
+							class="input num"
+							type="number"
+							min="12"
+							max="60"
+							value={furoda.tenor_months}
+							oninput={(e) =>
+								(furoda.tenor_months = parseInt((e.target as HTMLInputElement).value) || 36)}
+						/>
+					</label>
+					<PercentInput
+						bind:value={furoda.financing_rate_annual}
+						label="Margin Pembiayaan Bank Syariah / Tahun"
+						step={0.5}
+						max={25}
+						help="Margin murabahah/ujrah pembiayaan porsi haji bank syariah."
+					/>
+				</div>
+			</div>
+
+			<div class="border-t border-[var(--color-line)] pt-4">
+				<p class="mb-3 text-sm font-semibold text-teal-400">
+					Skenario R — Si Haji Reguler BPKH & Sukuk Syariah
+				</p>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+					<CurrencyInput bind:value={reguler.bpkh_initial_deposit} label="Setoran Awal Porsi BPKH" />
+					<label class="block">
+						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]"
+							>Instrumen Investasi Syariah Selisih Dana</span
+						>
+						<select class="input" bind:value={reguler.invest_instrument}>
+							{#each instruments as ins}
+								<option value={ins.value}>{ins.label}</option>
+							{/each}
+						</select>
+					</label>
+				</div>
+				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
+					Mendaftar nomor porsi haji reguler BPKH (Rp25jt). Sisa ratusan juta tabungan dan alokasi cicilan diinvestasikan
+					penuh ke instrumen syariah (Sukuk/Reksadana Syariah) yang terus bertumbuh selama masa tunggu antrean.
 				</p>
 			</div>
 		</div>
