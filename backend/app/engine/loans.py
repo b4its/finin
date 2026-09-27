@@ -120,7 +120,9 @@ def accrue_month(state: LoanState) -> float:
         # Manfaat flat diakui sekali di awal (bulan ke-0). Denda boleh berjalan
         # atas saldo bila menunggak.
         if state.fee_accrued <= 1e-9:
-            interest = min(total_fee(loan.principal, loan.rate_daily, loan.tenor_months, loan.ruleset), loan.max_fee)
+            interest = min(
+                total_fee(loan.principal, loan.rate_daily, loan.tenor_months, loan.ruleset), loan.max_fee
+            )
         else:
             interest = 0.0
         penalty = 0.0
