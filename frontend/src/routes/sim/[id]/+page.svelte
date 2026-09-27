@@ -23,6 +23,7 @@
 	import DebtPayoffAccelerator from '$lib/components/multiverse/DebtPayoffAccelerator.svelte';
 	import EducationFundPlanner from '$lib/components/multiverse/EducationFundPlanner.svelte';
 	import EmergencyRunwaySimulator from '$lib/components/multiverse/EmergencyRunwaySimulator.svelte';
+	import FinancialGoalPlanner from '$lib/components/multiverse/FinancialGoalPlanner.svelte';
 	import ScenarioSandbox from '$lib/components/multiverse/ScenarioSandbox.svelte';
 	import ShareModal from '$lib/components/multiverse/ShareModal.svelte';
 	import Disclaimer from '$lib/components/ui/Disclaimer.svelte';
@@ -54,9 +55,9 @@
 	const TABS = [
 		{ id: 'overview', label: 'Multiverse Utama', icon: '🌌', count: 5 },
 		{ id: 'risk', label: 'Risiko & Ketahanan', icon: '🎲', count: 5 },
-		{ id: 'strategy', label: 'Akselerasi & Target', icon: '🎯', count: 4 },
+		{ id: 'strategy', label: 'Akselerasi & Target', icon: '🎯', count: 5 },
 		{ id: 'future', label: 'Pensiun, Waris & Pajak', icon: '🏛️', count: 5 },
-		{ id: 'all', label: 'Semua Modul', icon: '📋', count: 19 }
+		{ id: 'all', label: 'Semua Modul', icon: '📋', count: 20 }
 	] as const;
 
 	onMount(async () => {
@@ -268,6 +269,7 @@
 				{/if}
 
 				{#if activeTab === 'strategy' || activeTab === 'all'}
+					<FinancialGoalPlanner twins={result.twins} profile={sim.input.profile} />
 					<DebtPayoffAccelerator profile={sim.input.profile} twins={result.twins} />
 					<EducationFundPlanner twins={result.twins} profile={sim.input.profile} />
 					<PortfolioAllocationRadar twins={result.twins} />
