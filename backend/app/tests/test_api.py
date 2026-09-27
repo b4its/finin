@@ -97,6 +97,7 @@ async def test_templates(client: AsyncClient):
         "wedding_grand_vs_intimate",
         "franchise_vs_passive_invest",
         "child_education_unitlink_vs_diy",
+        "haji_furoda_vs_reguler",
     }
 
 
@@ -579,6 +580,44 @@ async def test_api_child_education_unitlink_vs_diy(client: AsyncClient):
     assert "0" in codes
     assert "O" in codes
     assert "P" in codes
+
+
+async def test_api_haji_furoda_vs_reguler(client: AsyncClient):
+    payload = {
+        "profile": {
+            "age": 35,
+            "income_type": "salary",
+            "income_monthly": 20_000_000,
+            "expense_monthly": 8_000_000,
+            "dependents_monthly": 2_000_000,
+            "savings": 80_000_000,
+            "existing_debt": {"principal": 0, "monthly_payment": 0},
+        },
+        "decisions": [
+            {
+                "type": "haji_furoda_vs_reguler",
+                "haji_furoda": {
+                    "total_cost": 250_000_000,
+                    "savings_used": 50_000_000,
+                    "financing_amount": 200_000_000,
+                    "financing_rate_annual": 0.09,
+                    "tenor_months": 36,
+                },
+                "haji_reguler": {
+                    "bpkh_initial_deposit": 25_000_000,
+                    "invest_instrument": "bond",
+                },
+            }
+        ],
+        "preset": "moderat",
+    }
+    r = await client.post("/api/v1/simulations", json=payload)
+    assert r.status_code == 201
+    body = r.json()
+    codes = [t["code"] for t in body["twins"]]
+    assert "0" in codes
+    assert "Q" in codes
+    assert "R" in codes
 
 
 

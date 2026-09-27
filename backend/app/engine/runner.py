@@ -170,6 +170,32 @@ def regulatory_flags_for_input(profile: Profile, decisions: list[Decision], rule
                             f"melebihi batas kemampuan bayar OJK {ruleset.get('dsr_cap', 0.30):.0%}.",
                         )
                     )
+        if (
+            dec.type == "haji_furoda_vs_reguler"
+            and dec.haji_furoda is not None
+            and dec.haji_furoda.financing_amount > 0
+        ):
+            from app.engine.loans import Loan
+
+            haji_l = Loan(
+                kind="annuity",
+                principal=dec.haji_furoda.financing_amount,
+                tenor_months=dec.haji_furoda.tenor_months,
+                annual_rate=dec.haji_furoda.financing_rate_annual,
+                ruleset=ruleset,
+            )
+            if profile.income_monthly > 0:
+                tot = haji_l.scheduled_payment + profile.existing_debt.monthly_payment
+                dsr = tot / profile.income_monthly
+                if dsr > ruleset.get("dsr_cap", 0.30):
+                    flags.append(
+                        Flag(
+                            "orange",
+                            "DSR_OVER_30",
+                            f"Cicilan pembiayaan haji khusus Rp{tot:,.0f}/bulan ≈ {dsr:.0%} penghasilan, "
+                            f"melebihi batas kemampuan bayar OJK {ruleset.get('dsr_cap', 0.30):.0%}.",
+                        )
+                    )
     # DSR utang berjalan
     if profile.income_monthly > 0 and profile.existing_debt.monthly_payment > 0:
         f = check_dsr(profile.existing_debt.monthly_payment, profile.income_monthly, ruleset)

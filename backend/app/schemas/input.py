@@ -144,6 +144,19 @@ class ChildEducationDiyDecision(BaseModel):
     invest_instrument: Instrument = "stock"
 
 
+class HajiFurodaDecision(BaseModel):
+    total_cost: float = Field(..., ge=50_000_000)
+    savings_used: float = Field(..., ge=0)
+    financing_amount: float = Field(0.0, ge=0)
+    financing_rate_annual: float = Field(0.09, ge=0.01, le=0.25)
+    tenor_months: int = Field(36, ge=12, le=60)
+
+
+class HajiRegulerDecision(BaseModel):
+    bpkh_initial_deposit: float = Field(25_000_000, ge=25_000_000)
+    invest_instrument: Instrument = "bond"
+
+
 class Decision(BaseModel):
     type: Literal[
         "loan_vs_save",
@@ -154,6 +167,7 @@ class Decision(BaseModel):
         "wedding_grand_vs_intimate",
         "franchise_vs_passive_invest",
         "child_education_unitlink_vs_diy",
+        "haji_furoda_vs_reguler",
     ]
     loan: LoanDecision | None = None
     save: SaveDecision | None = None
@@ -170,6 +184,8 @@ class Decision(BaseModel):
     passive_invest: PassiveInvestDecision | None = None
     child_education_unitlink: ChildEducationUnitLinkDecision | None = None
     child_education_diy: ChildEducationDiyDecision | None = None
+    haji_furoda: HajiFurodaDecision | None = None
+    haji_reguler: HajiRegulerDecision | None = None
 
     @model_validator(mode="after")
     def _require_payload(self) -> Decision:
@@ -197,6 +213,10 @@ class Decision(BaseModel):
             raise ValueError(
                 "child_education_unitlink_vs_diy butuh 'child_education_unitlink' dan 'child_education_diy'"
             )
+        if self.type == "haji_furoda_vs_reguler" and (
+            self.haji_furoda is None or self.haji_reguler is None
+        ):
+            raise ValueError("haji_furoda_vs_reguler butuh 'haji_furoda' dan 'haji_reguler'")
         return self
 
 

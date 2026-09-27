@@ -585,4 +585,55 @@ def test_child_education_unitlink_vs_diy(assumptions):
     assert res_p.at_year(15).net_worth > res_o.at_year(15).net_worth
 
 
+def test_haji_furoda_vs_reguler(assumptions):
+    from app.engine.regulatory import ruleset_from_assumptions
+    from app.schemas.input import HajiFurodaDecision, HajiRegulerDecision
+
+    prof = Profile(
+        age=35,
+        income_type="salary",
+        income_monthly=20_000_000,
+        expense_monthly=8_000_000,
+        dependents_monthly=2_000_000,
+        savings=100_000_000,
+        existing_debt=ExistingDebt(),
+    )
+    ip = IncomeProfile("salary", 20_000_000)
+    rs = ruleset_from_assumptions(None)
+    dec = Decision(
+        type="haji_furoda_vs_reguler",
+        haji_furoda=HajiFurodaDecision(
+            total_cost=250_000_000,
+            savings_used=50_000_000,
+            financing_amount=200_000_000,
+            financing_rate_annual=0.09,
+            tenor_months=36,
+        ),
+        haji_reguler=HajiRegulerDecision(
+            bpkh_initial_deposit=25_000_000,
+            invest_instrument="bond",
+        ),
+    )
+    twins = twins_for_decision(dec, prof, ip, rs, 0.05, {})
+    assert len(twins) == 2
+    twin_q, twin_r = twins[0], twins[1]
+    assert twin_q.code == "Q"
+    assert twin_q.initial_dp == 50_000_000
+    assert twin_q.loan is not None
+
+    assert twin_r.code == "R"
+    assert twin_r.initial_dp == 25_000_000
+    assert twin_r.loan is None
+    assert twin_r.monthly_invest > 0
+
+    res_q = simulate(twin_q, prof, ip, {"inflation": 0.03, "returns": {"bond": 0.068}}, rs, months=240)
+    res_r = simulate(twin_r, prof, ip, {"inflation": 0.03, "returns": {"bond": 0.068}}, rs, months=240)
+
+    assert res_q.at_year(10).net_worth > 0
+    assert res_r.at_year(10).net_worth > 0
+    # Twin R (Haji Reguler + Investasi Sukuk) memiliki akumulasi kekayaan jauh lebih tinggi di tahun ke-10 dan 20
+    assert res_r.at_year(10).net_worth > res_q.at_year(10).net_worth
+    assert res_r.at_year(20).net_worth > res_q.at_year(20).net_worth
+
+
 

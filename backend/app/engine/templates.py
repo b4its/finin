@@ -32,6 +32,8 @@ TWIN_STYLE = {
     "N": {"color": "#10B981", "dash": "dashed", "icon": "trending-up"},
     "O": {"color": "#F43F5E", "dash": "solid", "icon": "shield-alert"},
     "P": {"color": "#059669", "dash": "dashed", "icon": "graduation-cap"},
+    "Q": {"color": "#D97706", "dash": "solid", "icon": "kaaba"},
+    "R": {"color": "#0D9488", "dash": "dashed", "icon": "moon"},
 }
 
 STYLE_FALLBACK = {"color": "#94A3B8", "dash": "solid", "icon": "circle"}
@@ -535,6 +537,71 @@ def twins_for_decision(
         )
         return [twin_o, twin_p]
 
+    if (
+        dec.type == "haji_furoda_vs_reguler"
+        and dec.haji_furoda
+        and dec.haji_reguler
+    ):
+        q_style = _style("Q")
+        r_style = _style("R")
+
+        syariah_loan = None
+        scheduled_pay = 0.0
+        if dec.haji_furoda.financing_amount > 0:
+            syariah_loan = Loan(
+                kind="annuity",
+                principal=dec.haji_furoda.financing_amount,
+                tenor_months=dec.haji_furoda.tenor_months,
+                annual_rate=dec.haji_furoda.financing_rate_annual,
+                ruleset=ruleset,
+            )
+            scheduled_pay = syariah_loan.scheduled_payment
+
+        fin_desc = (
+            f" + pembiayaan syariah Rp{dec.haji_furoda.financing_amount:,.0f} "
+            f"tenor {dec.haji_furoda.tenor_months} bln)"
+            if dec.haji_furoda.financing_amount > 0
+            else ")"
+        )
+        twin_q = TwinConfig(
+            code="Q",
+            label="Si Haji Khusus / Furoda",
+            description=(
+                f"Berangkat haji langsung tanpa antre kuota (biaya Rp{dec.haji_furoda.total_cost:,.0f}, "
+                f"tabungan Rp{dec.haji_furoda.savings_used:,.0f}{fin_desc}."
+            ),
+            loan=syariah_loan,
+            initial_dp=dec.haji_furoda.savings_used,
+            monthly_invest=0.0,
+            meta={
+                "total_cost": dec.haji_furoda.total_cost,
+                "savings_used": dec.haji_furoda.savings_used,
+                "financing_amount": dec.haji_furoda.financing_amount,
+            },
+            **q_style,
+        )
+
+        invest_diff = max(0.0, scheduled_pay)
+        twin_r = TwinConfig(
+            code="R",
+            label="Si Haji Reguler & Sukuk Syariah",
+            description=(
+                f"Daftar porsi reguler BPKH Rp{dec.haji_reguler.bpkh_initial_deposit:,.0f}, "
+                f"sisa tabungan utuh dan investasikan selisih dana Rp{invest_diff:,.0f}/bln "
+                f"ke {dec.haji_reguler.invest_instrument}."
+            ),
+            initial_dp=dec.haji_reguler.bpkh_initial_deposit,
+            monthly_invest=invest_diff,
+            instrument=dec.haji_reguler.invest_instrument,
+            meta={
+                "bpkh_initial_deposit": dec.haji_reguler.bpkh_initial_deposit,
+                "monthly_invest": invest_diff,
+                "instrument": dec.haji_reguler.invest_instrument,
+            },
+            **r_style,
+        )
+        return [twin_q, twin_r]
+
     return []
 
 
@@ -794,6 +861,46 @@ def decision_templates() -> list[dict]:
                 {
                     "key": "child_education_diy.invest_instrument",
                     "label": "Instrumen investasi mandiri",
+                    "type": "instrument",
+                },
+            ],
+        },
+        {
+            "type": "haji_furoda_vs_reguler",
+            "title": "Haji Furoda/Khusus (Pembiayaan Syariah) vs Haji Reguler BPKH + Investasi Sukuk",
+            "twin_a": {"code": "Q", "label": "Si Haji Khusus / Furoda", **_style("Q")},
+            "twin_b": {"code": "R", "label": "Si Haji Reguler & Sukuk Syariah", **_style("R")},
+            "fields": [
+                {
+                    "key": "haji_furoda.total_cost",
+                    "label": "Total biaya paket Haji Furoda / Khusus",
+                    "type": "currency",
+                },
+                {
+                    "key": "haji_furoda.savings_used",
+                    "label": "Porsi dana tunai dari tabungan",
+                    "type": "currency",
+                },
+                {
+                    "key": "haji_furoda.financing_amount",
+                    "label": "Porsi pembiayaan bank syariah",
+                    "type": "currency",
+                },
+                {
+                    "key": "haji_furoda.tenor_months",
+                    "label": "Tenor pembiayaan syariah (bulan)",
+                    "type": "int",
+                    "min": 12,
+                    "max": 60,
+                },
+                {
+                    "key": "haji_reguler.bpkh_initial_deposit",
+                    "label": "Setoran awal porsi haji reguler BPKH",
+                    "type": "currency",
+                },
+                {
+                    "key": "haji_reguler.invest_instrument",
+                    "label": "Instrumen investasi syariah pembanding",
                     "type": "instrument",
                 },
             ],
