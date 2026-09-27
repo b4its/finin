@@ -161,6 +161,19 @@ export interface EmergencySpec {
 	invest_monthly: number;
 }
 
+export interface KprSpec {
+	property_price: number;
+	down_payment_pct: number;
+	interest_rate_annual: number;
+	tenor_years: number;
+	property_appreciation_annual: number;
+}
+
+export interface RentSpec {
+	rent_monthly: number;
+	invest_instrument: string;
+}
+
 export interface Decision {
 	type: string;
 	loan?: LoanSpec;
@@ -168,4 +181,6 @@ export interface Decision {
 	study?: StudySpec;
 	work?: WorkSpec;
 	emergency?: EmergencySpec;
+	kpr?: KprSpec;
+	rent?: RentSpec;
 }

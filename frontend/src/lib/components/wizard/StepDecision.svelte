@@ -14,6 +14,12 @@
 			title: 'Dana Darurat Dulu vs Langsung Investasi',
 			icon: '🛡️',
 			twins: 'E & F'
+		},
+		{
+			type: 'kpr_vs_rent',
+			title: 'Beli Rumah KPR vs Sewa & Investasi',
+			icon: '🏠',
+			twins: 'G & H'
 		}
 	];
 
@@ -52,6 +58,21 @@
 				},
 				work: { upskill_monthly: 300_000, skill_premium: 0.1, premium_after_months: 12 }
 			};
+		if (type === 'kpr_vs_rent')
+			return {
+				type,
+				kpr: {
+					property_price: 500_000_000,
+					down_payment_pct: 0.2,
+					interest_rate_annual: 0.08,
+					tenor_years: 15,
+					property_appreciation_annual: 0.04
+				},
+				rent: {
+					rent_monthly: 2_500_000,
+					invest_instrument: 'bond'
+				}
+			};
 		return { type, emergency: { target_months: 6, invest_monthly: 1_000_000 } };
 	}
 
@@ -77,7 +98,7 @@
 		</p>
 	</div>
 
-	<div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
+	<div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
 		{#each TEMPLATES as t}
 			<button
 				type="button"
@@ -245,6 +266,74 @@
 					</p>
 				</label>
 				<CurrencyInput bind:value={em.invest_monthly} label="Investasi per bulan" />
+			</div>
+		</div>
+	{/if}
+
+	{#if selected.includes('kpr_vs_rent')}
+		{@const d = decisionOf('kpr_vs_rent')!}
+		{@const kpr = d.kpr!}
+		{@const rent = d.rent!}
+		<div class="card space-y-4 p-4">
+			<div class="flex items-center justify-between">
+				<p class="text-sm font-semibold">🏠 Beli Rumah KPR vs Sewa & Investasi</p>
+			</div>
+
+			<div class="space-y-4">
+				<p class="text-sm font-semibold text-emerald-400">Skenario G — Si Pemilik Rumah (KPR)</p>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+					<CurrencyInput bind:value={kpr.property_price} label="Harga Properti / Rumah" />
+					<PercentInput bind:value={kpr.down_payment_pct} label="Uang Muka (DP)" step={5} />
+					<PercentInput
+						bind:value={kpr.interest_rate_annual}
+						label="Suku Bunga KPR / Tahun"
+						step={0.5}
+					/>
+				</div>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+					<label class="block">
+						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]"
+							>Tenor KPR (tahun)</span
+						>
+						<input
+							class="input num"
+							type="number"
+							min="5"
+							max="30"
+							value={kpr.tenor_years}
+							oninput={(e) =>
+								(kpr.tenor_years = parseInt((e.target as HTMLInputElement).value) || 15)}
+						/>
+					</label>
+					<PercentInput
+						bind:value={kpr.property_appreciation_annual}
+						label="Apresiasi Nilai Properti / Tahun"
+						step={0.5}
+					/>
+				</div>
+			</div>
+
+			<div class="border-t border-[var(--color-line)] pt-4">
+				<p class="mb-3 text-sm font-semibold text-pink-400">
+					Skenario H — Si Pengontrak & Investor
+				</p>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+					<CurrencyInput bind:value={rent.rent_monthly} label="Biaya Sewa / Kontrak Bulanan" />
+					<label class="block">
+						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]"
+							>Instrumen Investasi Selisih</span
+						>
+						<select class="input" bind:value={rent.invest_instrument}>
+							{#each instruments as ins}
+								<option value={ins.value}>{ins.label}</option>
+							{/each}
+						</select>
+					</label>
+				</div>
+				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
+					Dana DP tetap berada di tabungan/investasi, dan selisih antara cicilan KPR dengan biaya
+					sewa diinvestasikan secara disiplin tiap bulan.
+				</p>
 			</div>
 		</div>
 	{/if}
