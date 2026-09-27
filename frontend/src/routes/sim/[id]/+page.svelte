@@ -10,6 +10,7 @@
 	import RecommendationPanel from '$lib/components/multiverse/RecommendationPanel.svelte';
 	import ReportModal from '$lib/components/multiverse/ReportModal.svelte';
 	import PitchModal from '$lib/components/multiverse/PitchModal.svelte';
+	import MilestoneTracker from '$lib/components/multiverse/MilestoneTracker.svelte';
 	import Disclaimer from '$lib/components/ui/Disclaimer.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
@@ -32,6 +33,7 @@
 	let focusedTwin = $state<string | null>(null);
 	let reportOpen = $state(false);
 	let pitchOpen = $state(false);
+	let exportMenuOpen = $state(false);
 
 	onMount(async () => {
 		if (!sim.result || sim.result.id !== simId) {
@@ -115,6 +117,37 @@
 				>
 					⚡ Presentasi Juri
 				</button>
+				<div class="relative inline-block">
+					<button
+						class="btn btn-ghost !py-1.5 !px-3 text-xs"
+						onclick={() => (exportMenuOpen = !exportMenuOpen)}
+						title="Unduh data simulasi lengkap (CSV atau JSON)"
+					>
+						📥 Unduh Data ▾
+					</button>
+					{#if exportMenuOpen}
+						<div
+							class="absolute right-0 top-full z-20 mt-1 w-48 rounded-xl border border-[var(--color-line)] bg-[var(--color-void-1)] p-1.5 shadow-xl text-left"
+						>
+							<a
+								href={api.exportCsvUrl(result.id)}
+								class="block rounded-lg px-3 py-2 text-xs font-medium text-[var(--color-ink)] hover:bg-[var(--color-void-3)]"
+								download
+								onclick={() => (exportMenuOpen = false)}
+							>
+								📊 CSV Trajektori 240 Bulan
+							</a>
+							<a
+								href={api.exportJsonUrl(result.id)}
+								class="block rounded-lg px-3 py-2 text-xs font-medium text-[var(--color-ink)] hover:bg-[var(--color-void-3)]"
+								download
+								onclick={() => (exportMenuOpen = false)}
+							>
+								💾 JSON Paket Simulasi
+							</a>
+						</div>
+					{/if}
+				</div>
 			{/if}
 			<a href="/start" class="btn btn-ghost !py-1.5">Simulasi baru</a>
 		</div>
@@ -165,6 +198,7 @@
 				/>
 				<NetWorthChart twins={result.twins} bind:selectedYear={year} bind:real />
 				<CompareView twins={result.twins} {year} />
+				<MilestoneTracker twins={result.twins} />
 				<StressTestPanel twins={result.twins} bind:active={activeShock} />
 			</div>
 

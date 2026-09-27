@@ -51,6 +51,7 @@ export interface Twin {
 	config: Record<string, unknown>;
 	yearly_series: YearPoint[];
 	summary: Record<string, unknown>;
+	milestones?: Record<string, number | null>;
 	flags: Flag[];
 	stress: StressResult[];
 	score: number;

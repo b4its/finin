@@ -94,7 +94,9 @@ export const api = {
 			commits: number;
 			simulations: number;
 			commit_rate: number | null;
-		}>('/impact/summary')
+		}>('/impact/summary'),
+	exportCsvUrl: (id: string) => `${baseUrl()}${API}/simulations/${id}/export/csv`,
+	exportJsonUrl: (id: string) => `${baseUrl()}${API}/simulations/${id}/export/json`
 };
 
 /** Stream narasi (SSE) dengan EventSource-like parsing via fetch. */

@@ -20,6 +20,16 @@
 	function printReport() {
 		window.print();
 	}
+
+	function formatMilestone(m: number | null | undefined): string {
+		if (m === undefined || m === null) return '—';
+		if (m === 0) return 'Bulan 0';
+		const y = Math.floor(m / 12);
+		const rem = m % 12;
+		if (y === 0) return `Bln ${rem}`;
+		if (rem === 0) return `Thn ${y}`;
+		return `Thn ${y}, Bln ${rem}`;
+	}
 </script>
 
 {#if open}
@@ -189,6 +199,52 @@
 												<span class="text-emerald-400 print:text-green-700">Patuh OJK</span>
 											{/if}
 										</td>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+				<!-- Tonggak Capaian Finansial (Milestones) -->
+				<div>
+					<h3
+						class="mb-2 text-xs font-bold uppercase tracking-wider text-[var(--color-ink-dim)] print:text-gray-700"
+					>
+						Pencapaian Tonggak Finansial Penting (Bulan / Tahun)
+					</h3>
+					<div
+						class="overflow-x-auto rounded-xl border border-[var(--color-line)] print:border-black/20"
+					>
+						<table class="w-full text-left text-xs">
+							<thead
+								class="border-b border-[var(--color-line)] bg-[var(--color-void-2)] text-[11px] print:border-black/20 print:bg-gray-100"
+							>
+								<tr>
+									<th class="p-2 font-semibold">Kembar Multiverse</th>
+									<th class="p-2 font-semibold">🛡️ Dana Darurat Penuh</th>
+									<th class="p-2 font-semibold">🚀 100 Juta Pertama</th>
+									<th class="p-2 font-semibold">⛓️ Bebas Utang</th>
+									<th class="p-2 font-semibold">🏆 1 Miliar Pertama</th>
+									<th class="p-2 font-semibold">🏖️ FIRE (Rule of 25)</th>
+								</tr>
+							</thead>
+							<tbody class="divide-y divide-[var(--color-line)] print:divide-black/10">
+								{#each simulation.twins as t}
+									{@const ms = t.milestones ?? {}}
+									{@const isBest = t.code === bestTwin?.code}
+									<tr class={isBest ? 'bg-blue-500/5 font-semibold print:bg-gray-50' : ''}>
+										<td class="p-2">
+											<span class="inline-block w-4 font-bold" style="color:{t.color}">
+												{twinIcon(t.icon)}
+											</span>
+											<span>Twin {t.code}: {t.label}</span>
+										</td>
+										<td class="p-2 num">{formatMilestone(ms.emergency_fund_full)}</td>
+										<td class="p-2 num">{formatMilestone(ms.net_worth_100m)}</td>
+										<td class="p-2 num">{formatMilestone(ms.debt_free)}</td>
+										<td class="p-2 num">{formatMilestone(ms.net_worth_1b)}</td>
+										<td class="p-2 num">{formatMilestone(ms.financial_independence)}</td>
 									</tr>
 								{/each}
 							</tbody>
