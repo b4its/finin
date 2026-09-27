@@ -283,6 +283,24 @@ export interface DividendInvestSpec {
 	invest_instrument: string;
 }
 
+export interface EvVehicleSpec {
+	vehicle_price: number;
+	government_subsidy: number;
+	down_payment_pct: number;
+	loan_interest_rate_annual: number;
+	loan_tenor_months: number;
+	monthly_fuel_cost_savings: number;
+	annual_tax_pkb_savings: number;
+}
+
+export interface IceVehicleSpec {
+	vehicle_price: number;
+	down_payment_pct: number;
+	loan_interest_rate_annual: number;
+	loan_tenor_months: number;
+	invest_instrument: string;
+}
+
 export interface Decision {
 	type: string;
 	loan?: LoanSpec;
@@ -306,4 +324,6 @@ export interface Decision {
 	career_freelance?: CareerFreelanceSpec;
 	rental_property?: RentalPropertySpec;
 	dividend_invest?: DividendInvestSpec;
+	ev_vehicle?: EvVehicleSpec;
+	ice_vehicle?: IceVehicleSpec;
 }

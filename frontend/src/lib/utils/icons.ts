@@ -26,6 +26,8 @@ const ICONS: Record<string, string> = {
 	laptop: '💻', // Si Freelancer & Solopreneur
 	'building-2': '🏬', // Si Juragan Properti Sewa
 	'chart-line': '📈', // Si Investor Dividen Pasar Modal
+	zap: '⚡', // Si Pengadopsi Kendaraan Listrik (EV)
+	fuel: '⛽', // Si Pengendara Bensin Konvensional (ICE)
 	circle: '●'
 };
 
@@ -56,7 +58,9 @@ export function twinIconLabel(name: string): string {
 		building: 'pegawai korporat tetap',
 		laptop: 'freelancer dan solopreneur',
 		'building-2': 'juragan properti sewa komersial',
-		'chart-line': 'investor dividen pasar modal'
+		'chart-line': 'investor dividen pasar modal',
+		zap: 'kendaraan listrik ev subsidi',
+		fuel: 'kendaraan bensin konvensional'
 	};
 	return labels[name] ?? 'twin';
 }

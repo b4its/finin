@@ -62,6 +62,12 @@
 			title: 'Properti Sewa (Kos) vs Saham Dividen',
 			icon: '🏬',
 			twins: 'U & V'
+		},
+		{
+			type: 'electric_vehicle_vs_ice',
+			title: 'Kendaraan Listrik EV vs Bensin (ICE)',
+			icon: '⚡',
+			twins: 'W & X'
 		}
 	];
 
@@ -219,6 +225,26 @@
 				},
 				dividend_invest: {
 					invest_instrument: 'stock'
+				}
+			};
+		if (type === 'electric_vehicle_vs_ice')
+			return {
+				type,
+				ev_vehicle: {
+					vehicle_price: 28_000_000,
+					government_subsidy: 7_000_000,
+					down_payment_pct: 0.2,
+					loan_interest_rate_annual: 0.09,
+					loan_tenor_months: 36,
+					monthly_fuel_cost_savings: 500_000,
+					annual_tax_pkb_savings: 400_000
+				},
+				ice_vehicle: {
+					vehicle_price: 22_000_000,
+					down_payment_pct: 0.2,
+					loan_interest_rate_annual: 0.09,
+					loan_tenor_months: 36,
+					invest_instrument: 'bond'
 				}
 			};
 		return { type, emergency: { target_months: 6, invest_monthly: 1_000_000 } };
@@ -964,6 +990,76 @@
 				</div>
 				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
 					Menghindari kerepotan operasional fisik properti (penyewa menunggak, renovasi atap bocor). Uang DP ditahan utuh dan setara cicilan KPR dialihkan penuh ke portofolio saham dividen (bebas PPh dividen UU HPP / PMK 18/2021).
+				</p>
+			</div>
+		</div>
+	{/if}
+
+	{#if selected.includes('electric_vehicle_vs_ice')}
+		{@const d = decisionOf('electric_vehicle_vs_ice')!}
+		{@const ev = d.ev_vehicle!}
+		{@const ice = d.ice_vehicle!}
+		<div class="card space-y-4 p-4">
+			<p class="text-sm font-semibold">⚡ Kendaraan Listrik (EV Subsidi OJK/Kemenperin) vs Motor/Mobil Bensin (ICE)</p>
+			<div>
+				<p class="mb-3 text-sm font-semibold text-cyan-400">
+					Skenario W — Si Pengadopsi Kendaraan Listrik EV (Subsidi Pemerintah & Efisiensi Energi)
+				</p>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+					<CurrencyInput bind:value={ev.vehicle_price} label="Harga Resmi OTR Kendaraan Listrik" />
+					<CurrencyInput bind:value={ev.government_subsidy} label="Subsidi / Insentif PPN DTP" help="Subsidi motor listrik Rp7jt (Permenperin 21/2023) atau PPN DTP 1% (PMK 8/2024)." />
+					<PercentInput
+						bind:value={ev.down_payment_pct}
+						label="Uang Muka (DP EV)"
+						step={5}
+						min={5}
+						max={50}
+					/>
+				</div>
+				<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+					<CurrencyInput bind:value={ev.monthly_fuel_cost_savings} label="Hemat Biaya Energi (PLN vs BBM)/Bulan" help="Listrik PLN Rp1.699/kWh vs Bensin Pertalite/Pertamax." />
+					<CurrencyInput bind:value={ev.annual_tax_pkb_savings} label="Hemat PKB Tahunan (PKB EV 0% Permendagri 6/2023)" />
+					<label class="block">
+						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]">Tenor Pembiayaan (bulan)</span>
+						<input
+							class="input num"
+							type="number"
+							min="12"
+							max="60"
+							value={ev.loan_tenor_months}
+							oninput={(e) =>
+								(ev.loan_tenor_months = parseInt((e.target as HTMLInputElement).value) || 36)}
+						/>
+					</label>
+				</div>
+			</div>
+
+			<div class="border-t border-[var(--color-line)] pt-4">
+				<p class="mb-3 text-sm font-semibold text-orange-400">
+					Skenario X — Si Pengendara Bensin Konvensional (ICE) & Portofolio Selisih
+				</p>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+					<CurrencyInput bind:value={ice.vehicle_price} label="Harga Beli Kendaraan Bensin" />
+					<PercentInput
+						bind:value={ice.down_payment_pct}
+						label="Uang Muka (DP ICE)"
+						step={5}
+						min={5}
+						max={50}
+					/>
+					<label class="block">
+						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]"
+							>Instrumen Investasi Selisih Dana</span
+						>
+						<select class="input" bind:value={ice.invest_instrument}>
+							{#each instruments as ins}
+								<option value={ins.value}>{ins.label}</option>
+							{/each}
+						</select>
+					</label>
+				</div>
+				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
+					Harga awal kendaraan bensin lebih murah tanpa risiko penggantian baterai di tahun ke-8, namun menanggung beban BBM harian dan PKB tahunan secara berkelanjutan.
 				</p>
 			</div>
 		</div>
