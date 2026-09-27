@@ -19,6 +19,7 @@ const ICONS: Record<string, string> = {
 	party: '🎉', // Si Pesta Akbar
 	gem: '💎', // Si Intim & Modal Keluarga
 	store: '🏪', // Si Pebisnis Waralaba
+	'shield-alert': '🛡️', // Si Unit Link Pendidikan
 	circle: '●'
 };
 
@@ -42,7 +43,8 @@ export function twinIconLabel(name: string): string {
 		bike: 'beli kendaraan bekas tunai',
 		party: 'pesta resepsi pernikahan akbar',
 		gem: 'nikah intim dan modal keluarga',
-		store: 'usaha waralaba franchise'
+		store: 'usaha waralaba franchise',
+		'shield-alert': 'asuransi proteksi unitlink'
 	};
 	return labels[name] ?? 'twin';
 }

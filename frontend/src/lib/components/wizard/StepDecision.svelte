@@ -38,6 +38,12 @@
 			title: 'Franchise Mikro (KUR) vs Investasi Dividen Pasif',
 			icon: '🏪',
 			twins: 'M & N'
+		},
+		{
+			type: 'child_education_unitlink_vs_diy',
+			title: 'Pendidikan Anak: Unit Link vs Tabungan Mandiri',
+			icon: '🎓',
+			twins: 'O & P'
 		}
 	];
 
@@ -134,6 +140,22 @@
 				},
 				passive_invest: {
 					invest_instrument: 'bond'
+				}
+			};
+		if (type === 'child_education_unitlink_vs_diy')
+			return {
+				type,
+				child_education_unitlink: {
+					monthly_premium: 1_500_000,
+					target_years: 15,
+					acquisition_fee_pct_y1: 0.6,
+					acquisition_fee_pct_y2: 0.3,
+					acquisition_fee_pct_y3: 0.15,
+					invest_instrument: 'stock'
+				},
+				child_education_diy: {
+					term_life_premium_monthly: 250_000,
+					invest_instrument: 'stock'
 				}
 			};
 		return { type, emergency: { target_months: 6, invest_monthly: 1_000_000 } };
@@ -586,6 +608,63 @@
 				</div>
 				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
 					Tidak mengambil risiko operasional bisnis dan bebas cicilan utang KUR. Tabungan tetap utuh di portofolio, dan alokasi dana setara cicilan dialihkan tiap bulan ke instrumen pasif.
+				</p>
+			</div>
+		</div>
+	{/if}
+
+	{#if selected.includes('child_education_unitlink_vs_diy')}
+		{@const d = decisionOf('child_education_unitlink_vs_diy')!}
+		{@const ul = d.child_education_unitlink!}
+		{@const diy = d.child_education_diy!}
+		<div class="card space-y-4 p-4">
+			<p class="text-sm font-semibold">🎓 Dana Pendidikan Anak: Unit Link vs Tabungan Mandiri + Asuransi Murni</p>
+			<div>
+				<p class="mb-3 text-sm font-semibold text-rose-400">
+					Skenario O — Si Asuransi Unit Link (PAYDI Terintegrasi)
+				</p>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+					<CurrencyInput bind:value={ul.monthly_premium} label="Premi Unit Link Bulanan" />
+					<PercentInput
+						bind:value={ul.acquisition_fee_pct_y1}
+						label="Beban Akuisisi Th-1 (Beban PAYDI)"
+						step={5}
+						max={90}
+						help="Rerata polis di RI memotong 50-70% premi di tahun pertama untuk komisi agen."
+					/>
+					<label class="block">
+						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]"
+							>Subdana Investasi Polis</span
+						>
+						<select class="input" bind:value={ul.invest_instrument}>
+							{#each instruments as ins}
+								<option value={ins.value}>{ins.label}</option>
+							{/each}
+						</select>
+					</label>
+				</div>
+			</div>
+
+			<div class="border-t border-[var(--color-line)] pt-4">
+				<p class="mb-3 text-sm font-semibold text-emerald-400">
+					Skenario P — Si Portofolio Mandiri (SBN/Saham) + Asuransi Murni
+				</p>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+					<CurrencyInput bind:value={diy.term_life_premium_monthly} label="Premi Asuransi Jiwa Murni / Bulan" />
+					<label class="block">
+						<span class="mb-1.5 block text-sm font-medium text-[var(--color-ink-dim)]"
+							>Instrumen Investasi Mandiri (0% Akuisisi)</span
+						>
+						<select class="input" bind:value={diy.invest_instrument}>
+							{#each instruments as ins}
+								<option value={ins.value}>{ins.label}</option>
+							{/each}
+						</select>
+					</label>
+				</div>
+				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
+					Memisahkan proteksi jiwa dengan asuransi murni (tanpa embel-embel investasi). Sisa alokasi dana
+					diinvestasikan 100% secara langsung ke instrumen pasar modal tanpa potongan biaya akuisisi PAYDI.
 				</p>
 			</div>
 		</div>

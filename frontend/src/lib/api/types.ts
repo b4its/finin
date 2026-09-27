@@ -41,6 +41,22 @@ export interface TwinSummary {
 	defaulted: boolean;
 }
 
+export interface Profile {
+	age: number;
+	income_type: string;
+	income_monthly: number;
+	income_range?: { min: number; max: number } | null;
+	expense_monthly: number;
+	dependents_monthly: number;
+	savings: number;
+	existing_debt?: {
+		principal: number;
+		monthly_payment: number;
+		annual_rate?: number;
+		tenor_months?: number;
+	};
+}
+
 export interface Twin {
 	code: string;
 	label: string;
@@ -214,6 +230,20 @@ export interface PassiveInvestSpec {
 	invest_instrument: string;
 }
 
+export interface ChildEducationUnitLinkSpec {
+	monthly_premium: number;
+	target_years: number;
+	acquisition_fee_pct_y1: number;
+	acquisition_fee_pct_y2: number;
+	acquisition_fee_pct_y3: number;
+	invest_instrument: string;
+}
+
+export interface ChildEducationDiySpec {
+	term_life_premium_monthly: number;
+	invest_instrument: string;
+}
+
 export interface Decision {
 	type: string;
 	loan?: LoanSpec;
@@ -229,4 +259,6 @@ export interface Decision {
 	wedding_intimate?: WeddingIntimateSpec;
 	franchise?: FranchiseSpec;
 	passive_invest?: PassiveInvestSpec;
+	child_education_unitlink?: ChildEducationUnitLinkSpec;
+	child_education_diy?: ChildEducationDiySpec;
 }
