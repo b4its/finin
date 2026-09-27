@@ -1,8 +1,9 @@
 <script lang="ts">
 	import type { Twin } from '$lib/api/types';
 	import { rupiahBrief, months } from '$lib/utils/format';
+	import { twinIcon } from '$lib/utils/icons';
 
-	let { twins }: { twins: Twin[] } = $props();
+	let { twins, year = 10 }: { twins: Twin[]; year?: number } = $props();
 
 	let aCode = $state('0');
 	let bCode = $state('A');
@@ -42,40 +43,61 @@
 			` L ${x(20)} ${yFor(0)} Z`
 	);
 
-	const metrics: { key: string; label: string; fn: (t: Twin, y: number) => string }[] = [
+	function at(t: Twin | undefined, y: number) {
+		return t?.yearly_series.find((p) => p.year === y);
+	}
+
+	const metrics: {
+		key: string;
+		label: string;
+		fmt: (v: number) => string;
+		get: (t: Twin | undefined) => number;
+	}[] = [
 		{
 			key: 'net_worth',
-			label: 'Net worth th 10',
-			fn: (t) => rupiahBrief(t.yearly_series.find((p) => p.year === 10)?.net_worth ?? 0)
+			label: 'Net worth',
+			fmt: rupiahBrief,
+			get: (t) => at(t, year)?.net_worth ?? 0
 		},
 		{
 			key: 'net_worth_real',
-			label: 'Net worth riil th 10',
-			fn: (t) => rupiahBrief(t.yearly_series.find((p) => p.year === 10)?.net_worth_real ?? 0)
+			label: 'Net worth riil',
+			fmt: rupiahBrief,
+			get: (t) => at(t, year)?.net_worth_real ?? 0
 		},
+		{ key: 'cash', label: 'Kas', fmt: rupiahBrief, get: (t) => at(t, year)?.cash ?? 0 },
+		{ key: 'invest', label: 'Investasi', fmt: rupiahBrief, get: (t) => at(t, year)?.invest ?? 0 },
+		{ key: 'debt', label: 'Sisa utang', fmt: rupiahBrief, get: (t) => at(t, year)?.debt ?? 0 },
 		{
-			key: 'debt',
-			label: 'Sisa utang th 10',
-			fn: (t) => rupiahBrief(t.yearly_series.find((p) => p.year === 10)?.debt ?? 0)
+			key: 'cashflow',
+			label: 'Arus kas/bln',
+			fmt: rupiahBrief,
+			get: (t) => at(t, year)?.cashflow ?? 0
 		},
 		{
 			key: 'emergency',
-			label: 'Dana darurat th 10',
-			fn: (t) => months(t.yearly_series.find((p) => p.year === 10)?.emergency_months ?? 0)
+			label: 'Dana darurat',
+			fmt: months,
+			get: (t) => at(t, year)?.emergency_months ?? 0
 		},
-		{ key: 'score', label: 'Skor', fn: (t) => `${(t.score * 100).toFixed(0)} / 100` }
+		{
+			key: 'score',
+			label: 'Skor',
+			fmt: (v) => `${(v * 100).toFixed(0)}/100`,
+			get: (t) => t?.score ?? 0
+		}
 	];
 </script>
 
 <div class="card p-4">
 	<div class="mb-3 flex flex-wrap items-center gap-3">
-		<h3 class="text-sm font-semibold">Bandingkan dua twin</h3>
+		<h3 class="text-sm font-semibold">Bandingkan dua twin (tahun ke-{year})</h3>
 		<div class="flex items-center gap-2 text-sm">
-			<select class="input !w-auto !py-1.5" bind:value={aCode}>
+			<select class="input !w-auto !py-1.5" bind:value={aCode} aria-label="Twin pertama">
 				{#each twins as t (t.code)}<option value={t.code}>{t.label}</option>{/each}
 			</select>
 			<span class="text-[var(--color-ink-dim)]">vs</span>
-			<select class="input !w-auto !py-1.5" bind:value={bCode}>
+			<select class="input !w-auto !py-1.5" bind:value={bCode} aria-label="Twin kedua">
 				{#each twins as t (t.code)}<option value={t.code}>{t.label}</option>{/each}
 			</select>
 		</div>
@@ -86,7 +108,7 @@
 			viewBox={`0 0 ${W} ${H}`}
 			class="w-full min-w-[480px]"
 			role="img"
-			aria-label="Wealth gap per tahun"
+			aria-label="Selisih net worth per tahun antara dua twin"
 		>
 			<line
 				x1={PAD.l}
@@ -137,26 +159,38 @@
 		= lebih rendah, dibanding {a?.label}.
 	</p>
 
-	<div class="mt-4 overflow-hidden rounded-xl border border-[var(--color-line)]">
+	<div class="mt-4 overflow-x-auto rounded-xl border border-[var(--color-line)]">
 		<table class="w-full text-sm">
 			<thead class="bg-[var(--color-void-2)] text-xs text-[var(--color-ink-dim)]">
 				<tr>
-					<th class="px-3 py-2 text-left font-medium">Metrik</th>
-					<th class="px-3 py-2 text-right font-medium">{a?.label}</th>
-					<th class="px-3 py-2 text-right font-medium">{b?.label}</th>
+					<th class="px-3 py-2 text-left font-medium">Metrik th {year}</th>
+					<th class="px-3 py-2 text-right font-medium"
+						>{twinIcon(a?.icon ?? 'circle')} {a?.label}</th
+					>
+					<th class="px-3 py-2 text-right font-medium"
+						>{twinIcon(b?.icon ?? 'circle')} {b?.label}</th
+					>
 					<th class="px-3 py-2 text-right font-medium">Selisih</th>
 				</tr>
 			</thead>
 			<tbody class="divide-y divide-[var(--color-line)]">
 				{#each metrics as m}
-					{@const av = m.fn(a, 10)}
-					{@const bv = m.fn(b, 10)}
+					{@const av = m.get(a)}
+					{@const bv = m.get(b)}
+					{@const diff = bv - av}
 					<tr>
 						<td class="px-3 py-2">{m.label}</td>
-						<td class="num px-3 py-2 text-right">{av}</td>
-						<td class="num px-3 py-2 text-right">{bv}</td>
-						<td class="num px-3 py-2 text-right text-[var(--color-ink-dim)]">
-							{av === bv ? '—' : bv > av ? '↑' : '↓'}
+						<td class="num px-3 py-2 text-right">{m.fmt(av)}</td>
+						<td class="num px-3 py-2 text-right">{m.fmt(bv)}</td>
+						<td
+							class="num px-3 py-2 text-right"
+							style="color:{diff > 0
+								? 'var(--color-ok)'
+								: diff < 0
+									? 'var(--color-danger)'
+									: 'var(--color-ink-dim)'}"
+						>
+							{diff > 0 ? '+' : ''}{m.fmt(diff)}
 						</td>
 					</tr>
 				{/each}

@@ -1,7 +1,7 @@
 <script lang="ts">
-import type { Twin } from '$lib/api/types';
-import { rupiahBrief } from '$lib/utils/format';
-import { twinIcon } from '$lib/utils/icons';
+	import type { Twin } from '$lib/api/types';
+	import { rupiahBrief } from '$lib/utils/format';
+	import { twinIcon } from '$lib/utils/icons';
 
 	let {
 		twins,

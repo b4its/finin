@@ -127,12 +127,14 @@
 					class="num"
 					fill={yr === selectedYear ? 'var(--color-ink)' : 'var(--color-ink-dim)'}
 				>
-					{twinIcon(t.icon)} {rupiahBrief(valueAt(t, yr))}
+					{twinIcon(t.icon)}
+					{rupiahBrief(valueAt(t, yr))}
 				</text>
 			{/each}
 			<!-- label -->
 			<text x={rootX + 16} y={ty + 4} font-size="11" font-weight="600" fill={t.color}>
-				{twinIcon(t.icon)} {t.label}
+				{twinIcon(t.icon)}
+				{t.label}
 			</text>
 			{#if broken}
 				<text
@@ -167,7 +169,9 @@
 					{#each twins as t (t.code)}
 						<tr>
 							<td class="px-2 py-1">{twinIcon(t.icon)} {t.label}</td>
-							{#each years as yr}<td class="num px-2 py-1 text-right">{rupiahBrief(valueAt(t, yr))}</td>{/each}
+							{#each years as yr}<td class="num px-2 py-1 text-right"
+									>{rupiahBrief(valueAt(t, yr))}</td
+								>{/each}
 							<td class="px-2 py-1 text-[var(--color-ink-dim)]">
 								{isBroken(t) ? 'Tidak bertahan saat guncangan' : '—'}
 							</td>

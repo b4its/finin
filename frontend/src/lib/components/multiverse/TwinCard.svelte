@@ -51,7 +51,9 @@
 		<div class="flex flex-col items-end gap-1">
 			{#if isBest}<Badge level="ok">Terbaik</Badge>{/if}
 			{#if twin.deleted_by_hard_rule}
-				<Tooltip text="Dikeluarkan dari rekomendasi karena melanggar aturan keras (macet atau DSR > 30% lebih dari 6 bulan).">
+				<Tooltip
+					text="Dikeluarkan dari rekomendasi karena melanggar aturan keras (macet atau DSR > 30% lebih dari 6 bulan)."
+				>
 					<Badge level="red">Aturan keras</Badge>
 				</Tooltip>
 			{/if}

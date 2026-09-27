@@ -46,7 +46,7 @@
 	});
 
 	let result = $derived(sim.result);
-	let bestCode = $derived(sim.recommendation?.best_twin ?? null);
+	let bestCode = $derived(sim.recommendation?.best_twin ?? sim.result?.best_twin ?? null);
 
 	function openDetail(t: Twin) {
 		detailTwin = t;
@@ -63,6 +63,25 @@
 		moderat: 'Moderat',
 		optimis: 'Optimis'
 	};
+
+	// Bobot komponen skor (PRD §8) + label manusiawi.
+	const scoreLabel: Record<string, string> = {
+		net_worth_real: 'Net worth riil th-10',
+		emergency: 'Dana darurat',
+		dsr: 'Rasio cicilan (DSR)',
+		stress: 'Lolos stress test',
+		robust: 'Konsisten antar preset'
+	};
+	const scoreWeight: Record<string, number> = {
+		net_worth_real: 0.3,
+		emergency: 0.25,
+		dsr: 0.2,
+		stress: 0.15,
+		robust: 0.1
+	};
+	function weightOf(k: string): number {
+		return scoreWeight[k] ?? 0.1;
+	}
 </script>
 
 <svelte:head><title>Multiverse — Financial Twin</title></svelte:head>
@@ -75,6 +94,7 @@
 					robust={result.robust}
 					reason={result.robust_reason}
 					winners={result.preset_winners}
+					drivers={result.sensitivity_drivers}
 				/>{/if}
 			<a href="/start" class="btn btn-ghost !py-1.5">Simulasi baru</a>
 		</div>
@@ -124,7 +144,7 @@
 					onFocusTwin={(c) => (focusedTwin = c)}
 				/>
 				<NetWorthChart twins={result.twins} bind:selectedYear={year} bind:real />
-				<CompareView twins={result.twins} />
+				<CompareView twins={result.twins} {year} />
 				<StressTestPanel twins={result.twins} bind:active={activeShock} />
 			</div>
 
@@ -175,11 +195,11 @@
 		</div>
 
 		<div class="mt-6">
-				<AssumptionPanel
-					assumptions={result.assumptions}
-					bind:overrides={assumptionOverrides}
-					onRecompute={(ov) => sim.recompute(preset ?? result.preset, ov)}
-				/>
+			<AssumptionPanel
+				assumptions={result.assumptions}
+				bind:overrides={assumptionOverrides}
+				onRecompute={(ov) => sim.recompute(preset ?? result.preset, ov)}
+			/>
 		</div>
 	{/if}
 
@@ -194,31 +214,80 @@
 >
 	{#if detailTwin}
 		<p class="mb-4 text-sm text-[var(--color-ink-dim)]">{detailTwin.description}</p>
+		{@const pt = detailTwin.yearly_series.find((p) => p.year === year)}
 		<div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
 			<div>
 				<div class="text-xs text-[var(--color-ink-dim)]">Net worth th {year}</div>
-				<div class="num text-lg font-bold">
-					{rupiahBrief(detailTwin.yearly_series.find((p) => p.year === year)?.net_worth ?? 0)}
-				</div>
+				<div class="num text-lg font-bold">{rupiahBrief(pt?.net_worth ?? 0)}</div>
 			</div>
 			<div>
 				<div class="text-xs text-[var(--color-ink-dim)]">Nilai riil</div>
-				<div class="num text-lg font-bold">
-					{rupiahBrief(detailTwin.yearly_series.find((p) => p.year === year)?.net_worth_real ?? 0)}
-				</div>
+				<div class="num text-lg font-bold">{rupiahBrief(pt?.net_worth_real ?? 0)}</div>
 			</div>
 			<div>
 				<div class="text-xs text-[var(--color-ink-dim)]">Dana darurat</div>
-				<div class="num text-lg font-bold">
-					{months(detailTwin.yearly_series.find((p) => p.year === year)?.emergency_months ?? 0)}
-				</div>
+				<div class="num text-lg font-bold">{months(pt?.emergency_months ?? 0)}</div>
 			</div>
 			<div>
 				<div class="text-xs text-[var(--color-ink-dim)]">DSR</div>
-				<div class="num text-lg font-bold">
-					{percent(detailTwin.yearly_series.find((p) => p.year === year)?.dsr ?? 0, 0)}
-				</div>
+				<div class="num text-lg font-bold">{percent(pt?.dsr ?? 0, 0)}</div>
 			</div>
+		</div>
+
+		<!-- Aset, utang, arus kas (field yang sebelumnya tidak ditampilkan) -->
+		<div
+			class="mt-3 grid grid-cols-2 gap-4 rounded-xl border border-[var(--color-line)] p-3 sm:grid-cols-4"
+		>
+			<div>
+				<div class="text-xs text-[var(--color-ink-dim)]">Kas</div>
+				<div class="num font-semibold">{rupiahBrief(pt?.cash ?? 0)}</div>
+			</div>
+			<div>
+				<div class="text-xs text-[var(--color-ink-dim)]">Investasi</div>
+				<div class="num font-semibold">{rupiahBrief(pt?.invest ?? 0)}</div>
+			</div>
+			<div>
+				<div class="text-xs text-[var(--color-ink-dim)]">Utang</div>
+				<div class="num font-semibold">{rupiahBrief(pt?.debt ?? 0)}</div>
+			</div>
+			<div>
+				<div class="text-xs text-[var(--color-ink-dim)]">Arus kas/bln</div>
+				<div class="num font-semibold">{rupiahBrief(pt?.cashflow ?? 0)}</div>
+			</div>
+		</div>
+
+		<!-- Skor & breakdown (PRD §8) -->
+		<div class="mt-4">
+			<h4 class="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-dim)]">
+				Skor rekomendasi: {(detailTwin.score * 100).toFixed(0)}/100
+			</h4>
+			{#if detailTwin.score_breakdown?.components}
+				<div class="space-y-1.5">
+					{#each Object.entries(detailTwin.score_breakdown.components as Record<string, number>) as [k, v]}
+						<div class="flex items-center gap-2 text-xs">
+							<span class="w-36 shrink-0 text-[var(--color-ink-dim)]">{scoreLabel[k] ?? k}</span>
+							<div class="h-1.5 flex-1 overflow-hidden rounded-full bg-[var(--color-line)]">
+								<div
+									class="h-full rounded-full"
+									style="width:{Math.min(
+										100,
+										(v / weightOf(k)) * 100
+									)}%; background:var(--color-accent)"
+								></div>
+							</div>
+							<span class="num w-20 text-right">{v.toFixed(3)} / {weightOf(k)}</span>
+						</div>
+					{/each}
+				</div>
+			{/if}
+			{#if detailTwin.score_breakdown?.preset_scores}
+				<p class="mt-2 text-xs text-[var(--color-ink-dim)]">
+					Skor per preset:
+					{#each Object.entries(detailTwin.score_breakdown.preset_scores as Record<string, number>) as [k, v]}
+						<span class="chip mr-1 !text-[0.65rem]">{k.slice(0, 5)}: {(v * 100).toFixed(0)}</span>
+					{/each}
+				</p>
+			{/if}
 		</div>
 
 		{#if detailTwin.flags.length}
@@ -240,9 +309,14 @@
 				{#each detailTwin.stress as s}
 					<div class="flex items-center justify-between text-sm">
 						<span class="text-[var(--color-ink-dim)]">{s.label}</span>
-						<Badge level={s.survived ? 'ok' : 'red'}
-							>{s.survived ? 'Bertahan' : 'Tidak bertahan'}</Badge
-						>
+						<div class="flex items-center gap-2">
+							<span class="num text-xs text-[var(--color-ink-dim)]"
+								>kas min {rupiahBrief(s.min_cash)}</span
+							>
+							<Badge level={s.survived ? 'ok' : 'red'}
+								>{s.survived ? 'Bertahan' : 'Tidak bertahan'}</Badge
+							>
+						</div>
 					</div>
 				{/each}
 			</div>

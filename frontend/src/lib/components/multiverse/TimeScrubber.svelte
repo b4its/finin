@@ -44,11 +44,7 @@
 		<div class="mt-3 flex flex-wrap gap-1.5">
 			<span class="text-xs text-[var(--color-ink-dim)]">Narasi twin:</span>
 			{#each twins as t (t.code)}
-				<button
-					class="chip"
-					style="border-color:{t.color}"
-					onclick={() => onFocusTwin?.(t.code)}
-				>
+				<button class="chip" style="border-color:{t.color}" onclick={() => onFocusTwin?.(t.code)}>
 					<span class="inline-block h-2 w-2 rounded-full" style="background:{t.color}"></span>
 					{t.label}
 				</button>
@@ -57,7 +53,9 @@
 	{/if}
 
 	{#if narration}
-		<p class="mt-3 rounded-xl border border-[var(--color-line)] bg-[var(--color-void-2)] p-3 text-sm leading-relaxed">
+		<p
+			class="mt-3 rounded-xl border border-[var(--color-line)] bg-[var(--color-void-2)] p-3 text-sm leading-relaxed"
+		>
 			{narration}
 		</p>
 	{:else}

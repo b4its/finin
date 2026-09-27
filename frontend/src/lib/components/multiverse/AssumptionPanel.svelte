@@ -146,7 +146,8 @@
 							<label class="block">
 								<div class="flex items-center justify-between text-xs">
 									<span class={overridden ? 'font-semibold text-[var(--color-accent)]' : ''}
-										>{e.label}{#if e.returns} (imbal){/if}</span
+										>{e.label}{#if e.returns}
+											(imbal){/if}</span
 									>
 									<span class="num">{percent(val)}</span>
 								</div>
@@ -157,7 +158,11 @@
 									step="0.001"
 									value={val}
 									oninput={(ev) =>
-										setOverride(e.key, e.returns, parseFloat((ev.target as HTMLInputElement).value))}
+										setOverride(
+											e.key,
+											e.returns,
+											parseFloat((ev.target as HTMLInputElement).value)
+										)}
 									class="mt-1 w-full accent-[var(--color-accent)]"
 									aria-label={`${e.label} ${percent(val)}`}
 								/>
