@@ -10,6 +10,25 @@
 		null
 	);
 
+	const faqs = [
+		{
+			q: 'Apakah data saya aman?',
+			a: 'Ya. Tidak ada akun, nama, maupun NIK. Simulasi diidentifikasi UUID anonim dan disimpan 30 hari (sesuai UU 27/2022 PDP). Riwayat juga tersimpan lokal di perangkatmu.'
+		},
+		{
+			q: 'Apakah ini nasihat keuangan?',
+			a: 'Bukan. Financial Twin adalah alat simulasi edukatif. Semua proyeksi bergantung pada asumsi dan tidak menjamin hasil. Konsultasikan keputusan penting dengan perencana keuangan berlisensi.'
+		},
+		{
+			q: 'Dari mana angka-angkanya?',
+			a: 'Semua angka dihitung mesin deterministik, bukan oleh AI. AI hanya menarasikan dan setiap angkanya divalidasi. Set asumsi berversi (ID-2026-09) dengan sumber OJK, BI, BPS, dan LPS — bisa kamu lihat dan edit.'
+		},
+		{
+			q: 'Kenapa pakai aturan OJK?',
+			a: 'Batas bunga pinjol (0,3%/hari tenor ≤6 bln, 0,2% >6 bln), lock cap 100% pokok, dan DSR 30% tertanam di engine. Kalau keputusanmu melanggar, sistem menandainya.'
+		}
+	];
+
 	onMount(async () => {
 		try {
 			const a = await api.assumptions();
@@ -69,6 +88,51 @@
 				<FutureSelfScale bind:value={sim.fscPre} />
 			</div>
 		</div>
+	</section>
+
+	<section class="mt-16" aria-labelledby="how-heading">
+		<h2 id="how-heading" class="text-center text-2xl font-bold">Cara kerjanya — 3 langkah</h2>
+		<p class="mx-auto mt-2 max-w-xl text-center text-sm text-[var(--color-ink-dim)]">
+			Tanpa akun, tanpa unggah data. Semua perhitungan transparan dan bisa diaudit.
+		</p>
+		<ol class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+			<li class="card relative p-5">
+				<span
+					class="num absolute right-4 top-4 text-3xl font-black text-[var(--color-void-3)]"
+					aria-hidden="true">1</span
+				>
+				<div class="text-2xl" aria-hidden="true">📝</div>
+				<h3 class="mt-2 font-bold">Ceritakan posisimu</h3>
+				<p class="mt-1 text-sm text-[var(--color-ink-dim)]">
+					Pilih jenis penghasilan, tanggungan, utang berjalan, dan 1–2 keputusan besar yang sedang
+					kamu timbang.
+				</p>
+			</li>
+			<li class="card relative p-5">
+				<span
+					class="num absolute right-4 top-4 text-3xl font-black text-[var(--color-void-3)]"
+					aria-hidden="true">2</span
+				>
+				<div class="text-2xl" aria-hidden="true">⚙️</div>
+				<h3 class="mt-2 font-bold">Engine menghitung 240 bulan</h3>
+				<p class="mt-1 text-sm text-[var(--color-ink-dim)]">
+					Mesin deterministik memproyeksikan setiap cabang lintas 3 preset asumsi, plus uji
+					guncangan dan aturan OJK.
+				</p>
+			</li>
+			<li class="card relative p-5">
+				<span
+					class="num absolute right-4 top-4 text-3xl font-black text-[var(--color-void-3)]"
+					aria-hidden="true">3</span
+				>
+				<div class="text-2xl" aria-hidden="true">🌌</div>
+				<h3 class="mt-2 font-bold">Bandingkan multiverse-mu</h3>
+				<p class="mt-1 text-sm text-[var(--color-ink-dim)]">
+					Lihat kembaran digitalmu berdampingan, temukan rekomendasi, lalu komit langkah pertama
+					hari ini.
+				</p>
+			</li>
+		</ol>
 	</section>
 
 	{#if impact && impact.commits > 0}
@@ -133,6 +197,26 @@
 				Setiap asumsi punya nilai, tanggal, dan tautan sumber. LLM hanya menarasikan — tidak
 				menghitung.
 			</p>
+		</div>
+	</section>
+
+	<section class="mt-16" aria-labelledby="faq-heading">
+		<h2 id="faq-heading" class="text-center text-2xl font-bold">Pertanyaan yang sering diajukan</h2>
+		<div class="mx-auto mt-6 max-w-2xl space-y-3">
+			{#each faqs as f}
+				<details class="card group p-4">
+					<summary
+						class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold"
+					>
+						<span>{f.q}</span>
+						<span
+							class="text-[var(--color-ink-dim)] transition-transform group-open:rotate-45"
+							aria-hidden="true">+</span
+						>
+					</summary>
+					<p class="mt-2 text-sm leading-relaxed text-[var(--color-ink-dim)]">{f.a}</p>
+				</details>
+			{/each}
 		</div>
 	</section>
 
