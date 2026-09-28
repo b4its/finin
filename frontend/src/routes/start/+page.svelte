@@ -5,45 +5,66 @@
 	import StepPosition from '$lib/components/wizard/StepPosition.svelte';
 	import StepDecision from '$lib/components/wizard/StepDecision.svelte';
 	import StepAssumption from '$lib/components/wizard/StepAssumption.svelte';
+	import StepReview from '$lib/components/wizard/StepReview.svelte';
 	import { sim } from '$lib/stores/simulation.svelte';
 	import { toast } from '$lib/stores/toast.svelte';
+	import { validateStep, type WizardStep, type WizardUiStep } from '$lib/utils/wizard-validation';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 
-	let step = $state(0);
+	const LAST_STEP = 4; // 0..4 (4 = review)
+	let step = $state<WizardUiStep>(0);
 	let fsc = $state<number | null>(sim.fscPre);
+	let fscSkipped = $state(false);
 	let building = $state(false);
 	let buildError = $state<string | null>(null);
 
-	const steps = ['Penghasilan', 'Posisi', 'Keputusan', 'Asumsi'];
+	const steps = ['Penghasilan', 'Posisi', 'Keputusan', 'Asumsi', 'Ringkasan'];
 
 	onMount(() => {
 		sim.loadAssumptions();
 	});
 
-	let canNext = $derived(
-		step === 0
-			? sim.input.profile.income_monthly >= 0
-			: step === 2
-				? sim.input.decisions.length >= 1
-				: true
+	/** Validasi langkah saat ini (review = langkah terakhir, selalu lolos). */
+	let currentValidation = $derived(
+		step <= 3 ? validateStep(step as WizardStep, sim.input) : { valid: true, issues: [] }
 	);
+	let canNext = $derived(currentValidation.valid);
 
 	async function next() {
-		if (step < 3) {
-			step++;
+		if (!canNext) return;
+		if (step < LAST_STEP) {
+			step = (step + 1) as WizardUiStep;
+			scrollTop();
 			return;
 		}
 		await run();
 	}
 
 	function back() {
-		if (step > 0) step--;
+		if (step > 0) {
+			step = (step - 1) as WizardUiStep;
+			scrollTop();
+		}
+	}
+
+	function gotoStep(s: WizardUiStep) {
+		step = s;
+		scrollTop();
+	}
+
+	function scrollTop() {
+		document.getElementById('wizard-top')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	}
+
+	function skipFsc() {
+		fsc = null;
+		fscSkipped = true;
 	}
 
 	async function run() {
-		if (fsc !== null) {
-			// dicatat setelah simulasi dibuat (butuh id), disimpan sementara
+		// Catat FSC pra-simulasi hanya bila diisi (bukan 0 / tidak dilewati).
+		if (fsc !== null && fsc > 0) {
 			sessionStorage.setItem('fsc_pre', String(fsc));
 		}
 		building = true;
@@ -63,19 +84,25 @@
 			toast.error('Gagal membangun multiverse. Cek koneksi backend lalu coba lagi.');
 		} finally {
 			building = false;
+			// Bersihkan sisa agar tidak bocor ke simulasi berikutnya bila gagal.
+			sessionStorage.removeItem('fsc_pre');
 		}
 	}
 </script>
 
 <svelte:head><title>Mulai — Financial Twin</title></svelte:head>
 
-<div class="mx-auto max-w-3xl px-4 py-6 sm:px-5 sm:py-8">
+<div id="wizard-top" class="mx-auto max-w-3xl scroll-mt-20 px-4 py-6 sm:px-5 sm:py-8">
 	<div class="mb-6 flex items-center justify-between gap-3">
 		<div>
 			<h1 class="text-lg font-bold">Bangun multiverse-mu</h1>
 			<p class="text-xs text-[var(--color-ink-dim)]">Selesai dalam &lt; 90 detik · tanpa akun</p>
 		</div>
-		<div class="flex gap-1" aria-label={`Progres: langkah ${step + 1} dari 4`} role="img">
+		<div
+			class="flex gap-1"
+			aria-label={`Progres: langkah ${step + 1} dari ${LAST_STEP + 1}`}
+			role="img"
+		>
 			{#each steps as _s, i}
 				<span
 					class="h-1.5 w-8 rounded-full transition-colors"
@@ -86,22 +113,23 @@
 		</div>
 	</div>
 
-	{#if step === 0 && fsc === null}
+	{#if step === 0 && fsc === null && !fscSkipped}
 		<div class="card mb-4 p-5">
 			<div class="flex items-center justify-between">
 				<h2 class="text-base font-bold">
 					🧬 Sebelum mulai — seberapa dekat kamu dengan masa depan?
 				</h2>
 				<button
+					type="button"
 					class="text-xs text-[var(--color-ink-dim)] hover:underline"
-					onclick={() => (fsc = 0)}
+					onclick={skipFsc}
 				>
 					Lewati
 				</button>
 			</div>
 			<p class="mt-1 text-xs text-[var(--color-ink-dim)]">
 				Riset Hershfield (2011) membuktikan: keterhubungan visual dengan diri masa depan
-				melipatgandakan tabungan.
+				melipatgandakan tabungan. Opsional — kamu bisa melewatinya.
 			</p>
 			<div class="mt-3">
 				<FutureSelfScale bind:value={fsc} compact />
@@ -110,9 +138,22 @@
 	{/if}
 
 	<div class="card p-5 sm:p-6">
-		<div class="mb-5">
-			<div class="text-xs text-[var(--color-ink-dim)]">Langkah {step + 1} dari 4</div>
-			<div class="text-sm font-semibold">{steps[step]}</div>
+		<div class="mb-5 flex items-center justify-between">
+			<div>
+				<div class="text-xs text-[var(--color-ink-dim)]">
+					Langkah {step + 1} dari {LAST_STEP + 1}
+				</div>
+				<div class="text-sm font-semibold">{steps[step]}</div>
+			</div>
+			{#if step > 0}
+				<button
+					type="button"
+					class="text-xs text-[var(--color-ink-dim)] hover:underline"
+					onclick={() => gotoStep(0)}
+				>
+					Mulai dari awal
+				</button>
+			{/if}
 		</div>
 
 		{#if step === 0}
@@ -121,8 +162,23 @@
 			<StepPosition />
 		{:else if step === 2}
 			<StepDecision />
-		{:else}
+		{:else if step === 3}
 			<StepAssumption />
+		{:else}
+			<StepReview onEdit={gotoStep} />
+		{/if}
+
+		{#if currentValidation.issues.length}
+			<ul class="mt-4 space-y-1.5">
+				{#each currentValidation.issues as issue (issue.field + issue.message)}
+					<li
+						class="flex items-start gap-2 rounded-lg border border-[var(--color-warn)] bg-amber-500/10 p-2.5 text-xs"
+					>
+						<span aria-hidden="true">⚠️</span>
+						<span class="text-[var(--color-ink-dim)]">{issue.message}</span>
+					</li>
+				{/each}
+			</ul>
 		{/if}
 	</div>
 
@@ -132,12 +188,14 @@
 		</div>
 	{/if}
 
-	<div class="mt-5 flex items-center justify-between">
-		<button class="btn btn-ghost" onclick={back} disabled={step === 0}>← Kembali</button>
-		<button class="btn btn-primary" onclick={next} disabled={!canNext || building}>
+	<div class="mt-5 flex items-center justify-between gap-2">
+		<button type="button" class="btn btn-ghost" onclick={back} disabled={step === 0 || building}>
+			← Kembali
+		</button>
+		<button type="button" class="btn btn-primary" onclick={next} disabled={!canNext || building}>
 			{#if building}
 				Membangun multiverse…
-			{:else if step === 3}
+			{:else if step === LAST_STEP}
 				Bangun multiverse →
 			{:else}
 				Lanjut →
