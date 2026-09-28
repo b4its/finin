@@ -61,12 +61,12 @@ def run_stress(
             shock=shock,
             use_min_income=True,
         )
-        # Twin bertahan jika kas tidak pernah benar-benar 0 sekaligus investasi 0
-        # (yaitu: masih punya bantalan cair) DAN tidak menambah utang baru.
+        # Twin bertahan jika kas tidak pernah menyentuh 0 (masih punya bantalan
+        # likuid) DAN tidak terpaksa menambah utang baru kapan pun selama horizon.
         min_cash = min(m.cash for m in res.months)
         new_debt = max(m.new_debt for m in res.months)
         worst_month = min(range(len(res.months)), key=lambda i: res.months[i].net_worth)
-        survived = (min_cash > 0 or new_debt == 0) and new_debt == 0
+        survived = min_cash > 0 and new_debt == 0
         out.append(
             {
                 "shock": shock.code,

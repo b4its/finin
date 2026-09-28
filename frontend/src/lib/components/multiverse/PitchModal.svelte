@@ -215,7 +215,8 @@
 
 						<div class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 text-left">
 							{#each simulation.twins as t}
-								{@const jobShock = t.stress.find((s) => s.shock === 'job_loss_3m')}
+								{@const jobShock =
+									t.stress.find((s) => s.shock === 'income_loss_3m') ?? t.stress[0]}
 								<div
 									class="rounded-xl border p-3.5 transition-all {jobShock?.survived
 										? 'border-emerald-500 bg-emerald-500/5'

@@ -165,6 +165,8 @@ def simulate(
         # Sisa baki pinjaman bulan ini (untuk snapshot).
         debt_balance = sum(ls.balance for ls in loans if not ls.closed)
 
+        new_debt_month = 0.0
+
         if surplus >= 0:
             # Alokasikan surplus: dana darurat dulu (jika twin Si Siaga) lalu investasi.
             if cfg.emergency_first and cash < emergency_target:
@@ -201,8 +203,9 @@ def simulate(
                 invest += cash
                 cash = 0.0
                 if invest < 0:
-                    # Benar-benar kehabisan: catat sebagai utang baru baru (tidak modal).
-                    new_debt_total += -invest
+                    # Benar-benar kehabisan: catat sebagai utang baru non-modal.
+                    new_debt_month = -invest
+                    new_debt_total += new_debt_month
                     invest = 0.0
 
         # Bunga / pertumbuhan.
@@ -245,7 +248,7 @@ def simulate(
             emergency_months=emergency_months,
             dsr=dsr,
             defaulted=defaulted,
-            new_debt=0.0,
+            new_debt=new_debt_month,
         )
         result.months.append(snap)
         if defaulted:
@@ -255,7 +258,6 @@ def simulate(
         for ls in loans:
             result.max_arrears_days = max(result.max_arrears_days, ls.max_arrears_days)
 
-    result.months[-1].new_debt = new_debt_total
     return result
 
 

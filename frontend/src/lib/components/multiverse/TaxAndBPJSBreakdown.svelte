@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { rupiah, rupiahBrief, percent } from '$lib/utils/format';
 	import CurrencyInput from '$lib/components/ui/CurrencyInput.svelte';
+	import { terRateFor, BPJS_JP_MAX_WAGE, BPJS_KES_MAX_WAGE } from '$lib/data/tax';
 
 	let { initialGross = 10_000_000 }: { initialGross?: number } = $props();
 
@@ -14,94 +15,18 @@
 	let includeBpjs = $state(true);
 	let currentAge = $state(26);
 
-	// Tabel TER A, B, C client-side untuk responsivitas instan
-	const TER_A_LIMITS: [number, number][] = [
-		[5_400_000, 0.0],
-		[5_650_000, 0.0025],
-		[5_950_000, 0.005],
-		[6_300_000, 0.0075],
-		[6_750_000, 0.01],
-		[7_500_000, 0.0125],
-		[8_550_000, 0.015],
-		[9_650_000, 0.0175],
-		[10_050_000, 0.02],
-		[10_350_000, 0.0225],
-		[10_700_000, 0.025],
-		[11_050_000, 0.03],
-		[11_600_000, 0.035],
-		[12_500_000, 0.04],
-		[13_750_000, 0.05],
-		[15_100_000, 0.06],
-		[16_950_000, 0.07],
-		[19_750_000, 0.08],
-		[24_150_000, 0.09],
-		[26_450_000, 0.1],
-		[28_000_000, 0.11],
-		[30_050_000, 0.12],
-		[32_400_000, 0.13],
-		[35_400_000, 0.14],
-		[39_100_000, 0.15],
-		[43_850_000, 0.16],
-		[47_800_000, 0.17],
-		[51_400_000, 0.18],
-		[56_300_000, 0.19],
-		[62_200_000, 0.2],
-		[Infinity, 0.25]
-	];
+	// Tabel TER PPh 21 (PP 58/2023) — sumber tunggal di `$lib/data/tax`.
+	// Endpoint backend `/api/v1/tax/calculate` memakai tabel identik.
 
-	const TER_B_LIMITS: [number, number][] = [
-		[6_200_000, 0.0],
-		[6_500_000, 0.0025],
-		[6_850_000, 0.005],
-		[7_300_000, 0.0075],
-		[9_200_000, 0.01],
-		[10_750_000, 0.015],
-		[11_250_000, 0.02],
-		[11_600_000, 0.025],
-		[12_600_000, 0.03],
-		[13_600_000, 0.04],
-		[14_950_000, 0.05],
-		[16_400_000, 0.06],
-		[18_450_000, 0.07],
-		[21_850_000, 0.08],
-		[26_000_000, 0.09],
-		[Infinity, 0.25]
-	];
-
-	const TER_C_LIMITS: [number, number][] = [
-		[6_600_000, 0.0],
-		[6_950_000, 0.0025],
-		[7_350_000, 0.005],
-		[7_800_000, 0.0075],
-		[8_850_000, 0.01],
-		[9_800_000, 0.0125],
-		[10_950_000, 0.015],
-		[11_200_000, 0.0175],
-		[12_050_000, 0.02],
-		[12_950_000, 0.03],
-		[14_150_000, 0.04],
-		[15_550_000, 0.05],
-		[Infinity, 0.25]
-	];
-
-	function getRate(gross: number, cat: 'A' | 'B' | 'C'): number {
-		const limits = cat === 'A' ? TER_A_LIMITS : cat === 'B' ? TER_B_LIMITS : TER_C_LIMITS;
-		for (const [limit, rate] of limits) {
-			if (gross <= limit) return rate;
-		}
-		return 0.3;
-	}
-
-	let terRate = $derived(getRate(grossMonthly, terCategory));
+	let terRate = $derived(terRateFor(grossMonthly, terCategory));
 	let pph21 = $derived(Math.round(grossMonthly * terRate));
 
-	const JP_MAX_WAGE = 10_042_300;
-	const KES_MAX_WAGE = 12_000_000;
-
 	let jhtWorker = $derived(includeBpjs ? Math.round(grossMonthly * 0.02) : 0);
-	let jpWorker = $derived(includeBpjs ? Math.round(Math.min(grossMonthly, JP_MAX_WAGE) * 0.01) : 0);
+	let jpWorker = $derived(
+		includeBpjs ? Math.round(Math.min(grossMonthly, BPJS_JP_MAX_WAGE) * 0.01) : 0
+	);
 	let kesWorker = $derived(
-		includeBpjs ? Math.round(Math.min(grossMonthly, KES_MAX_WAGE) * 0.01) : 0
+		includeBpjs ? Math.round(Math.min(grossMonthly, BPJS_KES_MAX_WAGE) * 0.01) : 0
 	);
 
 	let jhtEmployer = $derived(includeBpjs ? Math.round(grossMonthly * 0.037) : 0);
