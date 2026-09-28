@@ -2,6 +2,7 @@
 
 import { api, streamNarrative, type SimulationInput } from '$lib/api/client';
 import { history } from '$lib/stores/history.svelte';
+import { clearDraft, loadDraft, saveDraft } from '$lib/stores/wizard-draft';
 import { rupiahBrief } from '$lib/utils/format';
 import type {
 	AssumptionsSnapshot,
@@ -46,6 +47,24 @@ class SimulationStore {
 	 */
 	#narrationGen = 0;
 	#recomputeGen = 0;
+	#draftTimer: ReturnType<typeof setTimeout> | null = null;
+
+	constructor() {
+		// Pulihkan draf wizard (client-only) agar isian tidak hilang saat reload.
+		if (typeof window !== 'undefined') {
+			const draft = loadDraft(DEFAULT_INPUT);
+			if (draft) this.input = draft;
+			this.loadAssumptions();
+			// Simpan draf saat input berubah (debounce agar tidak menulis tiap ketikan).
+			$effect.root(() => {
+				$effect(() => {
+					const snapshot = $state.snapshot(this.input) as SimulationInput;
+					if (this.#draftTimer) clearTimeout(this.#draftTimer);
+					this.#draftTimer = setTimeout(() => saveDraft(snapshot), 400);
+				});
+			});
+		}
+	}
 
 	async loadAssumptions(force = false) {
 		if (this.assumptions && !force) return;
@@ -66,6 +85,7 @@ class SimulationStore {
 		this.narrating = false;
 		this.errorMsg = null;
 		this.fscPre = null;
+		clearDraft();
 	}
 
 	async simulate() {
@@ -74,6 +94,8 @@ class SimulationStore {
 		try {
 			const res = await api.createSimulation(this.input);
 			this.result = res;
+			// Draf sudah terpakai — bersihkan agar simulasi berikutnya mulai segar.
+			clearDraft();
 			const bestTwin = res.twins.find((t) => t.code === res.best_twin);
 			const y10 = bestTwin?.yearly_series.find((p) => p.year === 10);
 			history.add({
