@@ -192,6 +192,14 @@ test('perbandingan responsif dapat dibagikan melalui URL', async ({ page }) => {
 		.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth))
 		.toBe(true);
 
+	// Ekspor tersedia begitu minimal ada 2 simulasi terbandingkan.
+	await expect(page.getByRole('button', { name: /Unduh CSV/i })).toBeVisible();
+	await expect(page.getByRole('button', { name: /Unduh JSON/i })).toBeVisible();
+	await expect(page.getByRole('button', { name: /Salin tautan/i })).toBeVisible();
+	const download = page.waitForEvent('download');
+	await page.getByRole('button', { name: /Unduh CSV/i }).click();
+	await expect((await download).suggestedFilename()).toMatch(/perbandingan-simulasi-.*\.csv/);
+
 	await page.reload();
 	await expect(page.getByText(/Pilih simulasi \(2\/3\)/i)).toBeVisible();
 

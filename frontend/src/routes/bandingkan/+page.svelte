@@ -158,14 +158,58 @@
 			].join(',')
 		);
 		const csv = [header.join(','), ...lines].join('\n');
-		const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+		downloadBlob(csv, 'text/csv;charset=utf-8', 'csv');
+		toast.success('CSV perbandingan diunduh');
+	}
+
+	/** Ekspor paket perbandingan lengkap sebagai JSON terstruktur. */
+	function exportComparisonJson() {
+		if (!rows.length) return;
+		const payload = {
+			exported_at: new Date().toISOString(),
+			metric_notes:
+				'net_worth_* dalam Rupiah; avg_dsr & skor_fraksi adalah rasio 0..1; skor_100 = skor_fraksi × 100.',
+			simulations: rows.map((r) => ({
+				id: r.id,
+				label: r.label,
+				preset: r.preset,
+				branches: r.branches,
+				best_twin: r.bestCode,
+				best_label: r.bestLabel,
+				net_worth_y10: Math.round(r.netWorthY10),
+				net_worth_real_y10: Math.round(r.netWorthRealY10),
+				emergency_months: r.emergencyMonths,
+				avg_dsr: r.avgDsr,
+				skor_fraksi: r.score / 100,
+				skor_100: Number(r.score.toFixed(1)),
+				robust: r.robust
+			}))
+		};
+		downloadBlob(JSON.stringify(payload, null, 2), 'application/json;charset=utf-8', 'json');
+		toast.success('JSON perbandingan diunduh');
+	}
+
+	function downloadBlob(content: string, type: string, ext: string) {
+		const blob = new Blob([content], { type });
 		const url = URL.createObjectURL(blob);
 		const a = document.createElement('a');
 		a.href = url;
-		a.download = `perbandingan-simulasi-${Date.now()}.csv`;
+		a.download = `perbandingan-simulasi-${Date.now()}.${ext}`;
 		a.click();
 		URL.revokeObjectURL(url);
-		toast.success('CSV perbandingan diunduh');
+	}
+
+	/** Bagikan tautan perbandingan (berisi daftar id) ke clipboard. */
+	async function copyShareLink() {
+		const url = new URL(page.url);
+		if (selected.length) url.searchParams.set('ids', selected.join(','));
+		else url.searchParams.delete('ids');
+		try {
+			await navigator.clipboard.writeText(url.toString());
+			toast.success('Tautan perbandingan disalin');
+		} catch {
+			toast.error('Gagal menyalin tautan — salin manual dari address bar');
+		}
 	}
 </script>
 
@@ -180,9 +224,17 @@
 			</p>
 		</div>
 		{#if rows.length >= 2}
-			<button class="btn btn-ghost !py-1.5 !text-xs" onclick={exportComparisonCsv}>
-				📥 Unduh CSV perbandingan
-			</button>
+			<div class="flex flex-wrap items-center gap-2">
+				<button class="btn btn-ghost !py-1.5 !text-xs" onclick={copyShareLink}>
+					🔗 Salin tautan
+				</button>
+				<button class="btn btn-ghost !py-1.5 !text-xs" onclick={exportComparisonCsv}>
+					📥 Unduh CSV
+				</button>
+				<button class="btn btn-ghost !py-1.5 !text-xs" onclick={exportComparisonJson}>
+					💾 Unduh JSON
+				</button>
+			</div>
 		{/if}
 	</div>
 
