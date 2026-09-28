@@ -149,7 +149,7 @@
 			{/each}
 
 			<!-- zero line -->
-			{#if (minY < 0 && maxY > 0) || true}
+			{#if minY < 0 && maxY > 0}
 				<line
 					x1={PAD.l}
 					y1={y(0)}
@@ -242,8 +242,9 @@
 			<table class="w-full text-xs">
 				<thead class="text-[var(--color-ink-dim)]">
 					<tr>
-						<th class="px-2 py-1 text-left">Twin</th>
-						{#each [5, 10, 15, 20] as yr}<th class="px-2 py-1 text-right">th {yr}</th>{/each}
+						<th scope="col" class="px-2 py-1 text-left">Twin</th>
+						{#each [5, 10, 15, 20] as yr}<th scope="col" class="px-2 py-1 text-right">th {yr}</th
+							>{/each}
 					</tr>
 				</thead>
 				<tbody>
