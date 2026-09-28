@@ -249,14 +249,14 @@
 			<table class="w-full text-sm">
 				<thead class="bg-[var(--color-void-2)] text-xs text-[var(--color-ink-dim)]">
 					<tr>
-						<th class="px-3 py-2 text-left font-medium">Metrik th {year}</th>
-						<th class="px-3 py-2 text-right font-medium"
+						<th scope="col" class="px-3 py-2 text-left font-medium">Metrik th {year}</th>
+						<th scope="col" class="px-3 py-2 text-right font-medium"
 							>{twinIcon(a?.icon ?? 'circle')} {a?.label}</th
 						>
-						<th class="px-3 py-2 text-right font-medium"
+						<th scope="col" class="px-3 py-2 text-right font-medium"
 							>{twinIcon(b?.icon ?? 'circle')} {b?.label}</th
 						>
-						<th class="px-3 py-2 text-right font-medium">Selisih</th>
+						<th scope="col" class="px-3 py-2 text-right font-medium">Selisih</th>
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-[var(--color-line)]">
@@ -302,16 +302,16 @@
 				<table class="w-full text-xs">
 					<thead class="bg-[var(--color-void-2)] text-[var(--color-ink-dim)]">
 						<tr>
-							<th class="px-2.5 py-2.5 text-center font-bold">#</th>
-							<th class="px-3 py-2.5 text-left font-bold">Skenario Twin</th>
-							<th class="px-3 py-2.5 text-right font-bold">Net Worth Th-{year}</th>
-							<th class="px-3 py-2.5 text-right font-bold">Net Worth Riil</th>
-							<th class="px-3 py-2.5 text-right font-bold">Kas Likuid</th>
-							<th class="px-3 py-2.5 text-right font-bold">Investasi</th>
-							<th class="px-3 py-2.5 text-right font-bold">Sisa Utang</th>
-							<th class="px-3 py-2.5 text-right font-bold">Dana Darurat</th>
-							<th class="px-3 py-2.5 text-right font-bold">Beban DSR</th>
-							<th class="px-3 py-2.5 text-center font-bold">Skor</th>
+							<th scope="col" class="px-2.5 py-2.5 text-center font-bold">#</th>
+							<th scope="col" class="px-3 py-2.5 text-left font-bold">Skenario Twin</th>
+							<th scope="col" class="px-3 py-2.5 text-right font-bold">Net Worth Th-{year}</th>
+							<th scope="col" class="px-3 py-2.5 text-right font-bold">Net Worth Riil</th>
+							<th scope="col" class="px-3 py-2.5 text-right font-bold">Kas Likuid</th>
+							<th scope="col" class="px-3 py-2.5 text-right font-bold">Investasi</th>
+							<th scope="col" class="px-3 py-2.5 text-right font-bold">Sisa Utang</th>
+							<th scope="col" class="px-3 py-2.5 text-right font-bold">Dana Darurat</th>
+							<th scope="col" class="px-3 py-2.5 text-right font-bold">Beban DSR</th>
+							<th scope="col" class="px-3 py-2.5 text-center font-bold">Skor</th>
 						</tr>
 					</thead>
 					<tbody class="divide-y divide-[var(--color-line)]">

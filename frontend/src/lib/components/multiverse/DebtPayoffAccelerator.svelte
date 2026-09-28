@@ -344,12 +344,12 @@
 			<table class="w-full text-left text-xs">
 				<thead>
 					<tr class="border-b border-[var(--color-line)] text-[11px] text-[var(--color-ink-dim)]">
-						<th class="pb-2 font-semibold">Prioritas</th>
-						<th class="pb-2 font-semibold">Nama Kewajiban</th>
-						<th class="pb-2 font-semibold text-right">Sisa Pokok</th>
-						<th class="pb-2 font-semibold text-right">Bunga/Tahun</th>
-						<th class="pb-2 font-semibold text-right">Cicilan Normal</th>
-						<th class="pb-2 font-semibold text-center">Fokus Ekstra</th>
+						<th scope="col" class="pb-2 font-semibold">Prioritas</th>
+						<th scope="col" class="pb-2 font-semibold">Nama Kewajiban</th>
+						<th scope="col" class="pb-2 font-semibold text-right">Sisa Pokok</th>
+						<th scope="col" class="pb-2 font-semibold text-right">Bunga/Tahun</th>
+						<th scope="col" class="pb-2 font-semibold text-right">Cicilan Normal</th>
+						<th scope="col" class="pb-2 font-semibold text-center">Fokus Ekstra</th>
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-[var(--color-line)]/50">

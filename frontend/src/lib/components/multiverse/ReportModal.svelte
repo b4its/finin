@@ -153,14 +153,14 @@
 								<tr
 									class="border-b border-[var(--color-line)] bg-[var(--color-void-2)] print:bg-gray-100 print:border-black/20"
 								>
-									<th class="p-2 font-semibold">Twin</th>
-									<th class="p-2 font-semibold">Net Worth Riil (Th 5)</th>
-									<th class="p-2 font-semibold">Net Worth Riil (Th 10)</th>
-									<th class="p-2 font-semibold">Net Worth Riil (Th 20)</th>
-									<th class="p-2 font-semibold">Dana Darurat Min</th>
-									<th class="p-2 font-semibold">DSR Rata-rata</th>
-									<th class="p-2 font-semibold">Status OJK / SLIK</th>
-									<th class="p-2 font-semibold">Rapor Kesehatan</th>
+									<th scope="col" class="p-2 font-semibold">Twin</th>
+									<th scope="col" class="p-2 font-semibold">Net Worth Riil (Th 5)</th>
+									<th scope="col" class="p-2 font-semibold">Net Worth Riil (Th 10)</th>
+									<th scope="col" class="p-2 font-semibold">Net Worth Riil (Th 20)</th>
+									<th scope="col" class="p-2 font-semibold">Dana Darurat Min</th>
+									<th scope="col" class="p-2 font-semibold">DSR Rata-rata</th>
+									<th scope="col" class="p-2 font-semibold">Status OJK / SLIK</th>
+									<th scope="col" class="p-2 font-semibold">Rapor Kesehatan</th>
 								</tr>
 							</thead>
 							<tbody class="divide-y divide-[var(--color-line)] print:divide-black/10">
@@ -235,12 +235,12 @@
 								class="border-b border-[var(--color-line)] bg-[var(--color-void-2)] text-[11px] print:border-black/20 print:bg-gray-100"
 							>
 								<tr>
-									<th class="p-2 font-semibold">Kembar Multiverse</th>
-									<th class="p-2 font-semibold">🛡️ Dana Darurat Penuh</th>
-									<th class="p-2 font-semibold">🚀 100 Juta Pertama</th>
-									<th class="p-2 font-semibold">⛓️ Bebas Utang</th>
-									<th class="p-2 font-semibold">🏆 1 Miliar Pertama</th>
-									<th class="p-2 font-semibold">🏖️ FIRE (Rule of 25)</th>
+									<th scope="col" class="p-2 font-semibold">Kembar Multiverse</th>
+									<th scope="col" class="p-2 font-semibold">🛡️ Dana Darurat Penuh</th>
+									<th scope="col" class="p-2 font-semibold">🚀 100 Juta Pertama</th>
+									<th scope="col" class="p-2 font-semibold">⛓️ Bebas Utang</th>
+									<th scope="col" class="p-2 font-semibold">🏆 1 Miliar Pertama</th>
+									<th scope="col" class="p-2 font-semibold">🏖️ FIRE (Rule of 25)</th>
 								</tr>
 							</thead>
 							<tbody class="divide-y divide-[var(--color-line)] print:divide-black/10">

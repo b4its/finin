@@ -265,8 +265,10 @@
 				<table class="w-full text-xs">
 					<thead class="text-[var(--color-ink-dim)]">
 						<tr>
-							<th class="px-2 py-1 text-left font-medium">Parameter</th>
-							{#each presets as p}<th class="px-2 py-1 text-right font-medium">{p.label}</th>{/each}
+							<th scope="col" class="px-2 py-1 text-left font-medium">Parameter</th>
+							{#each presets as p}<th scope="col" class="px-2 py-1 text-right font-medium"
+									>{p.label}</th
+								>{/each}
 						</tr>
 					</thead>
 					<tbody class="num">

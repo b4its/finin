@@ -371,11 +371,11 @@
 				<table class="w-full text-left text-xs">
 					<thead>
 						<tr class="border-b border-[var(--color-line)] text-[var(--color-ink-dim)] text-[11px]">
-							<th class="pb-2 font-semibold">Ahli Waris</th>
-							<th class="pb-2 font-semibold">Jumlah</th>
-							<th class="pb-2 font-semibold">Porsi Hukum</th>
-							<th class="pb-2 font-semibold">Nominal Total</th>
-							<th class="pb-2 font-semibold">Per Orang</th>
+							<th scope="col" class="pb-2 font-semibold">Ahli Waris</th>
+							<th scope="col" class="pb-2 font-semibold">Jumlah</th>
+							<th scope="col" class="pb-2 font-semibold">Porsi Hukum</th>
+							<th scope="col" class="pb-2 font-semibold">Nominal Total</th>
+							<th scope="col" class="pb-2 font-semibold">Per Orang</th>
 						</tr>
 					</thead>
 					<tbody class="divide-y divide-[var(--color-line)]/50">

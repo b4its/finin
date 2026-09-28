@@ -160,9 +160,9 @@
 			<table class="w-full text-xs">
 				<thead class="text-[var(--color-ink-dim)]">
 					<tr>
-						<th class="px-2 py-1 text-left">Twin</th>
-						{#each years as yr}<th class="px-2 py-1 text-right">th {yr}</th>{/each}
-						<th class="px-2 py-1 text-left">Catatan</th>
+						<th scope="col" class="px-2 py-1 text-left">Twin</th>
+						{#each years as yr}<th scope="col" class="px-2 py-1 text-right">th {yr}</th>{/each}
+						<th scope="col" class="px-2 py-1 text-left">Catatan</th>
 					</tr>
 				</thead>
 				<tbody>
