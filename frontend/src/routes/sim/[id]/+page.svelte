@@ -27,6 +27,7 @@
 	import ScenarioSandbox from '$lib/components/multiverse/ScenarioSandbox.svelte';
 	import ShareModal from '$lib/components/multiverse/ShareModal.svelte';
 	import CommandPalette from '$lib/components/multiverse/CommandPalette.svelte';
+	import ExecutiveSummary from '$lib/components/multiverse/ExecutiveSummary.svelte';
 	import Disclaimer from '$lib/components/ui/Disclaimer.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
@@ -296,6 +297,21 @@
 				{/each}
 			</section>
 		{/if}
+
+		<div class="mb-5">
+			<ExecutiveSummary
+				twins={result.twins}
+				recommendation={sim.recommendation}
+				robust={result.robust}
+				robustReason={result.robust_reason}
+				{year}
+				flagsCount={result.flags.length}
+				onOpenTwin={(code) => {
+					const t = result?.twins.find((x) => x.code === code);
+					if (t) openDetail(t);
+				}}
+			/>
+		</div>
 
 		<!-- Multiverse Hub Navigation Bar -->
 		<div
