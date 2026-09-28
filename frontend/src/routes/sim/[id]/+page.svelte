@@ -217,6 +217,7 @@
 				<CommandPalette
 					tabs={TABS}
 					twins={result.twins}
+					simulationId={result.id}
 					onSelectTab={(id) => selectTab(id as TabId)}
 					onSelectTwin={(code) => {
 						const t = result?.twins.find((x) => x.code === code);
@@ -269,6 +270,13 @@
 						💾 JSON Paket Simulasi
 					</a>
 				</Dropdown>
+				<a
+					href={`/bandingkan?ids=${result.id}`}
+					class="btn btn-ghost !py-1.5 !px-3 text-xs"
+					title="Bandingkan simulasi ini dengan simulasi lain di riwayatmu"
+				>
+					⚖️ Bandingkan
+				</a>
 			{/if}
 			<a href="/start" class="btn btn-ghost !py-1.5">Simulasi baru</a>
 		</div>

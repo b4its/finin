@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import { toast } from '$lib/stores/toast.svelte';
 	import type { Twin } from '$lib/api/types';
 
 	interface Item {
@@ -12,6 +14,7 @@
 	let {
 		tabs,
 		twins,
+		simulationId = '',
 		onSelectTab,
 		onSelectTwin,
 		onOpenReport,
@@ -20,6 +23,7 @@
 	}: {
 		tabs: readonly { id: string; label: string; icon: string }[];
 		twins: Twin[];
+		simulationId?: string;
 		onSelectTab: (id: string) => void;
 		onSelectTwin: (code: string) => void;
 		onOpenReport: () => void;
@@ -49,8 +53,52 @@
 		})),
 		{ id: 'act:report', label: 'Cetak laporan PDF', icon: '📄', hint: 'Aksi', run: onOpenReport },
 		{ id: 'act:pitch', label: 'Mulai presentasi juri', icon: '⚡', hint: 'Aksi', run: onOpenPitch },
-		{ id: 'act:share', label: 'Bagikan hasil', icon: '✨', hint: 'Aksi', run: onOpenShare }
+		{ id: 'act:share', label: 'Bagikan hasil', icon: '✨', hint: 'Aksi', run: onOpenShare },
+		{
+			id: 'nav:compare',
+			label: 'Bandingkan dengan simulasi lain',
+			icon: '⚖️',
+			hint: 'Navigasi',
+			run: () => void goto(simulationId ? `/bandingkan?ids=${simulationId}` : '/bandingkan')
+		},
+		{
+			id: 'nav:catalog',
+			label: 'Buka katalog keputusan',
+			icon: '🧩',
+			hint: 'Navigasi',
+			run: () => void goto('/katalog')
+		},
+		{
+			id: 'nav:new',
+			label: 'Mulai simulasi baru',
+			icon: '➕',
+			hint: 'Navigasi',
+			run: () => void goto('/start')
+		},
+		{
+			id: 'nav:history',
+			label: 'Riwayat simulasi saya',
+			icon: '🗂️',
+			hint: 'Navigasi',
+			run: () => void goto('/saya')
+		},
+		{
+			id: 'act:copy',
+			label: 'Salin link simulasi ini',
+			icon: '🔗',
+			hint: 'Aksi',
+			run: () => void copyLink()
+		}
 	]);
+
+	async function copyLink() {
+		try {
+			await navigator.clipboard.writeText(window.location.href);
+			toast.success('Link simulasi disalin ke clipboard');
+		} catch {
+			toast.error('Gagal menyalin link — salin manual dari address bar');
+		}
+	}
 
 	const filtered = $derived.by(() => {
 		const q = query.trim().toLowerCase();
