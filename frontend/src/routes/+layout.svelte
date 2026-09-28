@@ -1,6 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import AppHeader from '$lib/components/ui/AppHeader.svelte';
+	import AppFooter from '$lib/components/ui/AppFooter.svelte';
 	import Toaster from '$lib/components/ui/Toaster.svelte';
 	import BackToTop from '$lib/components/ui/BackToTop.svelte';
 	import { onMount } from 'svelte';
@@ -24,5 +25,6 @@
 	{@render children()}
 </main>
 
+<AppFooter />
 <BackToTop />
 <Toaster />
