@@ -414,6 +414,18 @@
 					</p>
 				</div>
 
+				{#if sim.narrating}
+					<div
+						class="flex items-center gap-2 rounded-xl border border-[var(--color-line)] bg-[var(--color-void-2)] px-3 py-2 text-xs text-[var(--color-ink-dim)]"
+						aria-live="polite"
+					>
+						<span
+							class="inline-block h-3 w-3 shrink-0 animate-spin rounded-full border-2 border-[var(--color-accent)] border-t-transparent"
+						></span>
+						Menulis narasi per horizon (5/10/20 tahun)…
+					</div>
+				{/if}
+
 				{#each result.twins as t (t.code)}
 					<TwinCard
 						twin={t}

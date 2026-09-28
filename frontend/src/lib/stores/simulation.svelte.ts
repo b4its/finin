@@ -33,6 +33,8 @@ class SimulationStore {
 	recommendation = $state<Recommendation | null>(null);
 	narrative = $state<Record<string, NarrativeChunk[]>>({});
 	loading = $state(false);
+	/** True selama narasi SSE masih mengalir (untuk indikator "menulis narasi…"). */
+	narrating = $state(false);
 	errorMsg = $state<string | null>(null);
 	fscPre = $state<number | null>(null);
 	fscPost = $state<number | null>(null);
@@ -52,6 +54,7 @@ class SimulationStore {
 		this.result = null;
 		this.recommendation = null;
 		this.narrative = {};
+		this.narrating = false;
 		this.errorMsg = null;
 		this.fscPre = null;
 		this.fscPost = null;
@@ -111,6 +114,7 @@ class SimulationStore {
 
 	private async streamNarration(id: string) {
 		const map: Record<string, NarrativeChunk[]> = {};
+		this.narrating = true;
 		try {
 			await streamNarrative(
 				id,
@@ -124,6 +128,8 @@ class SimulationStore {
 			);
 		} catch {
 			/* narasi gagal stream -> tetap jalan */
+		} finally {
+			this.narrating = false;
 		}
 	}
 
