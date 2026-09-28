@@ -38,6 +38,7 @@
 	import { rupiahBrief, months, percent } from '$lib/utils/format';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
+	import { replaceState, afterNavigate } from '$app/navigation';
 
 	let simId = $derived($page.params.id ?? '');
 
@@ -53,7 +54,24 @@
 	let pitchOpen = $state(false);
 	let shareOpen = $state(false);
 	let exportMenuOpen = $state(false);
-	let activeTab = $state<'overview' | 'risk' | 'strategy' | 'future' | 'all'>('overview');
+	const VALID_TABS = ['overview', 'risk', 'strategy', 'future', 'all'] as const;
+	type TabId = (typeof VALID_TABS)[number];
+
+	function hashTab(raw: string): TabId {
+		const id = (raw ?? '').replace('#', '') as TabId;
+		return VALID_TABS.includes(id) ? id : 'overview';
+	}
+
+	let activeTab = $state<TabId>('overview');
+
+	/** Pilih tab: perbarui state + hash URL agar bisa dibagikan/di-bookmark. */
+	function selectTab(id: TabId, focus = false) {
+		activeTab = id;
+		replaceState(`#${id}`, { tab: id });
+		if (focus) {
+			queueMicrotask(() => document.getElementById(`tab-${id}`)?.focus());
+		}
+	}
 
 	// Daftar modul per tab — satu sumber kebenaran agar jumlah modul akurat
 	// dan tidak lagi hard-coded (menghindari hitungan yang meleset).
@@ -101,6 +119,21 @@
 			}
 		}
 		if (sim.result) preset = sim.result.preset;
+	});
+
+	// Sinkronkan tab dari hash URL saat halaman dimuat, tautan langsung, dan
+	// navigasi back/forward (mis. pengguna menekan tombol kembali peramban).
+	afterNavigate(() => {
+		activeTab = hashTab(window.location.hash);
+	});
+
+	// Tangani tombol back/forward peramban untuk hash yang sama (popstate).
+	$effect(() => {
+		const onPop = () => {
+			activeTab = hashTab(window.location.hash);
+		};
+		window.addEventListener('popstate', onPop);
+		return () => window.removeEventListener('popstate', onPop);
 	});
 
 	let result = $derived(sim.result);
@@ -156,8 +189,7 @@
 		else if (e.key === 'End') next = last;
 		else return;
 		e.preventDefault();
-		activeTab = TABS[next].id;
-		queueMicrotask(() => document.getElementById(`tab-${TABS[next].id}`)?.focus());
+		selectTab(TABS[next].id as TabId, true);
 	}
 </script>
 
@@ -171,7 +203,7 @@
 				<CommandPalette
 					tabs={TABS}
 					twins={result.twins}
-					onSelectTab={(id) => (activeTab = id as typeof activeTab)}
+					onSelectTab={(id) => selectTab(id as TabId)}
 					onSelectTwin={(code) => {
 						const t = result?.twins.find((x) => x.code === code);
 						if (t) openDetail(t);
@@ -331,7 +363,7 @@
 					tab.id
 						? 'bg-[var(--color-accent)] font-bold text-slate-950 shadow-md'
 						: 'text-[var(--color-ink-dim)] hover:bg-[var(--color-void-3)] hover:text-[var(--color-ink)]'}"
-					onclick={() => (activeTab = tab.id)}
+					onclick={() => selectTab(tab.id as TabId)}
 					onkeydown={(e) => onTabKey(e, i)}
 				>
 					<span aria-hidden="true">{tab.icon}</span>
