@@ -31,17 +31,17 @@
 	import Disclaimer from '$lib/components/ui/Disclaimer.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
+	import Dropdown from '$lib/components/ui/Dropdown.svelte';
 	import { sim } from '$lib/stores/simulation.svelte';
 	import { toast } from '$lib/stores/toast.svelte';
 	import type { Twin } from '$lib/api/types';
 	import { api } from '$lib/api/client';
 	import { rupiahBrief, months, percent } from '$lib/utils/format';
-	import { onMount } from 'svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { replaceState, afterNavigate } from '$app/navigation';
+	import { untrack } from 'svelte';
 
-	let simId = $derived($page.params.id ?? '');
-
+	let simId = $derived(page.params.id ?? '');
 	let year = $state(10);
 	let real = $state(false);
 	let detailTwin = $state<Twin | null>(null);
@@ -53,7 +53,6 @@
 	let reportOpen = $state(false);
 	let pitchOpen = $state(false);
 	let shareOpen = $state(false);
-	let exportMenuOpen = $state(false);
 	const VALID_TABS = ['overview', 'risk', 'strategy', 'future', 'all'] as const;
 	type TabId = (typeof VALID_TABS)[number];
 
@@ -105,35 +104,50 @@
 		{ id: 'all', label: 'Semua Modul', icon: '📋', count: Object.values(TAB_MODULES).flat().length }
 	] as const;
 
-	onMount(async () => {
-		if (!sim.result || sim.result.id !== simId) {
-			try {
-				sim.result = await api.getSimulation(simId);
-				sim.input.preset = sim.result.preset;
-				api
-					.recommendation(simId)
-					.then((r) => (sim.recommendation = r))
-					.catch(() => {});
-			} catch (e) {
-				sim.errorMsg = String(e);
-			}
+	/**
+	 * Muat simulasi secara reaktif terhadap `simId`. Sebelumnya memakai onMount
+	 * sehingga navigasi klien dari /sim/A -> /sim/B tidak memuat ulang data.
+	 * Efek ini membersihkan state lama sebelum memuat id baru.
+	 */
+	$effect(() => {
+		const id = simId;
+		if (!id) return;
+		const current = untrack(() => sim.result);
+		if (current?.id === id) {
+			preset = current.preset;
+			return;
 		}
-		if (sim.result) preset = sim.result.preset;
+		let cancelled = false;
+		sim.errorMsg = null;
+		sim.result = null;
+		sim.recommendation = null;
+		api
+			.getSimulation(id)
+			.then((res) => {
+				if (cancelled) return;
+				sim.result = res;
+				sim.input.preset = res.preset;
+				preset = res.preset;
+				api
+					.recommendation(id)
+					.then((r) => {
+						if (!cancelled) sim.recommendation = r;
+					})
+					.catch(() => {});
+			})
+			.catch((e) => {
+				if (!cancelled) sim.errorMsg = String(e);
+			});
+		return () => {
+			cancelled = true;
+		};
 	});
 
-	// Sinkronkan tab dari hash URL saat halaman dimuat, tautan langsung, dan
-	// navigasi back/forward (mis. pengguna menekan tombol kembali peramban).
+	// Sinkronkan tab aktif dari hash URL saat dimuat, melalui tautan langsung,
+	// dan pada navigasi back/forward. `afterNavigate` sudah mencakup popstate,
+	// sehingga listener popstate manual tidak lagi diperlukan (menghindari double-fire).
 	afterNavigate(() => {
 		activeTab = hashTab(window.location.hash);
-	});
-
-	// Tangani tombol back/forward peramban untuk hash yang sama (popstate).
-	$effect(() => {
-		const onPop = () => {
-			activeTab = hashTab(window.location.hash);
-		};
-		window.addEventListener('popstate', onPop);
-		return () => window.removeEventListener('popstate', onPop);
 	});
 
 	let result = $derived(sim.result);
@@ -239,37 +253,22 @@
 				>
 					✨ Bagikan Hasil
 				</button>
-				<div class="relative inline-block">
-					<button
-						class="btn btn-ghost !py-1.5 !px-3 text-xs"
-						onclick={() => (exportMenuOpen = !exportMenuOpen)}
-						title="Unduh data simulasi lengkap (CSV atau JSON)"
+				<Dropdown label="📥 Unduh Data ▾" title="Unduh data simulasi lengkap (CSV atau JSON)">
+					<a
+						href={api.exportCsvUrl(result.id)}
+						class="block rounded-lg px-3 py-2 text-xs font-medium text-[var(--color-ink)] hover:bg-[var(--color-void-3)]"
+						download
 					>
-						📥 Unduh Data ▾
-					</button>
-					{#if exportMenuOpen}
-						<div
-							class="absolute right-0 top-full z-20 mt-1 w-48 rounded-xl border border-[var(--color-line)] bg-[var(--color-void-1)] p-1.5 shadow-xl text-left"
-						>
-							<a
-								href={api.exportCsvUrl(result.id)}
-								class="block rounded-lg px-3 py-2 text-xs font-medium text-[var(--color-ink)] hover:bg-[var(--color-void-3)]"
-								download
-								onclick={() => (exportMenuOpen = false)}
-							>
-								📊 CSV Trajektori 240 Bulan
-							</a>
-							<a
-								href={api.exportJsonUrl(result.id)}
-								class="block rounded-lg px-3 py-2 text-xs font-medium text-[var(--color-ink)] hover:bg-[var(--color-void-3)]"
-								download
-								onclick={() => (exportMenuOpen = false)}
-							>
-								💾 JSON Paket Simulasi
-							</a>
-						</div>
-					{/if}
-				</div>
+						📊 CSV Trajektori 240 Bulan
+					</a>
+					<a
+						href={api.exportJsonUrl(result.id)}
+						class="block rounded-lg px-3 py-2 text-xs font-medium text-[var(--color-ink)] hover:bg-[var(--color-void-3)]"
+						download
+					>
+						💾 JSON Paket Simulasi
+					</a>
+				</Dropdown>
 			{/if}
 			<a href="/start" class="btn btn-ghost !py-1.5">Simulasi baru</a>
 		</div>
@@ -436,7 +435,12 @@
 					</div>
 					<div class="flex flex-wrap gap-1.5">
 						{#each Object.entries(presetLabels) as [k, l]}
-							<button class="chip" class:active={preset === k} onclick={() => changePreset(k)}>
+							<button
+								class="chip"
+								class:active={preset === k}
+								disabled={sim.loading}
+								onclick={() => changePreset(k)}
+							>
 								{l}
 							</button>
 						{/each}

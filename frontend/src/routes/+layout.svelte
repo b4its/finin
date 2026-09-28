@@ -6,10 +6,15 @@
 	import BackToTop from '$lib/components/ui/BackToTop.svelte';
 	import { onMount } from 'svelte';
 	import { history } from '$lib/stores/history.svelte';
+	import { health } from '$lib/stores/health.svelte';
 
 	let { children } = $props();
 
-	onMount(() => history.load());
+	onMount(() => {
+		history.load();
+		health.start();
+		return () => health.stop();
+	});
 </script>
 
 <a

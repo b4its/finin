@@ -37,19 +37,28 @@ class SimulationStore {
 	narrating = $state(false);
 	errorMsg = $state<string | null>(null);
 	fscPre = $state<number | null>(null);
-	fscPost = $state<number | null>(null);
 
-	async loadAssumptions() {
-		if (this.assumptions) return;
+	/**
+	 * Token generasi narasi. Setiap panggilan streamNarration menaikkan nilai ini;
+	 * hanya stream dengan token terbaru yang boleh menulis ke state. Ini mencegah
+	 * race condition ketika pengguna mengganti preset cepat sementara stream lama
+	 * masih mengalir (chunk lama tidak lagi menimpa hasil baru).
+	 */
+	#narrationGen = 0;
+	#recomputeGen = 0;
+
+	async loadAssumptions(force = false) {
+		if (this.assumptions && !force) return;
 		try {
-			const a = await api.assumptions(this.input.preset);
-			this.assumptions = a;
+			this.assumptions = await api.assumptions(this.input.preset);
 		} catch (e) {
 			this.errorMsg = String(e);
 		}
 	}
 
 	reset() {
+		this.#narrationGen++;
+		this.#recomputeGen++;
 		this.input = structuredClone(DEFAULT_INPUT);
 		this.result = null;
 		this.recommendation = null;
@@ -57,7 +66,6 @@ class SimulationStore {
 		this.narrating = false;
 		this.errorMsg = null;
 		this.fscPre = null;
-		this.fscPost = null;
 	}
 
 	async simulate() {
@@ -94,12 +102,16 @@ class SimulationStore {
 
 	async recompute(preset?: string, overrides: Record<string, unknown> = {}) {
 		if (!this.result) return;
+		const generation = ++this.#recomputeGen;
+		const simulationId = this.result.id;
 		this.loading = true;
+		this.errorMsg = null;
 		try {
-			const res = await api.recompute(this.result.id, {
+			const res = await api.recompute(simulationId, {
 				preset: preset ?? this.result.preset,
 				assumption_overrides: overrides
 			});
+			if (generation !== this.#recomputeGen) return;
 			this.result = res;
 			// Hitung ulang mengubah angka, jadi narasi & rekomendasi harus segar.
 			this.narrative = {};
@@ -107,39 +119,42 @@ class SimulationStore {
 			this.streamNarration(res.id);
 			api
 				.recommendation(res.id)
-				.then((r) => (this.recommendation = r))
-				.catch(() => (this.recommendation = null));
+				.then((r) => {
+					if (generation === this.#recomputeGen) this.recommendation = r;
+				})
+				.catch(() => {
+					if (generation === this.#recomputeGen) this.recommendation = null;
+				});
 		} catch (e) {
-			this.errorMsg = String(e);
+			if (generation === this.#recomputeGen) this.errorMsg = String(e);
 		} finally {
-			this.loading = false;
+			if (generation === this.#recomputeGen) this.loading = false;
 		}
 	}
 
 	private async streamNarration(id: string) {
+		const gen = ++this.#narrationGen;
 		const map: Record<string, NarrativeChunk[]> = {};
 		this.narrating = true;
 		try {
 			await streamNarrative(
 				id,
 				(chunk) => {
+					if (gen !== this.#narrationGen) return; // stream usang -> abaikan
 					(map[chunk.twin] ||= []).push(chunk);
 					this.narrative = { ...map };
 				},
 				() => {
+					if (gen !== this.#narrationGen) return;
 					this.narrative = { ...map };
 				}
 			);
 		} catch {
 			/* narasi gagal stream -> tetap jalan */
 		} finally {
-			this.narrating = false;
+			// Hanya stream terbaru yang boleh mematikan indikator.
+			if (gen === this.#narrationGen) this.narrating = false;
 		}
-	}
-
-	async commit() {
-		if (!this.result) return;
-		await api.recordEvent(this.result.id, 'commit');
 	}
 
 	textForTwin(twinCode: string, horizon: number): string | null {

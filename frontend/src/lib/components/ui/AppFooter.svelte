@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
 	let year = new Date().getFullYear();
-	let path = $derived($page.url.pathname);
+	let path = $derived(page.url.pathname);
 
 	const links = [
 		{ href: '/', label: 'Beranda' },

@@ -24,7 +24,22 @@ function read(): SimRecord[] {
 		if (!raw) return [];
 		const parsed = JSON.parse(raw);
 		if (!Array.isArray(parsed)) return [];
-		return parsed.filter((r) => r && typeof r.id === 'string') as SimRecord[];
+		// Toleran terhadap data lama/korup: syarat minimum hanya `id` (string),
+		// field lain diisi default aman agar statistik & daftar tidak pecah.
+		return parsed
+			.filter((r) => r && typeof r.id === 'string')
+			.map((r) => ({
+				id: r.id,
+				created_at: Number.isFinite(r.created_at) ? r.created_at : 0,
+				twin_count: Number.isFinite(r.twin_count) ? r.twin_count : 0,
+				best_twin: typeof r.best_twin === 'string' ? r.best_twin : '—',
+				preset: typeof r.preset === 'string' ? r.preset : '—',
+				label: typeof r.label === 'string' ? r.label : '',
+				best_net_worth_y10: Number.isFinite(r.best_net_worth_y10)
+					? r.best_net_worth_y10
+					: undefined,
+				income_monthly: Number.isFinite(r.income_monthly) ? r.income_monthly : undefined
+			})) as SimRecord[];
 	} catch {
 		return [];
 	}
@@ -33,10 +48,23 @@ function read(): SimRecord[] {
 class HistoryStore {
 	items = $state<SimRecord[]>([]);
 	loaded = $state(false);
+	#listening = false;
 
 	load(): void {
 		this.items = read();
 		this.loaded = true;
+		this.#listen();
+	}
+
+	/** Sinkronisasi antar-tab: muat ulang saat tab lain mengubah localStorage. */
+	#listen(): void {
+		if (this.#listening || typeof window === 'undefined') return;
+		this.#listening = true;
+		window.addEventListener('storage', (e) => {
+			if (e.key === KEY || e.key === null) {
+				this.items = read();
+			}
+		});
 	}
 
 	add(rec: Omit<SimRecord, 'created_at'> & { created_at?: number }): void {

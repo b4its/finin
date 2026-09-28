@@ -12,26 +12,59 @@ import type {
 } from './types';
 
 function baseUrl(): string {
-	return env.PUBLIC_API_URL || 'http://localhost:8072';
+	// Normalisasi: buang garis miring di akhir agar tidak muncul '//api/v1'.
+	return (env.PUBLIC_API_URL || 'http://localhost:8072').replace(/\/+$/, '');
 }
 
 const API = '/api/v1';
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-	const res = await fetch(`${baseUrl()}${API}${path}`, {
-		headers: { 'Content-Type': 'application/json' },
-		...init
-	});
-	if (!res.ok) {
-		let detail: unknown = null;
-		try {
-			detail = await res.json();
-		} catch {
-			detail = await res.text();
-		}
-		throw new Error(`API ${res.status}: ${JSON.stringify(detail)}`);
+/** Bentuk respons endpoint /health. */
+export interface HealthStatus {
+	status: string;
+	time: string;
+	engine_version: string;
+	assumption_set: string;
+	llm_enabled: boolean;
+}
+
+/**
+ * Gabungkan sinyal AbortSignal eksternal dengan timeout internal, sehingga
+ * permintaan yang menggantung tidak membuat UI "loading" selamanya.
+ */
+function withTimeout(
+	init: RequestInit | undefined,
+	ms: number
+): { init: RequestInit; clear: () => void } {
+	const ctrl = new AbortController();
+	const timer = setTimeout(() => ctrl.abort(new DOMException('timeout', 'TimeoutError')), ms);
+	const external = init?.signal;
+	if (external) {
+		if (external.aborted) ctrl.abort(external.reason);
+		else external.addEventListener('abort', () => ctrl.abort(external.reason), { once: true });
 	}
-	return (await res.json()) as T;
+	return { init: { ...init, signal: ctrl.signal }, clear: () => clearTimeout(timer) };
+}
+
+async function request<T>(path: string, init?: RequestInit, timeoutMs = 30_000): Promise<T> {
+	const { init: mergedInit, clear } = withTimeout(init, timeoutMs);
+	try {
+		const res = await fetch(`${baseUrl()}${API}${path}`, {
+			headers: { 'Content-Type': 'application/json' },
+			...mergedInit
+		});
+		if (!res.ok) {
+			let detail: unknown = null;
+			try {
+				detail = await res.json();
+			} catch {
+				detail = await res.text();
+			}
+			throw new Error(`API ${res.status}: ${JSON.stringify(detail)}`);
+		}
+		return (await res.json()) as T;
+	} finally {
+		clear();
+	}
 }
 
 export interface SimulationInput {
@@ -56,7 +89,7 @@ export interface SimulationInput {
 }
 
 export const api = {
-	health: () => request<{ status: string; engine_version: string }>('/health'),
+	health: (init?: RequestInit) => request<HealthStatus>('/health', init),
 	assumptions: (preset = 'moderat') =>
 		request<AssumptionsSnapshot & { presets_available: string[] }>(
 			`/assumptions/default?preset=${preset}`

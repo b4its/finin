@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
 	let { error } = $props<{ error?: { message?: string; status?: number } }>();
 	const status = $derived(error?.status ?? 500);
 	const isNotFound = $derived(status === 404);
+	const currentPath = $derived(page.url.pathname);
 </script>
 
 <svelte:head
@@ -17,7 +18,7 @@
 	</h1>
 	<p class="mt-2 text-sm text-[var(--color-ink-dim)]">
 		{isNotFound
-			? `Kami tidak menemukan ${$page.url.pathname}. Mungkin tautannya salah atau simulasi sudah kedaluwarsa.`
+			? `Kami tidak menemukan ${currentPath}. Mungkin tautannya salah atau simulasi sudah kedaluwarsa.`
 			: (error?.message ?? 'Sesuatu yang tidak terduga terjadi.')}
 	</p>
 	<div class="mt-6 flex flex-wrap justify-center gap-2">

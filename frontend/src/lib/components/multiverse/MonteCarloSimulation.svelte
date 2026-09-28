@@ -24,23 +24,35 @@
 
 	let currentTwin = $derived(twins.find((t) => t.code === selectedTwinCode) ?? twins[0]);
 
-	async function loadMonteCarlo(code: string, runs: number, p: string) {
-		if (!simId) return;
+	/**
+	 * Muat data Monte Carlo. Bergantung pada `simId`, `selectedTwinCode`,
+	 * `runsCount`, dan `preset` — SATU-satunya jalur pemuatan (selector tidak
+	 * lagi memanggil fungsi ini langsung) agar tidak ada request ganda.
+	 */
+	$effect(() => {
+		// Baca semua dependency agar reaktif.
+		const id = simId;
+		const code = selectedTwinCode;
+		const runs = runsCount;
+		const p = preset;
+		if (!id || !code) return;
+		let cancelled = false;
 		loading = true;
 		errorMsg = null;
-		try {
-			mcData = await api.getMonteCarlo(simId, code, runs, p);
-		} catch (e) {
-			errorMsg = String(e);
-		} finally {
-			loading = false;
-		}
-	}
-
-	$effect(() => {
-		if (simId && selectedTwinCode) {
-			loadMonteCarlo(selectedTwinCode, runsCount, preset);
-		}
+		api
+			.getMonteCarlo(id, code, runs, p)
+			.then((data) => {
+				if (!cancelled) mcData = data;
+			})
+			.catch((e) => {
+				if (!cancelled) errorMsg = String(e);
+			})
+			.finally(() => {
+				if (!cancelled) loading = false;
+			});
+		return () => {
+			cancelled = true;
+		};
 	});
 
 	// SVG Dimensions
@@ -184,7 +196,6 @@
 			<select
 				class="rounded border border-[var(--color-line)] bg-[var(--color-void-1)] px-2 py-1 text-xs font-mono font-bold"
 				bind:value={runsCount}
-				onchange={() => loadMonteCarlo(selectedTwinCode, runsCount, preset)}
 			>
 				<option value={100}>100 Run (Cepat)</option>
 				<option value={500}>500 Run (Standar)</option>
