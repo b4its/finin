@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { sim } from '$lib/stores/simulation.svelte';
+	import StatusPill from '$lib/components/ui/StatusPill.svelte';
 
 	let mobileOpen = $state(false);
 
-	const path = $derived($page.url.pathname);
+	const path = $derived(page.url.pathname);
 	const inSim = $derived(path.startsWith('/sim/'));
 	const simId = $derived(inSim ? path.split('/')[2] : '');
 
@@ -46,9 +47,12 @@
 					>
 				</nav>
 			{/if}
+			<div class="hidden lg:block">
+				<StatusPill compact />
+			</div>
 		</div>
 
-		<nav class="hidden items-center gap-1.5 sm:flex" aria-label="Navigasi utama">
+		<nav class="hidden items-center gap-1.5 lg:flex" aria-label="Navigasi utama">
 			<a
 				href="/"
 				class="rounded-lg px-3 py-1.5 text-xs font-medium transition {isActive('/') && path === '/'
@@ -73,6 +77,13 @@
 				aria-current={isActive('/saya') ? 'page' : undefined}>🗂️ Simulasi saya</a
 			>
 			<a
+				href="/bandingkan"
+				class="rounded-lg px-3 py-1.5 text-xs font-medium transition {isActive('/bandingkan')
+					? 'bg-[var(--color-void-3)] text-[var(--color-ink)]'
+					: 'text-[var(--color-ink-dim)] hover:bg-[var(--color-void-2)] hover:text-[var(--color-ink)]'}"
+				aria-current={isActive('/bandingkan') ? 'page' : undefined}>⚖️ Bandingkan</a
+			>
+			<a
 				href="/start"
 				class="btn btn-primary ml-1 !px-3.5 !py-1.5 !text-xs"
 				aria-current={isActive('/start') ? 'page' : undefined}
@@ -82,7 +93,7 @@
 		</nav>
 
 		<button
-			class="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--color-line)] bg-[var(--color-panel-2)] text-[var(--color-ink-dim)] sm:hidden"
+			class="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--color-line)] bg-[var(--color-panel-2)] text-[var(--color-ink-dim)] lg:hidden"
 			aria-label={mobileOpen ? 'Tutup menu' : 'Buka menu navigasi'}
 			aria-expanded={mobileOpen}
 			aria-controls="mobile-nav"
@@ -95,7 +106,7 @@
 	{#if mobileOpen}
 		<nav
 			id="mobile-nav"
-			class="border-t border-[var(--color-line-soft)] bg-[var(--color-void-1)] px-4 py-3 sm:hidden"
+			class="border-t border-[var(--color-line-soft)] bg-[var(--color-void-1)] px-4 py-3 lg:hidden"
 			aria-label="Navigasi seluler"
 		>
 			<ul class="space-y-1">
@@ -127,6 +138,21 @@
 							: 'text-[var(--color-ink-dim)]'}"
 						onclick={close}>🗂️ Simulasi saya</a
 					>
+				</li>
+				<li>
+					<a
+						href="/bandingkan"
+						class="block rounded-lg px-3 py-2 text-sm {isActive('/bandingkan')
+							? 'bg-[var(--color-void-3)] font-semibold text-[var(--color-ink)]'
+							: 'text-[var(--color-ink-dim)]'}"
+						onclick={close}>⚖️ Bandingkan</a
+					>
+				</li>
+				<li class="pt-1 border-t border-[var(--color-line-soft)]">
+					<div class="flex items-center justify-between px-1 pt-2">
+						<span class="text-xs text-[var(--color-ink-dim)]">Status backend</span>
+						<StatusPill />
+					</div>
 				</li>
 				<li class="pt-1">
 					<a href="/start" class="btn btn-primary w-full" onclick={close}>+ Simulasi baru</a>

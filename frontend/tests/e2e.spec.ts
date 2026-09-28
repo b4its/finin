@@ -22,7 +22,7 @@ test('landing menampilkan ajakan dan konteks pasar', async ({ page }) => {
 	await expect(page.getByRole('heading', { name: /Cara kerjanya/i })).toBeVisible();
 });
 
-test('wizard 4 langkah sampai multiverse', async ({ page }) => {
+test('wizard 5 langkah sampai multiverse', async ({ page }) => {
 	await page.goto('/start');
 	await page.waitForLoadState('networkidle');
 	await skipFutureSelfQuestion(page);
@@ -48,6 +48,10 @@ test('wizard 4 langkah sampai multiverse', async ({ page }) => {
 
 	// Langkah 4: asumsi
 	await expect(page.getByRole('heading', { name: /Asumsi makro/i })).toBeVisible({ timeout: 8000 });
+	await page.getByRole('button', { name: /^Lanjut/i }).click();
+
+	// Langkah 5: ringkasan sebelum menjalankan simulasi
+	await expect(page.getByRole('heading', { name: /Ringkasan sebelum membangun/i })).toBeVisible();
 	await page.getByRole('button', { name: /Bangun multiverse/i }).click();
 
 	// Dashboard
@@ -109,6 +113,7 @@ test('halaman riwayat dapat dicari dan difilter', async ({ page }) => {
 	await page.getByRole('button', { name: /^Lanjut/i }).click();
 	await page.getByRole('button', { name: /Pinjol\/Paylater vs Nabung Dulu/i }).first().click();
 	await page.getByRole('button', { name: /^Lanjut/i }).click();
+	await page.getByRole('button', { name: /^Lanjut/i }).click();
 	await page.getByRole('button', { name: /Bangun multiverse/i }).click();
 	await expect(page).toHaveURL(/\/sim\//, { timeout: 30000 });
 
@@ -121,4 +126,78 @@ test('halaman riwayat dapat dicari dan difilter', async ({ page }) => {
 	// Pencarian yang tidak cocok menampilkan keadaan kosong, bukan error.
 	await page.getByRole('searchbox', { name: /Cari riwayat/i }).fill('zzz-tidak-ada');
 	await expect(page.getByText(/Tidak ada simulasi yang cocok/i)).toBeVisible();
+});
+
+test('perbandingan responsif dapat dibagikan melalui URL', async ({ page }) => {
+	const ids = ['sim-alpha', 'sim-beta'];
+	await page.addInitScript((simulationIds) => {
+		localStorage.setItem(
+			'ft_history_v1',
+			JSON.stringify(
+				simulationIds.map((id, index) => ({
+					id,
+					label: `Skenario ${index + 1}`,
+					created_at: Date.now() - index * 1000,
+					preset: index ? 'optimis' : 'moderat',
+					twin_count: 3,
+					best_twin: 'E',
+					best_net_worth_y10: 500_000_000 - index * 50_000_000
+				}))
+			)
+		);
+	}, ids);
+
+	await page.route('**/simulations/*', async (route) => {
+		const id = route.request().url().split('/').at(-1) ?? ids[0];
+		const index = ids.indexOf(id);
+		await route.fulfill({
+			json: {
+				id,
+				preset: index ? 'optimis' : 'moderat',
+				best_twin: 'E',
+				robust: true,
+				robust_reason: 'Konsisten',
+				twins: [
+					{
+						code: 'E',
+						label: 'Si Siaga',
+						color: index ? '#f472b6' : '#22d3ee',
+						score: 0.9 - index * 0.05,
+						summary: { avg_dsr: 0.2 + index * 0.05 },
+						yearly_series: [
+							{
+								year: 10,
+								net_worth: 600_000_000 - index * 50_000_000,
+								net_worth_real: 500_000_000 - index * 50_000_000,
+								emergency_months: 8 - index,
+								dsr: 0.2 + index * 0.05
+							}
+						]
+					}
+				]
+			}
+		});
+	});
+
+	await page.setViewportSize({ width: 390, height: 844 });
+	await page.goto('/bandingkan');
+	await page.getByRole('button', { name: /Skenario 1/i }).click();
+	await page.getByRole('button', { name: /Skenario 2/i }).click();
+
+	await expect(page).toHaveURL(/ids=sim-alpha%2Csim-beta/);
+	await expect(page.getByRole('region', { name: /Ringkasan perbandingan/i })).toBeVisible();
+	await expect(page.getByRole('article')).toHaveCount(2);
+	await expect(page.getByText(/Net worth riil tahun ke-10/i)).toBeVisible();
+	await expect
+		.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth))
+		.toBe(true);
+
+	await page.reload();
+	await expect(page.getByText(/Pilih simulasi \(2\/3\)/i)).toBeVisible();
+
+	// Penerima tautan tidak harus memiliki riwayat lokal milik pengirim.
+	await page.evaluate(() => localStorage.removeItem('ft_history_v1'));
+	await page.reload();
+	await expect(page.getByRole('region', { name: /Ringkasan perbandingan/i })).toBeVisible();
+	await expect(page.getByRole('article')).toHaveCount(2);
 });

@@ -86,11 +86,14 @@
 				Riwayat tersimpan di perangkatmu saja (tanpa akun, tanpa server).
 			</p>
 		</div>
-		<div class="flex items-center gap-2">
+		<div class="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center">
+			{#if history.items.length >= 2}
+				<a href="/bandingkan" class="btn btn-ghost !py-1.5 !text-xs">⚖️ Bandingkan</a>
+			{/if}
 			<a href="/start" class="btn btn-primary !py-1.5 !text-xs">+ Simulasi baru</a>
 			{#if history.items.length}
 				<button
-					class="btn btn-ghost !py-1.5 !text-xs {confirmClear
+					class="btn btn-ghost col-span-2 !py-1.5 !text-xs sm:col-span-1 {confirmClear
 						? '!border-[var(--color-danger)] !text-[var(--color-danger)]'
 						: 'text-[var(--color-ink-dim)]'}"
 					onclick={clearAll}
