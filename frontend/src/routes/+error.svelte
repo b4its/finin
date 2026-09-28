@@ -24,6 +24,7 @@
 	<div class="mt-6 flex flex-wrap justify-center gap-2">
 		<a href="/" class="btn btn-primary">Ke beranda</a>
 		<a href="/start" class="btn btn-ghost">Mulai simulasi</a>
+		<a href="/katalog" class="btn btn-ghost">Katalog keputusan</a>
 		<a href="/saya" class="btn btn-ghost">Riwayat simulasi</a>
 	</div>
 </div>
