@@ -63,6 +63,25 @@
 		scrollTop();
 	}
 
+	/** Reset penuh: hapus isian, draf tersimpan, dan kembali ke langkah pertama. */
+	let confirmReset = $state(false);
+
+	function resetAll() {
+		if (!confirmReset) {
+			confirmReset = true;
+			setTimeout(() => (confirmReset = false), 4000);
+			return;
+		}
+		confirmReset = false;
+		sim.reset();
+		fsc = null;
+		fscSkipped = false;
+		preselected = false;
+		step = 0;
+		toast.info('Isian wizard direset');
+		scrollTop();
+	}
+
 	function scrollTop() {
 		document.getElementById('wizard-top')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 	}
@@ -158,10 +177,12 @@
 			{#if step > 0}
 				<button
 					type="button"
-					class="text-xs text-[var(--color-ink-dim)] hover:underline"
-					onclick={() => gotoStep(0)}
+					class="text-xs hover:underline {confirmReset
+						? 'font-semibold text-[var(--color-danger)]'
+						: 'text-[var(--color-ink-dim)]'}"
+					onclick={resetAll}
 				>
-					Mulai dari awal
+					{confirmReset ? 'Yakin? Semua isian dihapus' : 'Mulai dari awal'}
 				</button>
 			{/if}
 		</div>

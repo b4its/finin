@@ -104,6 +104,28 @@ test('bunga di atas batas memunculkan bendera merah', async ({ page }) => {
 	await expect(page.getByText(/Di atas batas OJK/i).first()).toBeVisible({ timeout: 8000 });
 });
 
+test('wizard memulihkan draf setelah reload dan bisa direset', async ({ page }) => {
+	await page.goto('/start');
+	await page.waitForLoadState('networkidle');
+	await skipFutureSelfQuestion(page);
+
+	// Ubah penghasilan lalu reload: nilai harus dipulihkan dari draf lokal.
+	const income = page.locator('input[inputmode="numeric"]').first();
+	await income.fill('9500000');
+	await page.waitForTimeout(700); // menunggu debounce penulisan draf
+
+	await page.reload();
+	await page.waitForLoadState('networkidle');
+	await expect(page.locator('input[inputmode="numeric"]').first()).toHaveValue('9.500.000');
+
+	// "Mulai dari awal" mengharuskan konfirmasi, lalu mengembalikan ke default.
+	await page.getByRole('button', { name: /^Lanjut/i }).click();
+	await page.getByRole('button', { name: /Mulai dari awal/i }).click();
+	await page.getByRole('button', { name: /Yakin\? Semua isian dihapus/i }).click();
+	await expect(page.getByText(/Langkah 1 dari 5/i)).toBeVisible();
+	await expect(page.locator('input[inputmode="numeric"]').first()).toHaveValue('6.000.000');
+});
+
 test('halaman riwayat dapat dicari dan difilter', async ({ page }) => {
 	// Buat satu simulasi agar riwayat terisi (store localStorage per konteks browser).
 	await page.goto('/start');
