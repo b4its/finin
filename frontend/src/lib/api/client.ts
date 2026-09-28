@@ -4,6 +4,7 @@ import { env } from '$env/dynamic/public';
 import type {
 	AssumptionsSnapshot,
 	Decision,
+	DecisionTemplate,
 	Flag,
 	NarrativeChunk,
 	Recommendation,
@@ -94,7 +95,7 @@ export const api = {
 		request<AssumptionsSnapshot & { presets_available: string[] }>(
 			`/assumptions/default?preset=${preset}`
 		),
-	templates: () => request<{ templates: unknown[] }>('/templates'),
+	templates: () => request<{ templates: DecisionTemplate[] }>('/templates'),
 	regulatoryCheck: (body: Record<string, unknown>) =>
 		request<{
 			flags: Flag[];

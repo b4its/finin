@@ -349,6 +349,33 @@ export interface MonteCarloResult {
 	metrics: MonteCarloMetrics;
 }
 
+/** Persona kembar (twin) yang dipasangkan pada sebuah template keputusan. */
+export interface TemplateTwin {
+	code: string;
+	label: string;
+	color: string;
+	dash: string;
+	icon: string;
+}
+
+/** Deskriptor satu field masukan template (dipakai untuk ringkasan kebutuhan data). */
+export interface TemplateField {
+	key: string;
+	label: string;
+	type: 'currency' | 'float' | 'int' | 'percent' | 'percent_daily' | 'instrument' | 'bool';
+	min?: number;
+	max?: number;
+}
+
+/** Katalog template keputusan dari endpoint GET /templates. */
+export interface DecisionTemplate {
+	type: string;
+	title: string;
+	twin_a: TemplateTwin;
+	twin_b: TemplateTwin;
+	fields: TemplateField[];
+}
+
 export interface Decision {
 	type: string;
 	loan?: LoanSpec;
