@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { history } from '$lib/stores/history.svelte';
 	import { toast } from '$lib/stores/toast.svelte';
-	import { dateID } from '$lib/utils/format';
+	import { dateID, rupiahBrief } from '$lib/utils/format';
 	import Disclaimer from '$lib/components/ui/Disclaimer.svelte';
 
 	onMount(() => history.load());
@@ -177,6 +177,11 @@
 							<strong class="text-[var(--color-ink)]">{r.best_twin}</strong>
 							· preset {r.preset} · {dateID(new Date(r.created_at).toISOString())}
 						</p>
+						{#if typeof r.best_net_worth_y10 === 'number'}
+							<p class="num mt-0.5 text-[11px] text-[var(--color-ink-faint)]">
+								Net worth riil th-10: {rupiahBrief(r.best_net_worth_y10)}
+							</p>
+						{/if}
 					</a>
 					<div class="flex shrink-0 items-center gap-1.5">
 						<a href={`/sim/${r.id}`} class="btn btn-ghost !px-3 !py-1.5 !text-xs">Buka</a>

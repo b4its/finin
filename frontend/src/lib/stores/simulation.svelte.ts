@@ -66,12 +66,16 @@ class SimulationStore {
 		try {
 			const res = await api.createSimulation(this.input);
 			this.result = res;
+			const bestTwin = res.twins.find((t) => t.code === res.best_twin);
+			const y10 = bestTwin?.yearly_series.find((p) => p.year === 10);
 			history.add({
 				id: res.id,
 				twin_count: res.twins.length,
 				best_twin: res.best_twin,
 				preset: res.preset,
-				label: this.describeInput()
+				label: this.describeInput(),
+				best_net_worth_y10: y10?.net_worth_real,
+				income_monthly: this.input.profile.income_monthly
 			});
 			// mulai stream narasi + rekomendasi secara paralel
 			this.streamNarration(res.id);

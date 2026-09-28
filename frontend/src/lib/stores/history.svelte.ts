@@ -8,6 +8,10 @@ export interface SimRecord {
 	preset: string;
 	/** Ringkasan singkat untuk ditampilkan di daftar. */
 	label: string;
+	/** Snapshot opsional: net worth riil twin terbaik di tahun ke-10 (untuk daftar). */
+	best_net_worth_y10?: number;
+	/** Snapshot opsional: pendapatan bulanan saat simulasi dibuat. */
+	income_monthly?: number;
 }
 
 const KEY = 'ft_history_v1';
