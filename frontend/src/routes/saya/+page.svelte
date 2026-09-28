@@ -188,6 +188,12 @@
 					</a>
 					<div class="flex shrink-0 items-center gap-1.5">
 						<a href={`/sim/${r.id}`} class="btn btn-ghost !px-3 !py-1.5 !text-xs">Buka</a>
+						<a
+							href={`/bandingkan?ids=${r.id}`}
+							class="btn btn-ghost !px-2.5 !py-1.5 !text-xs text-[var(--color-ink-dim)]"
+							aria-label={`Bandingkan ${r.label || r.id} dengan simulasi lain`}
+							title="Bandingkan dengan simulasi lain">⚖️</a
+						>
 						<button
 							class="btn btn-ghost !px-2.5 !py-1.5 !text-xs text-[var(--color-ink-dim)]"
 							aria-label={`Hapus riwayat ${r.label || r.id}`}
