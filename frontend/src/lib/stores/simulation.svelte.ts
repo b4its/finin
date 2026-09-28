@@ -1,6 +1,8 @@
 /** Store simulasi (Svelte 5 runes) — menyimpan input wizard & hasil. */
 
 import { api, streamNarrative, type SimulationInput } from '$lib/api/client';
+import { history } from '$lib/stores/history.svelte';
+import { rupiahBrief } from '$lib/utils/format';
 import type {
 	AssumptionsSnapshot,
 	NarrativeChunk,
@@ -61,6 +63,13 @@ class SimulationStore {
 		try {
 			const res = await api.createSimulation(this.input);
 			this.result = res;
+			history.add({
+				id: res.id,
+				twin_count: res.twins.length,
+				best_twin: res.best_twin,
+				preset: res.preset,
+				label: this.describeInput()
+			});
 			// mulai stream narasi + rekomendasi secara paralel
 			this.streamNarration(res.id);
 			api
@@ -127,6 +136,13 @@ class SimulationStore {
 		const chunks = this.narrative[twinCode];
 		if (!chunks) return null;
 		return chunks.find((c) => c.horizon === horizon)?.text ?? null;
+	}
+
+	/** Ringkasan manusiawi dari input untuk label riwayat. */
+	describeInput(): string {
+		const dec = this.input.decisions.map((d) => d.type.replace(/_/g, ' ')).join(', ');
+		const income = rupiahBrief(this.input.profile.income_monthly);
+		return dec ? `${income}/bln · ${dec}` : `${income}/bln · tanpa keputusan`;
 	}
 }
 

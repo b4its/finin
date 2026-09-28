@@ -6,6 +6,7 @@
 	import StepDecision from '$lib/components/wizard/StepDecision.svelte';
 	import StepAssumption from '$lib/components/wizard/StepAssumption.svelte';
 	import { sim } from '$lib/stores/simulation.svelte';
+	import { toast } from '$lib/stores/toast.svelte';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 
@@ -55,9 +56,11 @@
 				await api.recordEvent(res.id, 'fsc_pre', parseInt(pre)).catch(() => {});
 				sessionStorage.removeItem('fsc_pre');
 			}
+			toast.success(`Multiverse dibangun: ${res.twins.length} cabang siap dijelajahi.`);
 			await goto(`/sim/${res.id}`);
 		} catch (e) {
 			buildError = String(e);
+			toast.error('Gagal membangun multiverse. Cek koneksi backend lalu coba lagi.');
 		} finally {
 			building = false;
 		}
@@ -66,21 +69,22 @@
 
 <svelte:head><title>Mulai — Financial Twin</title></svelte:head>
 
-<div class="mx-auto max-w-3xl px-5 py-8">
-	<header class="mb-6 flex items-center justify-between">
-		<a href="/" class="flex items-center gap-2 font-bold">
-			<span>🌌</span> Financial Twin
-		</a>
-		<div class="flex gap-1">
+<div class="mx-auto max-w-3xl px-4 py-6 sm:px-5 sm:py-8">
+	<div class="mb-6 flex items-center justify-between gap-3">
+		<div>
+			<h1 class="text-lg font-bold">Bangun multiverse-mu</h1>
+			<p class="text-xs text-[var(--color-ink-dim)]">Selesai dalam &lt; 90 detik · tanpa akun</p>
+		</div>
+		<div class="flex gap-1" aria-label={`Progres: langkah ${step + 1} dari 4`} role="img">
 			{#each steps as _s, i}
 				<span
-					class="h-1.5 w-8 rounded-full"
+					class="h-1.5 w-8 rounded-full transition-colors"
 					class:bg-[var(--color-accent)]={i <= step}
 					class:bg-[var(--color-line)]={i > step}
 				></span>
 			{/each}
 		</div>
-	</header>
+	</div>
 
 	{#if step === 0 && fsc === null}
 		<div class="card mb-4 p-5">

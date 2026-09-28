@@ -29,16 +29,8 @@
 	<title>Financial Twin — lihat dirimu di 5, 10, dan 20 tahun</title>
 </svelte:head>
 
-<div class="mx-auto max-w-5xl px-5 py-12 sm:py-20">
-	<header class="flex items-center justify-between">
-		<div class="flex items-center gap-2">
-			<span class="text-xl">🌌</span>
-			<span class="font-bold">Financial Twin</span>
-		</div>
-		<a href="/start" class="btn btn-ghost">Mulai</a>
-	</header>
-
-	<section class="mt-16 text-center">
+<div class="mx-auto max-w-5xl px-4 py-12 sm:px-5 sm:py-20">
+	<section class="mt-6 text-center sm:mt-10">
 		<div class="chip mx-auto border-[var(--color-accent)] text-[var(--color-accent)]">
 			Berdasarkan data OJK, BI, BPS, LPS & riset Hershfield (2011)
 		</div>

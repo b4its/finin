@@ -30,6 +30,7 @@
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
 	import { sim } from '$lib/stores/simulation.svelte';
+	import { toast } from '$lib/stores/toast.svelte';
 	import type { Twin } from '$lib/api/types';
 	import { api } from '$lib/api/client';
 	import { rupiahBrief, months, percent } from '$lib/utils/format';
@@ -87,6 +88,11 @@
 	async function changePreset(p: string) {
 		preset = p;
 		await sim.recompute(p);
+		if (sim.errorMsg) {
+			toast.error('Gagal menghitung ulang dengan preset baru.');
+		} else {
+			toast.success(`Preset diubah ke ${presetLabels[p] ?? p} — semua twin dihitung ulang.`);
+		}
 	}
 
 	const presetLabels: Record<string, string> = {
@@ -117,9 +123,9 @@
 
 <svelte:head><title>Multiverse — Financial Twin</title></svelte:head>
 
-<div class="mx-auto max-w-6xl px-5 py-6">
-	<header class="mb-6 flex flex-wrap items-center justify-between gap-3">
-		<a href="/" class="flex items-center gap-2 font-bold"><span>🌌</span> Financial Twin</a>
+<div class="mx-auto max-w-6xl px-4 py-5 sm:px-5 sm:py-6">
+	<header class="mb-5 flex flex-wrap items-center justify-between gap-3">
+		<h1 class="text-sm font-semibold text-[var(--color-ink-dim)]">Multiverse hub</h1>
 		<div class="flex flex-wrap items-center gap-2">
 			{#if result}
 				<RobustBadge
@@ -335,7 +341,14 @@
 					</button>
 					<button
 						class="btn btn-ghost mt-1.5 w-full !text-xs text-[var(--color-ink-dim)]"
-						onclick={() => navigator.clipboard?.writeText(window.location.href)}
+						onclick={async () => {
+							try {
+								await navigator.clipboard?.writeText(window.location.href);
+								toast.success('Link simulasi disalin ke clipboard');
+							} catch {
+								toast.error('Gagal menyalin link — salin manual dari address bar');
+							}
+						}}
 					>
 						Salin link URL
 					</button>
