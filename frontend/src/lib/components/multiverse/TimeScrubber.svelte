@@ -60,7 +60,9 @@
 		</p>
 	{:else}
 		<p class="mt-3 text-xs text-[var(--color-ink-dim)]">
-			Narasi tersedia pada horizon tahun ke-5, 10, dan 20 — geser atau pilih salah satunya.
+			Narasi tersedia pada horizon tahun ke-<strong class="text-[var(--color-ink)]">5</strong>,
+			<strong class="text-[var(--color-ink)]">10</strong>, dan
+			<strong class="text-[var(--color-ink)]">20</strong> — geser atau pilih salah satunya.
 		</p>
 	{/if}
 </div>

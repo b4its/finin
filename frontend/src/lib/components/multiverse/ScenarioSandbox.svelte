@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { rupiahBrief } from '$lib/utils/format';
 
+	let { baseExpense = 5_000_000, baseIncome = 0 }: { baseExpense?: number; baseIncome?: number } =
+		$props();
+
 	let extraIncome = $state(0);
 	let expenseCutPct = $state(0);
 	let extraSavings = $state(0);
@@ -25,9 +28,10 @@
 		{ label: '+Rp 30 Jt', value: 30_000_000 }
 	];
 
-	// Estimasi dampak majemuk tahun ke-10 (asumsi return moderat riil ~4%/tahun)
+	// Estimasi dampak majemuk tahun ke-10 (asumsi return moderat riil ~4%/tahun).
+	// Basis penghematan memakai pengeluaran bulanan pengguna, bukan angka tetap.
 	let projectedGainY10 = $derived.by(() => {
-		const monthlySurplus = extraIncome + expenseCutPct * 5_000_000;
+		const monthlySurplus = extraIncome + expenseCutPct * Math.max(baseExpense, 0);
 		const r = 0.04 / 12; // return riil bulanan
 		const n = 120; // 10 tahun (120 bulan)
 
@@ -39,6 +43,11 @@
 
 		return Math.round(fvSavings + fvMonthly);
 	});
+
+	// Nominal hemat per bulan agar pengguna paham angka absolutnya.
+	let monthlySavingAmount = $derived.by(
+		() => extraIncome + Math.round(expenseCutPct * Math.max(baseExpense, 0))
+	);
 </script>
 
 <div class="card p-4">
@@ -48,6 +57,11 @@
 		</h3>
 		<p class="text-xs text-[var(--color-ink-dim)]">
 			Uji dampak percepatan finansial jika kamu menambah penghasilan atau menyisihkan bonus hari ini
+			{#if baseIncome > 0}
+				<span class="text-[var(--color-ink-faint)]"
+					>· penghasilan saat ini {rupiahBrief(baseIncome)}/bln</span
+				>
+			{/if}
 		</p>
 	</div>
 
@@ -104,6 +118,11 @@
 					</button>
 				{/each}
 			</div>
+			<p class="mt-1 text-[11px] text-[var(--color-ink-faint)]">
+				Basis pengeluaranmu: {rupiahBrief(baseExpense)}/bln · hemat {rupiahBrief(
+					Math.round(expenseCutPct * Math.max(baseExpense, 0))
+				)}/bln
+			</p>
 		</div>
 
 		<!-- Hasil Proyeksi Nilai Tambah -->
@@ -111,7 +130,7 @@
 			<div
 				class="rounded-xl border border-emerald-500/50 bg-emerald-500/10 p-3.5 text-left transition-all"
 			>
-				<div class="flex items-center justify-between">
+				<div class="flex items-center justify-between gap-3">
 					<span class="font-bold text-xs text-emerald-400"
 						>✨ Potensi Tambahan Kekayaan Riil (Tahun ke-10):</span
 					>
@@ -120,9 +139,10 @@
 					</span>
 				</div>
 				<p class="mt-1 text-[11px] leading-relaxed text-[var(--color-ink-dim)]">
-					Dengan disiplin menyalurkan surplus ini ke instrumen investasi majemuk riil (~4%/thn),
-					kamu dapat mempercepat capaian target 100 Juta dan 1 Miliar Pertama hingga 2–4 tahun lebih
-					awal!
+					Surplus bulanan total <strong class="text-emerald-300"
+						>{rupiahBrief(monthlySavingAmount)}/bln</strong
+					> bila disalurkan ke instrumen investasi majemuk riil (~4%/thn) dapat mempercepat capaian target
+					100 Juta dan 1 Miliar Pertama hingga 2–4 tahun lebih awal.
 				</p>
 			</div>
 		{/if}

@@ -2,6 +2,7 @@
 	import '../app.css';
 	import AppHeader from '$lib/components/ui/AppHeader.svelte';
 	import Toaster from '$lib/components/ui/Toaster.svelte';
+	import BackToTop from '$lib/components/ui/BackToTop.svelte';
 	import { onMount } from 'svelte';
 	import { history } from '$lib/stores/history.svelte';
 
@@ -23,4 +24,5 @@
 	{@render children()}
 </main>
 
+<BackToTop />
 <Toaster />

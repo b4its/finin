@@ -30,3 +30,6 @@ backups/
 *.log
 playwright-report/
 test-results/
+
+# tooling
+.opencode/

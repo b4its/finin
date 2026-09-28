@@ -26,6 +26,7 @@
 	import FinancialGoalPlanner from '$lib/components/multiverse/FinancialGoalPlanner.svelte';
 	import ScenarioSandbox from '$lib/components/multiverse/ScenarioSandbox.svelte';
 	import ShareModal from '$lib/components/multiverse/ShareModal.svelte';
+	import CommandPalette from '$lib/components/multiverse/CommandPalette.svelte';
 	import Disclaimer from '$lib/components/ui/Disclaimer.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
@@ -53,12 +54,36 @@
 	let exportMenuOpen = $state(false);
 	let activeTab = $state<'overview' | 'risk' | 'strategy' | 'future' | 'all'>('overview');
 
+	// Daftar modul per tab — satu sumber kebenaran agar jumlah modul akurat
+	// dan tidak lagi hard-coded (menghindari hitungan yang meleset).
+	const TAB_MODULES = {
+		overview: ['BranchTree', 'TimeScrubber', 'NetWorthChart', 'CompareView', 'MilestoneTracker'],
+		risk: ['MonteCarlo', 'HealthScorecard', 'EmergencyRunway', 'StressTest', 'PurchasingPower'],
+		strategy: ['GoalPlanner', 'DebtPayoff', 'EducationFund', 'PortfolioRadar', 'ScenarioSandbox'],
+		future: ['PensionFIRE', 'SandwichGen', 'EstatePlanning', 'ZakatTax', 'TaxBPJS']
+	} as const;
+
 	const TABS = [
-		{ id: 'overview', label: 'Multiverse Utama', icon: '🌌', count: 5 },
-		{ id: 'risk', label: 'Risiko & Ketahanan', icon: '🎲', count: 5 },
-		{ id: 'strategy', label: 'Akselerasi & Target', icon: '🎯', count: 5 },
-		{ id: 'future', label: 'Pensiun, Waris & Pajak', icon: '🏛️', count: 5 },
-		{ id: 'all', label: 'Semua Modul', icon: '📋', count: 20 }
+		{
+			id: 'overview',
+			label: 'Multiverse Utama',
+			icon: '🌌',
+			count: TAB_MODULES.overview.length
+		},
+		{ id: 'risk', label: 'Risiko & Ketahanan', icon: '🎲', count: TAB_MODULES.risk.length },
+		{
+			id: 'strategy',
+			label: 'Akselerasi & Target',
+			icon: '🎯',
+			count: TAB_MODULES.strategy.length
+		},
+		{
+			id: 'future',
+			label: 'Pensiun, Waris & Pajak',
+			icon: '🏛️',
+			count: TAB_MODULES.future.length
+		},
+		{ id: 'all', label: 'Semua Modul', icon: '📋', count: Object.values(TAB_MODULES).flat().length }
 	] as const;
 
 	onMount(async () => {
@@ -119,15 +144,41 @@
 	function weightOf(k: string): number {
 		return scoreWeight[k] ?? 0.1;
 	}
+
+	/** Navigasi tablist dengan panah kiri/kanan (pola WAI-ARIA). */
+	function onTabKey(e: KeyboardEvent, idx: number) {
+		const last = TABS.length - 1;
+		let next = idx;
+		if (e.key === 'ArrowRight') next = idx === last ? 0 : idx + 1;
+		else if (e.key === 'ArrowLeft') next = idx === 0 ? last : idx - 1;
+		else if (e.key === 'Home') next = 0;
+		else if (e.key === 'End') next = last;
+		else return;
+		e.preventDefault();
+		activeTab = TABS[next].id;
+		queueMicrotask(() => document.getElementById(`tab-${TABS[next].id}`)?.focus());
+	}
 </script>
 
 <svelte:head><title>Multiverse — Financial Twin</title></svelte:head>
 
 <div class="mx-auto max-w-6xl px-4 py-5 sm:px-5 sm:py-6">
 	<header class="mb-5 flex flex-wrap items-center justify-between gap-3">
-		<h1 class="text-sm font-semibold text-[var(--color-ink-dim)]">Multiverse hub</h1>
+		<p class="text-sm font-semibold text-[var(--color-ink-dim)]">Multiverse hub</p>
 		<div class="flex flex-wrap items-center gap-2">
 			{#if result}
+				<CommandPalette
+					tabs={TABS}
+					twins={result.twins}
+					onSelectTab={(id) => (activeTab = id as typeof activeTab)}
+					onSelectTwin={(code) => {
+						const t = result?.twins.find((x) => x.code === code);
+						if (t) openDetail(t);
+					}}
+					onOpenReport={() => (reportOpen = true)}
+					onOpenPitch={() => (pitchOpen = true)}
+					onOpenShare={() => (shareOpen = true)}
+				/>
 				<RobustBadge
 					robust={result.robust}
 					reason={result.robust_reason}
@@ -192,12 +243,33 @@
 	</header>
 
 	{#if sim.errorMsg}
-		<div class="rounded-xl border border-[var(--color-danger)] bg-red-500/10 p-4 text-sm">
-			{sim.errorMsg}
+		<div class="card p-8 text-center">
+			<p class="text-4xl" aria-hidden="true">🛰️</p>
+			<h2 class="mt-3 text-lg font-bold">Multiverse tidak dapat dimuat</h2>
+			<p class="mx-auto mt-1 max-w-md text-sm text-[var(--color-ink-dim)]">
+				Simulasi tidak ditemukan, sudah kedaluwarsa, atau backend sedang tidak dapat dijangkau.
+			</p>
+			<code
+				class="mx-auto mt-3 block max-w-md truncate rounded-lg border border-[var(--color-line)] bg-[var(--color-void-2)] px-3 py-2 text-xs text-[var(--color-ink-dim)]"
+				title={sim.errorMsg}>{sim.errorMsg}</code
+			>
+			<div class="mt-5 flex justify-center gap-2">
+				<a href="/start" class="btn btn-primary">Buat simulasi baru</a>
+				<a href="/saya" class="btn btn-ghost">Riwayat simulasi</a>
+			</div>
 		</div>
 	{:else if !result}
-		<div class="flex items-center gap-3 p-8 text-[var(--color-ink-dim)]">
-			<span class="animate-pulse text-xl">✨</span> Memuat multiverse…
+		<div class="grid grid-cols-1 gap-5 lg:grid-cols-3" aria-busy="true" aria-live="polite">
+			<div class="space-y-5 lg:col-span-2">
+				<div class="card h-64 skeleton"></div>
+				<div class="card h-40 skeleton"></div>
+			</div>
+			<div class="space-y-4">
+				{#each Array(3) as _}
+					<div class="card h-32 skeleton"></div>
+				{/each}
+			</div>
+			<span class="sr-only">Memuat multiverse…</span>
 		</div>
 	{:else}
 		<section class="mb-5">
@@ -227,18 +299,26 @@
 
 		<!-- Multiverse Hub Navigation Bar -->
 		<div
-			class="mb-5 flex flex-wrap items-center gap-1.5 rounded-2xl border border-[var(--color-line)] bg-[var(--color-void-2)] p-1.5 shadow-sm"
+			class="no-print sticky top-14 z-30 mb-5 flex flex-wrap items-center gap-1.5 rounded-2xl border border-[var(--color-line)] bg-[var(--color-void-2)]/95 p-1.5 shadow-sm backdrop-blur-md"
+			role="tablist"
+			aria-label="Modul analisis multiverse"
 		>
-			{#each TABS as tab}
+			{#each TABS as tab, i (tab.id)}
 				<button
 					type="button"
+					role="tab"
+					id="tab-{tab.id}"
+					aria-selected={activeTab === tab.id}
+					aria-controls="panel-{tab.id}"
+					tabindex={activeTab === tab.id ? 0 : -1}
 					class="flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all {activeTab ===
 					tab.id
 						? 'bg-[var(--color-accent)] font-bold text-slate-950 shadow-md'
 						: 'text-[var(--color-ink-dim)] hover:bg-[var(--color-void-3)] hover:text-[var(--color-ink)]'}"
 					onclick={() => (activeTab = tab.id)}
+					onkeydown={(e) => onTabKey(e, i)}
 				>
-					<span>{tab.icon}</span>
+					<span aria-hidden="true">{tab.icon}</span>
 					<span>{tab.label}</span>
 					<span
 						class="rounded-full px-1.5 py-0.5 text-[10px] {activeTab === tab.id
@@ -252,7 +332,13 @@
 		</div>
 
 		<div class="grid grid-cols-1 gap-5 lg:grid-cols-3">
-			<div class="space-y-5 lg:col-span-2">
+			<div
+				class="space-y-5 lg:col-span-2"
+				id="panel-{activeTab}"
+				role="tabpanel"
+				aria-labelledby="tab-{activeTab}"
+				tabindex="0"
+			>
 				{#if activeTab === 'overview' || activeTab === 'all'}
 					<BranchTree twins={result.twins} selectedYear={year} brokenShock={activeShock} />
 					<TimeScrubber
@@ -279,7 +365,10 @@
 					<DebtPayoffAccelerator profile={sim.input.profile} twins={result.twins} />
 					<EducationFundPlanner twins={result.twins} profile={sim.input.profile} />
 					<PortfolioAllocationRadar twins={result.twins} />
-					<ScenarioSandbox />
+					<ScenarioSandbox
+						baseExpense={sim.input.profile.expense_monthly || 5_000_000}
+						baseIncome={sim.input.profile.income_monthly || 0}
+					/>
 				{/if}
 
 				{#if activeTab === 'future' || activeTab === 'all'}
