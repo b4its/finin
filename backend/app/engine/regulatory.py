@@ -68,15 +68,20 @@ def ruleset_from_assumptions(regulatory: dict | None) -> dict:
 
 
 def cap_for(tenor_months: float, ruleset: dict | None = None) -> tuple[float, float]:
-    """Kembalikan (bunga_harian_max, denda_harian_max) untuk tenor tertentu."""
+    """Kembalikan (bunga_harian_max, denda_harian_max) untuk tenor tertentu.
+
+    Kapas diurutkan dari tenor terkecil; entri tanpa batas tenor (None) selalu
+    paling akhir. Bila tidak ada yang cocok (mis. tenor di luar rentang), dipakai
+    kap yang paling luas (entri dengan tenor_max None, atau nilai rate tertinggi).
+    """
     rs = ruleset or RULESET
-    caps = rs["consumer_caps"]
-    # Kapas dari tenor terkecil yang menampung tenor ini.
-    for max_t, rate, fee in sorted(caps, key=lambda c: (c[0] is None, c[0] or 0)):
+    caps = rs.get("consumer_caps") or RULESET["consumer_caps"]
+    ordered = sorted(caps, key=lambda c: (c[0] is None, c[0] or 0))
+    for max_t, rate, fee in ordered:
         if max_t is None or tenor_months <= max_t:
             return rate, fee
-    # Fallback ke kap terakhir.
-    _, rate, fee = caps[-1]
+    # Fallback: kap paling luas (entri terakhir setelah pengurutan).
+    _, rate, fee = ordered[-1]
     return rate, fee
 
 
@@ -136,15 +141,16 @@ def check_pinjol(
         )
 
     installment = installment_for(amount, rate_daily, tenor_months, rs)
+    dsr_cap = rs.get("dsr_cap", RULESET["dsr_cap"])
     if income_monthly > 0:
         dsr = (installment + existing_payment) / income_monthly
-        if dsr > rs["dsr_cap"] + 1e-12:
+        if dsr > dsr_cap + 1e-12:
             flags.append(
                 Flag(
                     "orange",
                     "DSR_OVER_30",
                     f"Cicilan {(installment + existing_payment):,.0f}/bulan ≈ {dsr:.0%} penghasilan, "
-                    f"melebihi batas kemampuan bayar OJK {rs['dsr_cap']:.0%}.",
+                    f"melebihi batas kemampuan bayar OJK {dsr_cap:.0%}.",
                 )
             )
     return flags
@@ -153,14 +159,15 @@ def check_pinjol(
 def check_dsr(installment: float, income_monthly: float, ruleset: dict | None = None) -> Flag | None:
     """Bendera oranye jika rasio cicilan melebihi batas DSR."""
     rs = ruleset or RULESET
+    dsr_cap = rs.get("dsr_cap", RULESET["dsr_cap"])
     if income_monthly <= 0:
         return None
     dsr = installment / income_monthly
-    if dsr > rs["dsr_cap"] + 1e-12:
+    if dsr > dsr_cap + 1e-12:
         return Flag(
             "orange",
             "DSR_OVER_30",
-            f"Total cicilan ≈ {dsr:.0%} penghasilan, melebihi batas OJK {rs['dsr_cap']:.0%}.",
+            f"Total cicilan ≈ {dsr:.0%} penghasilan, melebihi batas OJK {dsr_cap:.0%}.",
         )
     return None
 
