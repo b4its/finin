@@ -77,6 +77,13 @@
 				aria-current={isActive('/saya') ? 'page' : undefined}>🗂️ Simulasi saya</a
 			>
 			<a
+				href="/katalog"
+				class="rounded-lg px-3 py-1.5 text-xs font-medium transition {isActive('/katalog')
+					? 'bg-[var(--color-void-3)] text-[var(--color-ink)]'
+					: 'text-[var(--color-ink-dim)] hover:bg-[var(--color-void-2)] hover:text-[var(--color-ink)]'}"
+				aria-current={isActive('/katalog') ? 'page' : undefined}>🧩 Katalog</a
+			>
+			<a
 				href="/bandingkan"
 				class="rounded-lg px-3 py-1.5 text-xs font-medium transition {isActive('/bandingkan')
 					? 'bg-[var(--color-void-3)] text-[var(--color-ink)]'
@@ -137,6 +144,15 @@
 							? 'bg-[var(--color-void-3)] font-semibold text-[var(--color-ink)]'
 							: 'text-[var(--color-ink-dim)]'}"
 						onclick={close}>🗂️ Simulasi saya</a
+					>
+				</li>
+				<li>
+					<a
+						href="/katalog"
+						class="block rounded-lg px-3 py-2 text-sm {isActive('/katalog')
+							? 'bg-[var(--color-void-3)] font-semibold text-[var(--color-ink)]'
+							: 'text-[var(--color-ink-dim)]'}"
+						onclick={close}>🧩 Katalog keputusan</a
 					>
 				</li>
 				<li>

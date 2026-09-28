@@ -201,3 +201,30 @@ test('perbandingan responsif dapat dibagikan melalui URL', async ({ page }) => {
 	await expect(page.getByRole('region', { name: /Ringkasan perbandingan/i })).toBeVisible();
 	await expect(page.getByRole('article')).toHaveCount(2);
 });
+
+test('katalog keputusan menyaring dan membuka wizard dengan template terpilih', async ({ page }) => {
+	await page.goto('/katalog');
+	await expect(
+		page.getByRole('heading', { level: 1, name: /Katalog keputusan finansial/i })
+	).toBeVisible();
+
+	// Semua 13 template dari backend tampil sebagai kartu.
+	await expect(page.getByRole('article')).toHaveCount(13);
+
+	// Pencarian menyaring; kata kunci "rumah" hanya menyisakan template KPR.
+	await page.getByRole('searchbox', { name: /Cari template keputusan/i }).fill('rumah');
+	await expect(page.getByRole('article')).toHaveCount(1);
+	await expect(page.getByText(/Beli Rumah KPR vs Sewa/i)).toBeVisible();
+
+	// Kosongkan pencarian lalu buka satu template ke wizard via tautan dalam.
+	await page.getByRole('searchbox', { name: /Cari template keputusan/i }).fill('');
+	await expect(page.getByRole('article')).toHaveCount(13);
+	await page.getByRole('link', { name: /Coba di wizard/i }).first().click();
+
+	await expect(page).toHaveURL(/\/start\?template=/);
+	await expect(
+		page.getByRole('heading', { name: /Pilih keputusan yang mau dibandingkan/i })
+	).toBeVisible();
+	// Template terpilih otomatis -> formulir detailnya muncul (ada tombol aktif).
+	await expect(page.locator('button.active').first()).toBeVisible();
+});

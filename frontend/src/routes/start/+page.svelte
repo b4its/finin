@@ -10,6 +10,7 @@
 	import { toast } from '$lib/stores/toast.svelte';
 	import { validateStep, type WizardStep, type WizardUiStep } from '$lib/utils/wizard-validation';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 
 	const LAST_STEP = 4; // 0..4 (4 = review)
@@ -19,10 +20,19 @@
 	let building = $state(false);
 	let buildError = $state<string | null>(null);
 
+	/** Template yang diminta dari katalog (`/start?template=<type>`) — diteruskan ke langkah keputusan. */
+	let preselectTemplate = $derived(page.url.searchParams.get('template') ?? '');
+	let preselected = $state(false);
+
 	const steps = ['Penghasilan', 'Posisi', 'Keputusan', 'Asumsi', 'Ringkasan'];
 
 	onMount(() => {
 		sim.loadAssumptions();
+		// Bila datang dari katalog dengan template tertentu, lompat ke langkah keputusan.
+		if (preselectTemplate) {
+			step = 2;
+			preselected = true;
+		}
 	});
 
 	/** Validasi langkah saat ini (review = langkah terakhir, selalu lolos). */
@@ -161,7 +171,7 @@
 		{:else if step === 1}
 			<StepPosition />
 		{:else if step === 2}
-			<StepDecision />
+			<StepDecision preselect={preselected ? preselectTemplate : ''} />
 		{:else if step === 3}
 			<StepAssumption />
 		{:else}

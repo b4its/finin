@@ -87,6 +87,22 @@
 
 	let selected = $derived(sim.input.decisions.map((d) => d.type));
 
+	/**
+	 * Template yang diminta lewat tautan katalog (`/start?template=...`). Bila
+	 * valid dan belum dipilih, tambahkan otomatis sekali agar pengguna langsung
+	 * melihat formulirnya tanpa harus mencari ulang.
+	 */
+	let { preselect = '' }: { preselect?: string } = $props();
+
+	$effect(() => {
+		const type = preselect;
+		if (!type) return;
+		if (!TEMPLATES.some((t) => t.type === type)) return;
+		if (sim.input.decisions.some((d) => d.type === type)) return;
+		if (sim.input.decisions.length >= 2) return;
+		sim.input.decisions = [...sim.input.decisions, defaultDecision(type)];
+	});
+
 	function defaultDecision(type: string): Decision {
 		if (type === 'loan_vs_save')
 			return {
@@ -286,7 +302,15 @@
 
 <div class="space-y-6">
 	<div>
-		<h3 class="text-lg font-bold">Pilih keputusan yang mau dibandingkan</h3>
+		<div class="flex flex-wrap items-center justify-between gap-2">
+			<h3 class="text-lg font-bold">Pilih keputusan yang mau dibandingkan</h3>
+			<a
+				href="/katalog"
+				class="text-xs text-[var(--color-accent)] hover:underline"
+				target="_blank"
+				rel="noreferrer">Lihat katalog lengkap ↗</a
+			>
+		</div>
 		<p class="mt-1 text-sm text-[var(--color-ink-dim)]">
 			Pilih 1–2 template. Setiap template menghasilkan dua "kembaran" dari dirimu di masa depan.
 		</p>

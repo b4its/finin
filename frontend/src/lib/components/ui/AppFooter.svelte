@@ -7,6 +7,7 @@
 	const links = [
 		{ href: '/', label: 'Beranda' },
 		{ href: '/start', label: 'Mulai simulasi' },
+		{ href: '/katalog', label: 'Katalog keputusan' },
 		{ href: '/saya', label: 'Simulasi saya' }
 	];
 

@@ -63,6 +63,7 @@
 		</p>
 		<div class="mt-8 flex flex-wrap justify-center gap-3">
 			<a href="/start" class="btn btn-primary !px-6 !py-3 !text-base">Bangun multiverse-ku →</a>
+			<a href="/katalog" class="btn btn-ghost !px-6 !py-3 !text-base">Jelajahi katalog keputusan</a>
 		</div>
 		<p class="mt-3 text-xs text-[var(--color-ink-dim)]">
 			Gratis · tanpa akun · selesai dalam &lt; 90 detik
