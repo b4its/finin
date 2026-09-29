@@ -82,10 +82,15 @@ def run_monte_carlo(
     base_expense = profile.expense_monthly + profile.dependents_monthly
     emergency_target = base_expense * cfg.emergency_target_months
 
-    # Simpan hasil tiap run: run_idx -> year (0..20) -> (nominal_nw, real_nw)
+    # Simpan hasil tiap run: run_idx -> year (0..num_years) -> (nominal_nw, real_nw)
     num_years = horizon_months // 12
     trajectories_nominal: list[list[float]] = [[] for _ in range(num_years + 1)]
     trajectories_real: list[list[float]] = [[] for _ in range(num_years + 1)]
+
+    # Titik evaluasi metrik risiko. Idealnya tahun ke-10, tapi bila horizon lebih
+    # pendek dari 10 tahun kita pakai tahun terakhir yang tersedia agar metrik tidak
+    # diam-diam bernilai 0 (sebelumnya bug: horizon <120 bulan -> semua metrik 0).
+    eval_year = min(10, num_years)
 
     y10_real_list: list[float] = []
     y10_nominal_list: list[float] = []
@@ -192,9 +197,11 @@ def run_monte_carlo(
             invest *= 1.0 + m_inv
             cash *= 1.0 + m_cash
 
-            # Evaluasi di titik tahunan (m % 12 == 0)
-            if m % 12 == 0:
-                yr = m // 12
+            # Evaluasi di titik tahunan (m % 12 == 0) dan di bulan terakhir horizon
+            # (agar tahun parsial terakhir, mis. horizon 125 bulan, tetap terisi).
+            is_final_partial = m == horizon_months and m % 12 != 0
+            if m % 12 == 0 or is_final_partial:
+                yr = min(m // 12, num_years)
                 prop_val = (
                     cfg.property_initial_value * (1.0 + cfg.property_appreciation_annual / 12.0) ** m
                     if cfg.property_initial_value > 0
@@ -210,12 +217,21 @@ def run_monte_carlo(
                 nw_nom = cash + tot_invest - debt_bal
                 nw_real = nw_nom / cum_infl
 
-                trajectories_nominal[yr].append(nw_nom)
-                trajectories_real[yr].append(nw_real)
+                if is_final_partial and trajectories_nominal[yr]:
+                    # Tahun parsial terakhir: perbarui nilai run ini, jangan tambah
+                    # entri baru agar tetap satu nilai per run per tahun.
+                    trajectories_nominal[yr][-1] = nw_nom
+                    trajectories_real[yr][-1] = nw_real
+                    if yr == eval_year:
+                        y10_nominal_list[-1] = nw_nom
+                        y10_real_list[-1] = nw_real
+                else:
+                    trajectories_nominal[yr].append(nw_nom)
+                    trajectories_real[yr].append(nw_real)
 
-                if yr == 10:
-                    y10_real_list.append(nw_real)
-                    y10_nominal_list.append(nw_nom)
+                    if yr == eval_year:
+                        y10_real_list.append(nw_real)
+                        y10_nominal_list.append(nw_nom)
 
     # Susun persentil tahunan 0..20
     yearly_percentiles: list[dict[str, Any]] = []
@@ -259,6 +275,7 @@ def run_monte_carlo(
     cvar_95 = sum(sorted_y10_nom[:cvar_cutoff]) / cvar_cutoff
 
     metrics = {
+        "eval_year": eval_year,
         "success_rate_positive_y10": round(success_rate_positive, 4),
         "success_rate_wealth_preservation_y10": round(success_rate_preservation, 4),
         "median_net_worth_nominal_y10": round(_percentile(sorted_y10_nom, 0.50)),

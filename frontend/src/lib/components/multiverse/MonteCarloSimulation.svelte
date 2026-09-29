@@ -219,7 +219,7 @@
 		<div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 text-xs">
 			<div class="rounded-xl border border-[var(--color-line)] bg-[var(--color-void-1)] p-3">
 				<span class="text-[11px] font-semibold text-[var(--color-ink-dim)]"
-					>Probabilitas Bertahan (Th-10)</span
+					>Probabilitas Bertahan (Th-{mcData.metrics.eval_year})</span
 				>
 				<div class="mt-1 text-lg font-black text-emerald-400">
 					{percent(mcData.metrics.success_rate_positive_y10, 0)}
@@ -229,7 +229,7 @@
 
 			<div class="rounded-xl border border-[var(--color-line)] bg-[var(--color-void-1)] p-3">
 				<span class="text-[11px] font-semibold text-[var(--color-ink-dim)]"
-					>Pelestarian Modal (Th-10)</span
+					>Pelestarian Modal (Th-{mcData.metrics.eval_year})</span
 				>
 				<div class="mt-1 text-lg font-black text-cyan-400">
 					{percent(mcData.metrics.success_rate_wealth_preservation_y10, 0)}

@@ -328,6 +328,8 @@ export interface MonteCarloYearPercentile {
 }
 
 export interface MonteCarloMetrics {
+	/** Tahun evaluasi metrik risiko (10, atau tahun terakhir bila horizon < 10 tahun). */
+	eval_year: number;
 	success_rate_positive_y10: number;
 	success_rate_wealth_preservation_y10: number;
 	median_net_worth_nominal_y10: number;

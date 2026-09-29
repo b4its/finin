@@ -64,7 +64,70 @@ def test_monte_carlo_execution(assumptions, sample_profile):
     assert real["p10"] <= real["p25"] <= real["p50"] <= real["p75"] <= real["p90"]
 
     # Cek metrik risiko
+    assert res.metrics["eval_year"] == 10
     assert 0.0 <= res.metrics["success_rate_positive_y10"] <= 1.0
     assert 0.0 <= res.metrics["success_rate_wealth_preservation_y10"] <= 1.0
     assert res.metrics["median_net_worth_nominal_y10"] > 0
     assert res.metrics["median_net_worth_real_y10"] > 0
+
+
+def test_monte_carlo_short_horizon_metrics_not_zero(assumptions, sample_profile):
+    """Regresi: horizon < 10 tahun tidak boleh membuat metrik tahun-10 jadi 0."""
+    ip = IncomeProfile(income_type="salary", income_monthly=10_000_000)
+    rs = assumptions.ruleset()
+    cfg = TwinConfig(
+        code="B",
+        label="Si Penabung SBN",
+        monthly_invest=2_000_000,
+        instrument="bond",
+    )
+
+    res = run_monte_carlo(
+        cfg=cfg,
+        profile=sample_profile,
+        income_profile=ip,
+        assumptions=assumptions,
+        ruleset=rs,
+        preset_name="moderat",
+        runs=50,
+        horizon_months=60,
+        seed=7,
+    )
+
+    # Titik evaluasi turun ke tahun terakhir yang tersedia (5), bukan 10.
+    assert res.metrics["eval_year"] == 5
+    assert len(res.yearly_percentiles) == 6  # 0..5 tahun
+    # Metrik tidak boleh diam-diam bernilai 0.
+    assert res.metrics["median_net_worth_nominal_y10"] != 0
+    assert res.metrics["median_net_worth_real_y10"] != 0
+    assert 0.0 < res.metrics["success_rate_positive_y10"] <= 1.0
+
+
+def test_monte_carlo_partial_final_year_populated(assumptions, sample_profile):
+    """Regresi: horizon bukan kelipatan 12 tetap mengisi bucket tahun terakhir."""
+    ip = IncomeProfile(income_type="salary", income_monthly=10_000_000)
+    rs = assumptions.ruleset()
+    cfg = TwinConfig(
+        code="B",
+        label="Si Penabung SBN",
+        monthly_invest=2_000_000,
+        instrument="bond",
+    )
+
+    res = run_monte_carlo(
+        cfg=cfg,
+        profile=sample_profile,
+        income_profile=ip,
+        assumptions=assumptions,
+        ruleset=rs,
+        preset_name="moderat",
+        runs=30,
+        horizon_months=125,
+        seed=11,
+    )
+
+    assert res.metrics["eval_year"] == 10
+    last = res.yearly_percentiles[-1]
+    # Bucket tahun terakhir (parsial) harus terisi, bukan nol.
+    assert last["year"] == 10
+    assert last["nominal"]["p50"] != 0
