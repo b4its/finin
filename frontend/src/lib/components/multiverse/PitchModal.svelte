@@ -15,6 +15,21 @@
 
 	let currentSlide = $state(0);
 
+	// Kunci scroll body saat presentasi terbuka, dan mulai selalu dari slide
+	// pertama. Sebelumnya `currentSlide` bertahan setelah modal ditutup sehingga
+	// membuka lagi melanjutkan dari slide terakhir, dan halaman di belakang
+	// overlay masih bisa ter-scroll.
+	$effect(() => {
+		if (typeof document === 'undefined') return;
+		if (open) {
+			currentSlide = 0;
+			document.body.style.overflow = 'hidden';
+		}
+		return () => {
+			document.body.style.overflow = '';
+		};
+	});
+
 	let bestTwin = $derived(
 		simulation.twins.find((t) => t.code === (recommendation?.best_twin ?? simulation.best_twin))
 	);
