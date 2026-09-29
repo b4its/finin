@@ -48,6 +48,12 @@ class MonthSnapshot:
     dsr: float
     defaulted: bool
     new_debt: float = 0.0
+    # Rincian aset: `invest` = total (pasar + properti + kendaraan). Komponen di
+    # bawah agar konsumen (mis. alokasi aset, dana darurat) tidak menghitung
+    # aset riil dua kali.
+    market_invest: float = 0.0
+    property_value: float = 0.0
+    vehicle_value: float = 0.0
 
 
 @dataclass
@@ -251,6 +257,9 @@ def simulate(
             dsr=dsr,
             defaulted=defaulted,
             new_debt=new_debt_month,
+            market_invest=max(invest, 0.0),
+            property_value=property_val,
+            vehicle_value=vehicle_val,
         )
         result.months.append(snap)
         if defaulted:
@@ -276,6 +285,9 @@ def yearly_series(result: SimResult, max_year: int = 20) -> list[dict]:
                 "debt": s.debt,
                 "cash": s.cash,
                 "invest": s.invest,
+                "market_invest": s.market_invest,
+                "property_value": s.property_value,
+                "vehicle_value": s.vehicle_value,
                 "cashflow": s.cashflow,
                 "emergency_months": s.emergency_months,
                 "dsr": s.dsr,
