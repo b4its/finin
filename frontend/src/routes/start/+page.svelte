@@ -92,19 +92,38 @@
 	}
 
 	async function run() {
-		// Catat FSC pra-simulasi hanya bila diisi (bukan 0 / tidak dilewati).
-		if (fsc !== null && fsc > 0) {
-			sessionStorage.setItem('fsc_pre', String(fsc));
-		}
+		// Sinkronkan skor Future-Self ke store agar RecommendationPanel bisa
+		// menampilkan delta pra→pasca untuk alur utama /start (sebelumnya hanya
+		// ditulis ke sessionStorage sehingga `sim.fscPre` tetap null).
+		sim.fscPre = fsc !== null && fsc > 0 ? fsc : null;
 		building = true;
 		buildError = null;
 		try {
+			// Tulis ke sessionStorage DI DALAM try: di mode privat/kebijakan
+			// ketat, storage bisa melempar dan dulu membatalkan run() sebelum
+			// tombol terlihat "bekerja".
+			if (fsc !== null && fsc > 0) {
+				try {
+					sessionStorage.setItem('fsc_pre', String(fsc));
+				} catch {
+					/* storage tidak tersedia — abaikan */
+				}
+			}
 			const res = await sim.simulate();
-			const pre = sessionStorage.getItem('fsc_pre');
+			let pre: string | null = null;
+			try {
+				pre = sessionStorage.getItem('fsc_pre');
+			} catch {
+				/* abaikan */
+			}
 			if (pre && res) {
 				const { api } = await import('$lib/api/client');
 				await api.recordEvent(res.id, 'fsc_pre', parseInt(pre)).catch(() => {});
-				sessionStorage.removeItem('fsc_pre');
+				try {
+					sessionStorage.removeItem('fsc_pre');
+				} catch {
+					/* abaikan */
+				}
 			}
 			toast.success(`Multiverse dibangun: ${res.twins.length} cabang siap dijelajahi.`);
 			await goto(`/sim/${res.id}`);
@@ -114,7 +133,11 @@
 		} finally {
 			building = false;
 			// Bersihkan sisa agar tidak bocor ke simulasi berikutnya bila gagal.
-			sessionStorage.removeItem('fsc_pre');
+			try {
+				sessionStorage.removeItem('fsc_pre');
+			} catch {
+				/* abaikan */
+			}
 		}
 	}
 </script>
