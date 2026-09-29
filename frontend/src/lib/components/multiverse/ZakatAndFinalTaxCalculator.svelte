@@ -280,7 +280,7 @@
 							>
 						{:else}
 							<span
-								>Fokus kumpulkan dana darurat dan akumulasi aset hingga melampaui batas nisab Rp{rupiahBrief(
+								>Fokus kumpulkan dana darurat dan akumulasi aset hingga melampaui batas nisab {rupiahBrief(
 									nisabMalAnnual
 								)}.</span
 							>
