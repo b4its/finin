@@ -14,7 +14,14 @@ export interface YearPoint {
 	net_worth_real: number;
 	debt: number;
 	cash: number;
+	/** Total aset investasi = market_invest + property_value + vehicle_value. */
 	invest: number;
+	/** Porsi investasi pasar modal / reksa dana / deposito (tanpa aset riil). */
+	market_invest?: number;
+	/** Nilai properti pada tahun ini. */
+	property_value?: number;
+	/** Nilai kendaraan pada tahun ini. */
+	vehicle_value?: number;
 	cashflow: number;
 	emergency_months: number;
 	dsr: number;

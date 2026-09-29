@@ -57,9 +57,16 @@
 			const totalBurn = Math.max(1_000_000, livingCostInflated + familyCostInflated + monthlyDebt);
 
 			const cash = pt?.cash ?? 0;
-			const invest = pt?.invest ?? 0;
+			// Hanya aset pasar modal yang likuid cepat; properti/kendaraan TIDAK
+			// boleh dihitung sebagai kas darurat. `pt.invest` = pasar + aset riil,
+			// jadi pakai komponen pasar (fallback: kurangi aset riil).
+			const propertyValue = pt?.property_value ?? 0;
+			const vehicleValue = pt?.vehicle_value ?? 0;
+			const marketInvest =
+				pt?.market_invest ??
+				Math.max(0, Math.max(0, pt?.invest ?? 0) - propertyValue - vehicleValue);
 			// Kas likuid utama + 30% alokasi instrumen pasar uang yang dapat dicairkan kilat tanpa penalti
-			const totalLiquid = Math.max(0, cash + invest * 0.3);
+			const totalLiquid = Math.max(0, cash + marketInvest * 0.3);
 
 			// Simulasi runway bulan demi bulan dengan memperhitungkan subsidi JKP jika aktif
 			let remainingCash = totalLiquid;
@@ -89,7 +96,7 @@
 			return {
 				twin: t,
 				cashReserve: cash,
-				investReserve: invest,
+				investReserve: marketInvest,
 				totalLiquid,
 				monthlyLiving: livingCostInflated,
 				monthlyDebt,

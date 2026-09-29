@@ -105,7 +105,13 @@
 			const pt =
 				t.yearly_series.find((p) => p.year === targetYear) ??
 				t.yearly_series[t.yearly_series.length - 1];
-			const invest = pt?.invest ?? 0;
+			const propertyValue = pt?.property_value ?? 0;
+			const vehicleValue = pt?.vehicle_value ?? 0;
+			// `pt.invest` mencakup aset riil (properti/kendaraan); dana pendidikan
+			// hanya boleh dihitung dari investasi pasar modal yang likuid.
+			const invest =
+				pt?.market_invest ??
+				Math.max(0, Math.max(0, pt?.invest ?? 0) - propertyValue - vehicleValue);
 			const cash = pt?.cash ?? 0;
 			const totalLiquid = invest + cash;
 			const readinessPct = futureCost > 0 ? (invest / futureCost) * 100 : 100;

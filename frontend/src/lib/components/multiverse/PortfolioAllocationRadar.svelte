@@ -12,24 +12,30 @@
 			const pt =
 				t.yearly_series.find((p) => p.year === year) ?? t.yearly_series[t.yearly_series.length - 1];
 			const cash = Math.max(0, pt?.cash ?? 0);
-			const invest = Math.max(0, pt?.invest ?? 0);
-
-			// Hitung nilai properti dan kendaraan jika ada di config
+			// `pt.invest` adalah TOTAL aset investasi (pasar + properti + kendaraan).
+			// Gunakan komponen eksplisit dari engine agar aset riil tidak dihitung
+			// dua kali. Fallback ke perhitungan dari config untuk data lama yang
+			// belum menyertakan field ini.
 			const cfg = t.config ?? {};
 			const propInit = (cfg.property_initial_value as number) || 0;
 			const propApprec = (cfg.property_appreciation_annual as number) || 0;
-			const propVal = propInit > 0 ? propInit * Math.pow(1 + propApprec / 12, year * 12) : 0;
+			const propValFromCfg = propInit > 0 ? propInit * Math.pow(1 + propApprec / 12, year * 12) : 0;
 
 			const vehInit = (cfg.vehicle_initial_value as number) || 0;
 			const vehDeprec = (cfg.vehicle_depreciation_annual as number) || 0;
-			const vehVal =
+			const vehValFromCfg =
 				vehInit > 0 ? vehInit * Math.max(0.05, Math.pow(1 - vehDeprec / 12, year * 12)) : 0;
 
+			// Gunakan nilai engine bila ada; jika tidak, hitung dari config.
+			const propVal = pt?.property_value ?? propValFromCfg;
+			const vehVal = pt?.vehicle_value ?? vehValFromCfg;
 			const realAssets = propVal + vehVal;
-			const totalAssets = Math.max(1, cash + invest + realAssets);
+			const marketInvest =
+				pt?.market_invest ?? Math.max(0, Math.max(0, pt?.invest ?? 0) - realAssets);
+			const totalAssets = Math.max(1, cash + marketInvest + realAssets);
 
 			const pCash = cash / totalAssets;
-			const pInvest = invest / totalAssets;
+			const pInvest = marketInvest / totalAssets;
 			const pReal = realAssets / totalAssets;
 
 			// Herfindahl-Hirschman Index untuk diversifikasi aset
@@ -67,7 +73,7 @@
 				color: t.color,
 				icon: t.icon,
 				cash,
-				invest,
+				marketInvest,
 				realAssets,
 				totalAssets,
 				pCash,
@@ -197,7 +203,7 @@
 						>
 						<span
 							>Investasi: <strong class="text-indigo-400">{percent(item.pInvest, 0)}</strong>
-							({rupiahBrief(item.invest)})</span
+							({rupiahBrief(item.marketInvest)})</span
 						>
 						{#if item.pReal > 0}
 							<span
