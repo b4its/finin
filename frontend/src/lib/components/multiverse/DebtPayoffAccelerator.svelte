@@ -44,13 +44,16 @@
 				const id = `twin-${t.code}-${meta.kind}`;
 				if (!list.some((d) => d.id === id)) {
 					const rateDaily = typeof meta.rate_daily === 'number' ? meta.rate_daily : 0.003;
+					// Fallback tenor HARUS sama untuk cicilan & tenor bulan, jika tidak
+					// angkanya saling bertentangan saat `meta.tenor` tidak ada.
+					const tenorMonths = Number(meta.tenor) || 12;
 					list.push({
 						id,
 						name: `${t.label} (${String(meta.kind).toUpperCase()})`,
 						principal: Number(meta.amount),
-						monthlyPayment: Number(meta.amount) / Number(meta.tenor || 6),
+						monthlyPayment: Number(meta.amount) / tenorMonths,
 						annualRate: rateDaily * 365,
-						tenorMonths: Number(meta.tenor || 12),
+						tenorMonths,
 						icon: '⚡'
 					});
 				}
