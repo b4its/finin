@@ -54,11 +54,14 @@ async function request<T>(path: string, init?: RequestInit, timeoutMs = 30_000):
 			...mergedInit
 		});
 		if (!res.ok) {
-			let detail: unknown = null;
+			// Baca body sekali sebagai teks lalu coba parse JSON. Memanggil res.json()
+			// lebih dulu lalu res.text() di catch dapat melempar "body already read".
+			const text = await res.text().catch(() => '');
+			let detail: unknown = text;
 			try {
-				detail = await res.json();
+				detail = JSON.parse(text);
 			} catch {
-				detail = await res.text();
+				/* body bukan JSON: pakai teks mentah */
 			}
 			throw new Error(`API ${res.status}: ${JSON.stringify(detail)}`);
 		}
@@ -143,10 +146,13 @@ export const api = {
 export async function streamNarrative(
 	simId: string,
 	onChunk: (chunk: NarrativeChunk) => void,
-	onDone: () => void
+	onDone: () => void,
+	signal?: AbortSignal
 ): Promise<void> {
-	const res = await fetch(`${baseUrl()}${API}/simulations/${simId}/narrative`);
-	if (!res.body) {
+	const res = await fetch(`${baseUrl()}${API}/simulations/${simId}/narrative`, { signal });
+	// Endpoint gagal (404/500) tidak boleh diperlakukan seperti stream kosong;
+	// hentikan agar UI dapat menampilkan fallback/error yang benar.
+	if (!res.ok || !res.body) {
 		onDone();
 		return;
 	}
