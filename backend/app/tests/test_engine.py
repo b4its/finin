@@ -856,3 +856,64 @@ def test_health_bpjs_vs_private_template(assumptions):
     # Twin Z menanggung biaya shock darurat yang 95% diserap asuransi
     assert res_y.at_year(3).net_worth > 0
     assert res_z.at_year(3).net_worth > 0
+
+
+def test_multi_loan_no_cash_double_spend(assumptions):
+    """Regresi: kas tidak boleh dipakai berkali-kali oleh >1 pinjaman.
+
+    Sebelum perbaikan, setiap pinjaman menerima saldo kas penuh sehingga
+    total ``cash_used`` bisa melebihi kas sebenarnya (double-spend), membuat
+    utang tampak lebih lunas dari kenyataan.
+    """
+    from app.engine.templates import TwinConfig
+
+    a = assumptions
+    rs = a.ruleset()
+    preset = a.preset("moderat")
+
+    # Penghasilan lebih kecil dari biaya hidup + cicilan -> semua pembayaran
+    # bergantung pada kas. Kas dibuat kecil agar cepat habis.
+    prof = Profile(
+        age=35,
+        income_type="salary",
+        income_monthly=1_000_000,
+        expense_monthly=5_000_000,
+        dependents_monthly=0,
+        savings=500_000,
+        existing_debt=ExistingDebt(
+            principal=300_000_000,
+            monthly_payment=6_000_000,
+            annual_rate=0.12,
+            tenor_months=120,
+        ),
+    )
+    # Twin punya pinjaman tambahan -> total 2 pinjaman dalam satu bulan.
+    cfg = TwinConfig(
+        code="X",
+        label="Uji dua pinjaman",
+        monthly_invest=0.0,
+        instrument="money_market",
+        loan=Loan(kind="annuity", principal=300_000_000, tenor_months=120, annual_rate=0.12, ruleset=rs),
+    )
+
+    res = simulate(
+        cfg,
+        prof,
+        IncomeProfile("salary", 1_000_000),
+        preset,
+        rs,
+        months=12,
+    )
+
+    # Kas awal kecil; kas tidak boleh negatif karena pembayaran pinjaman.
+    for snap in res.months:
+        assert snap.cash >= -1e-6, f"kas negatif di bulan {snap.month}: {snap.cash}"
+
+    # Cicilan bulanan jauh lebih besar dari kas. Pembayaran total bulan pertama
+    # tidak boleh melebihi (arus tersedia positif + kas awal).
+    first = res.months[1]
+    income_avail_for_debt = max(0.0, first.income - first.living)
+    max_payable = income_avail_for_debt + prof.savings
+    assert first.paid_debt <= max_payable + 1e-6, (
+        f"paid_debt {first.paid_debt} melebihi batas {max_payable} (double-spend kas)"
+    )
