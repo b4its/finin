@@ -122,7 +122,7 @@
 	let zeroY = $derived(yCoord(0));
 
 	let hoverYear = $state<number>(10);
-	let hoverData = $derived(pts.find((p) => p.year === hoverYear) ?? pts[10]);
+	let hoverData = $derived(pts.find((p) => p.year === hoverYear) ?? pts[pts.length - 1]);
 </script>
 
 <div class="card p-5">

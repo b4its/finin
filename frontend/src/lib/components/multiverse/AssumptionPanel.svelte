@@ -200,7 +200,7 @@
 							Bunga maks {percent(c.rate_daily_max, 2)}/hari untuk tenor
 							{c.tenor_max_months
 								? `≤ ${c.tenor_max_months} bulan`
-								: `> ${current.regulatory.consumer_caps[0].tenor_max_months} bulan`}
+								: `> ${current.regulatory.consumer_caps[0]?.tenor_max_months ?? 6} bulan`}
 							(denda sama).
 						</li>
 					{/each}

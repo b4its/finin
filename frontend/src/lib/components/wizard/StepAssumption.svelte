@@ -113,7 +113,7 @@
 							{a.regulatory.consumer_caps
 								.map(
 									(c) =>
-										`${((c.rate_daily_max ?? 0) * 100).toFixed(1)}%/hari ${c.tenor_max_months ? '≤' + c.tenor_max_months + ' bln' : '>' + a.regulatory.consumer_caps[0].tenor_max_months + ' bln'}`
+										`${((c.rate_daily_max ?? 0) * 100).toFixed(1)}%/hari ${c.tenor_max_months ? '≤' + c.tenor_max_months + ' bln' : '>' + (a.regulatory.consumer_caps[0]?.tenor_max_months ?? 6) + ' bln'}`
 								)
 								.join(' · ')}
 						</td>

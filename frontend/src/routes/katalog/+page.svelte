@@ -50,7 +50,7 @@
 <div class="mx-auto max-w-6xl px-4 py-8 sm:px-5">
 	<header class="text-center">
 		<div class="chip mx-auto border-[var(--color-accent)] text-[var(--color-accent)]">
-			{templates.length || 13} template keputusan
+			{loading ? 'Memuat…' : `${templates.length} template keputusan`}
 		</div>
 		<h1 class="mx-auto mt-4 max-w-2xl text-2xl font-bold sm:text-3xl">
 			Katalog keputusan finansial
