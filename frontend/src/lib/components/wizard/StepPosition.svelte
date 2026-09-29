@@ -73,7 +73,9 @@
 					class="input num"
 					type="number"
 					step="0.1"
-					value={(sim.input.profile.existing_debt.annual_rate * 100).toString()}
+					value={Number(
+						(sim.input.profile.existing_debt.annual_rate * 100).toPrecision(12)
+					).toString()}
 					oninput={(e) =>
 						(sim.input.profile.existing_debt.annual_rate =
 							(parseFloat((e.target as HTMLInputElement).value) || 0) / 100)}
