@@ -34,7 +34,7 @@
 
 {#if open}
 	<div
-		class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/80 p-4 print:static print:bg-white print:p-0"
+		class="print-report-root fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/80 p-4 print:static print:bg-white print:p-0"
 		role="dialog"
 		aria-modal="true"
 	>
@@ -363,6 +363,11 @@
 		:global(.print-avoid-break) {
 			break-inside: avoid !important;
 			page-break-inside: avoid !important;
+		}
+		/* Saat mencetak, sembunyikan seluruh isi halaman kecuali lembar laporan,
+		   agar PDF hanya berisi laporan eksekutif (bukan dashboard + laporan). */
+		:global(main > *:not(.print-report-root)) {
+			display: none !important;
 		}
 	}
 </style>
