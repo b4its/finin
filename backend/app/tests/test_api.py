@@ -221,6 +221,29 @@ async def test_recompute(client: AsyncClient):
     assert r2.json()["preset"] == "konservatif"
 
 
+async def test_recompute_persists_effective_input(client: AsyncClient):
+    """Ekspor (CSV/JSON) harus menghitung dari preset & override terbaru.
+
+    Regresi: `recompute` dahulu hanya menyimpan `sim.preset` tetapi tidak
+    memperbarui `sim.input`, sehingga `/export/csv` dan `/export/json`
+    memakai preset/override lama dan bertentangan dengan hasil yang tampil.
+    """
+    r = await client.post("/api/v1/simulations", json=SAMPLE)
+    sim_id = r.json()["id"]
+    r2 = await client.post(
+        f"/api/v1/simulations/{sim_id}/recompute",
+        json={"preset": "optimis", "assumption_overrides": {"inflation": 0.12}},
+    )
+    assert r2.status_code == 200
+    assert r2.json()["preset"] == "optimis"
+
+    exported = await client.get(f"/api/v1/simulations/{sim_id}/export/json")
+    assert exported.status_code == 200
+    inp = exported.json()["input"]
+    assert inp["preset"] == "optimis"
+    assert inp["assumption_overrides"].get("inflation") == 0.12
+
+
 async def test_narrative_sse(client: AsyncClient):
     r = await client.post("/api/v1/simulations", json=SAMPLE)
     sim_id = r.json()["id"]
