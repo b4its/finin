@@ -162,7 +162,9 @@ def run_monte_carlo(
             paid_total = 0.0
             cash_used_total = 0.0
             for ls in loans:
-                paid, cash_used, _ = apply_month(ls, available - paid_total, cash)
+                # Kurangi kas dengan yang sudah terpakai agar tidak double-spend
+                # ketika ada lebih dari satu pinjaman.
+                paid, cash_used, _ = apply_month(ls, available - paid_total, cash - cash_used_total)
                 paid_total += paid
                 cash_used_total += cash_used
             cash -= cash_used_total

@@ -151,10 +151,12 @@ def simulate(
         available = income - living
 
         # Bayar cicilan (semua pinjaman).
+        # Kas yang tersedia harus dikurangi setiap pinjaman agar satu saldo kas
+        # tidak dipakai berkali-kali (double-spend) saat ada >1 pinjaman.
         paid_total = 0.0
         cash_used_total = 0.0
         for ls in loans:
-            paid, cash_used, _ = apply_month(ls, available - paid_total, cash)
+            paid, cash_used, _ = apply_month(ls, available - paid_total, cash - cash_used_total)
             paid_total += paid
             cash_used_total += cash_used
         cash -= cash_used_total
