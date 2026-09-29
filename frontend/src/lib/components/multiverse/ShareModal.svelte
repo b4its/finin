@@ -196,12 +196,14 @@
 	$effect(() => {
 		if (open) {
 			// tunggu DOM selesai render
-			setTimeout(() => drawCard(), 60);
+			const id = setTimeout(() => drawCard(), 60);
+			// Bersihkan timer bila modal ditutup/di-unmount sebelum sempat menggambar.
+			return () => clearTimeout(id);
 		}
 	});
 
 	function downloadPng() {
-		if (!canvasEl) return;
+		if (!canvasEl || !bestTwin) return;
 		const a = document.createElement('a');
 		a.download = `finin-multiverse-twin-${bestTwin.code}.png`;
 		a.href = canvasEl.toDataURL('image/png');
@@ -236,6 +238,7 @@
 	}
 
 	function shareToTwitter() {
+		if (!bestTwin) return;
 		const tweet = encodeURIComponent(
 			`🌌 Multiverse finansialku membuktikan keputusanku di Finin!\n\n` +
 				`Twin ${bestTwin.code} (${bestTwin.label}) unggul ${rupiahBrief(delta)} di tahun ke-10.\n` +
