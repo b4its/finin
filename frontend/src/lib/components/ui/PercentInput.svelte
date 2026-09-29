@@ -21,6 +21,13 @@
 		const v = parseFloat((e.target as HTMLInputElement).value.replace(',', '.'));
 		value = isNaN(v) ? 0 : v / 100;
 	}
+
+	/**
+	 * Tampilkan persen tanpa noise floating-point.
+	 * `0.068 * 100` = `6.800000000000001` yang akan tampil literal di input
+	 * `type="number"`; bulatkan ke presisi wajar agar bersih ("6.8").
+	 */
+	let displayValue = $derived(Number((value * 100).toPrecision(12)).toString());
 </script>
 
 <label class="block">
@@ -34,7 +41,7 @@
 			{min}
 			{max}
 			{step}
-			value={(value * 100).toString()}
+			value={displayValue}
 			oninput={onInput}
 		/>
 		<span
