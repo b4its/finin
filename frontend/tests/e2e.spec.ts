@@ -126,6 +126,27 @@ test('wizard memulihkan draf setelah reload dan bisa direset', async ({ page }) 
 	await expect(page.locator('input[inputmode="numeric"]').first()).toHaveValue('6.000.000');
 });
 
+test('memilih persona non-variabel membersihkan rentang penghasilan lama', async ({ page }) => {
+	await page.goto('/start');
+	await page.waitForLoadState('networkidle');
+	await skipFutureSelfQuestion(page);
+
+	// Pilih Wulan (penghasilan variabel) -> rentang Wulan 4jt–7jt muncul.
+	await page.getByRole('button', { name: /Wulan/ }).click();
+	await expect(page.getByText(/Rentang penghasilan \(untuk stress test\)/)).toBeVisible();
+	const minInput = page.locator('label', { hasText: 'Minimum' }).locator('input');
+	await expect(minInput).toHaveValue('4.000.000');
+
+	// Pilih Sinta (gaji tetap, tanpa rentang) -> rentang lama harus dibersihkan.
+	await page.getByRole('button', { name: /Sinta/ }).click();
+
+	// Kembalikan jenis penghasilan ke "Tidak tetap": rentang diisi ulang dari
+	// penghasilan Sinta (6jt -> 4,2jt), bukan nilai Wulan yang tertinggal.
+	await page.getByRole('button', { name: /Tidak tetap/i }).click();
+	await expect(page.getByText(/Rentang penghasilan \(untuk stress test\)/)).toBeVisible();
+	await expect(page.locator('label', { hasText: 'Minimum' }).locator('input')).toHaveValue('4.200.000');
+});
+
 test('halaman riwayat dapat dicari dan difilter', async ({ page }) => {
 	// Buat satu simulasi agar riwayat terisi (store localStorage per konteks browser).
 	await page.goto('/start');

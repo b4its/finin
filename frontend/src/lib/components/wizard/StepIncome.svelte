@@ -76,9 +76,10 @@
 		sim.input.profile.expense_monthly = p.expense_monthly;
 		sim.input.profile.savings = p.savings;
 		sim.input.profile.dependents_monthly = p.dependents_monthly;
-		if (p.income_range) {
-			sim.input.profile.income_range = p.income_range;
-		}
+		// Selalu setel ulang rentang penghasilan: jika persona baru tidak punya
+		// income_range (mis. Raka/Sinta), rentang persona sebelumnya yang variabel
+		// tidak boleh tertinggal dan terkirim ke simulasi.
+		sim.input.profile.income_range = p.income_range ?? null;
 	}
 
 	let deficit = $derived(sim.input.profile.expense_monthly > sim.input.profile.income_monthly);
