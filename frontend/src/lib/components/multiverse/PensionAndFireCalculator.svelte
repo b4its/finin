@@ -229,7 +229,7 @@
 								? 'bg-emerald-500/15 text-emerald-400'
 								: 'bg-rose-500/15 text-rose-400'}"
 						>
-							{percent(st.coverageRatio, 0)} Aman
+							{st.isFunded ? 'Aman' : 'Kurang'} · {percent(st.coverageRatio, 0)}
 						</span>
 					</div>
 
