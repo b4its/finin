@@ -108,6 +108,19 @@
 		);
 	});
 
+	// Jaga indeks aktif tetap dalam rentang saat daftar hasil menyusut
+	// (mis. pengguna mengetik query yang mempersempit hasil). Tanpa ini,
+	// `filtered[active]` bisa `undefined` sehingga Enter tidak melakukan apa pun
+	// dan tidak ada baris yang ditandai terpilih.
+	$effect(() => {
+		const n = filtered.length;
+		if (n === 0) {
+			if (active !== 0) active = 0;
+		} else if (active > n - 1) {
+			active = n - 1;
+		}
+	});
+
 	function toggle() {
 		open = !open;
 		if (open) {
@@ -134,7 +147,7 @@
 			open = false;
 		} else if (e.key === 'ArrowDown') {
 			e.preventDefault();
-			active = Math.min(active + 1, filtered.length - 1);
+			active = Math.min(active + 1, Math.max(0, filtered.length - 1));
 		} else if (e.key === 'ArrowUp') {
 			e.preventDefault();
 			active = Math.max(active - 1, 0);
