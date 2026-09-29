@@ -23,8 +23,8 @@ def rp_brief(x: float) -> str:
 def _flags_note(flags: list[dict]) -> str:
     if not flags:
         return ""
-    red = [f for f in flags if f["level"] == "red"]
-    slik = [f for f in flags if f["code"] == "SLIK_DEFAULT"]
+    red = [f for f in flags if f.get("level") == "red"]
+    slik = [f for f in flags if f.get("code") == "SLIK_DEFAULT"]
     if red:
         return " Ada bendera: indikasi di atas batas OJK."
     if slik:

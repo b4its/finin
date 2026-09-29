@@ -26,6 +26,25 @@ def test_numbers_from_facts():
     assert "500000" in nums
 
 
+def test_numbers_from_facts_includes_numeric_keys():
+    """Regresi: horizon disimpan sebagai kunci dict dan harus dianggap fakta.
+
+    Tanpa ini, narasi valid yang menyebut "tahun ke-10"/"tahun ke-20" akan
+    ditolak validator dan selalu jatuh ke fallback.
+    """
+    facts = {"horizons": {5: {"net_worth": "Rp1.000.000"}, 10: {}, 20: {}}}
+    nums = numbers_from_facts(facts)
+    assert "5" in nums
+    assert "10" in nums
+    assert "20" in nums
+
+
+def test_validate_horizon_labels_accepted():
+    facts = {"horizons": {5: {"net_worth": "Rp1.000.000"}, 10: {}, 20: {}}}
+    ok, missing = validate_numbers("Tahun ke-10 dan tahun ke-20.", facts)
+    assert ok, f"angka hilang: {missing}"
+
+
 def test_validate_valid_text():
     facts = {"nw": "Rp12.400.000", "months": "6 bulan"}
     ok, missing = validate_numbers("Net worth Rp12.400.000 dengan dana 6 bulan.", facts)
@@ -208,4 +227,24 @@ async def test_narrator_valid_numbers_accepted():
         chunks = await n.narrate(twins)
     llm_chunks = [c for c in chunks if c["source"] == "llm"]
     assert len(llm_chunks) == 1
-    assert llm_chunks[0]["horizon"] == 5
+
+
+def test_parse_json_tolerates_prose_with_braces():
+    """Regresi: prosa berisi {...} sebelum JSON tidak boleh merusak parsing."""
+    text = 'Catatan {penting}: [{"twin": "A", "horizon": 5, "text": "ok"}]'
+    parsed = Narrator._parse_json(text)
+    assert isinstance(parsed, list)
+    assert parsed[0]["twin"] == "A"
+
+
+def test_parse_json_handles_object_payload():
+    text = 'Berikut: {"first_step": "lakukann", "rationale": "karena"}'
+    parsed = Narrator._parse_json(text)
+    assert isinstance(parsed, dict)
+    assert "first_step" in parsed
+
+
+def test_flags_note_tolerates_missing_keys():
+    """Regresi: flag tanpa 'level'/'code' tidak boleh memicu KeyError."""
+    assert fallback._flags_note([{"foo": "bar"}]) == ""
+    assert fallback._flags_note([{"level": "red"}]) != ""

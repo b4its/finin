@@ -11,7 +11,10 @@ from app.core.config import settings
 from app.llm import fallback, prompts
 from app.llm.validator import validate_numbers
 
-_JSON_BLOCK = re.compile(r"\{.*\}|\[.*\]", re.DOTALL)
+# Non-greedy agar tidak menelan objek/kurung lain yang muncul di prosa sebelum JSON.
+# Array dicoba lebih dulu karena narasi selalu diminta sebagai JSON array.
+_JSON_ARRAY = re.compile(r"\[.*?\]", re.DOTALL)
+_JSON_OBJECT = re.compile(r"\{.*?\}", re.DOTALL)
 
 
 class Narrator:
@@ -51,13 +54,15 @@ class Narrator:
     def _parse_json(text: str | None):
         if not text:
             return None
-        m = _JSON_BLOCK.search(text)
-        if not m:
-            return None
-        try:
-            return json.loads(m.group())
-        except json.JSONDecodeError:
-            return None
+        for pattern in (_JSON_ARRAY, _JSON_OBJECT):
+            m = pattern.search(text)
+            if not m:
+                continue
+            try:
+                return json.loads(m.group())
+            except json.JSONDecodeError:
+                continue
+        return None
 
     # ---- Narasi ----
     async def narrate(self, twins: list[dict]) -> list[dict]:

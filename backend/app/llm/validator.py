@@ -45,7 +45,14 @@ def numbers_from_facts(facts: dict | list) -> set[str]:
 
     def walk(node) -> None:  # noqa: ANN001
         if isinstance(node, dict):
-            for v in node.values():
+            for k, v in node.items():
+                # Kunci numerik juga dianggap fakta: horizon pada FACTS disimpan
+                # sebagai kunci {"5": ..., "10": ..., "20": ...} dan narasi menyebut
+                # "tahun ke-10"/"tahun ke-20" sehingga angka itu harus diizinkan.
+                if isinstance(k, str):
+                    acc.update(extract_numbers(k))
+                elif isinstance(k, (int, float)):
+                    acc.update(extract_numbers(str(k)))
                 walk(v)
         elif isinstance(node, list):
             for v in node:
