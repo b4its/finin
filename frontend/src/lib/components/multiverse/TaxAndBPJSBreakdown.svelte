@@ -5,10 +5,16 @@
 
 	let { initialGross = 10_000_000 }: { initialGross?: number } = $props();
 
+	// Seed sekali dari prop. Sebelumnya memakai $effect yang menulis ulang
+	// `grossMonthly` setiap nilai 0, sehingga pengguna tidak bisa mengosongkan
+	// field (efek langsung mengembalikannya ke nilai awal). Penjaga `seeded`
+	// memastikan nilai awal hanya diisi sekali, sekali pun prop berubah.
 	let grossMonthly = $state(0);
+	let seeded = false;
 	$effect(() => {
-		if (grossMonthly === 0 && initialGross > 0) {
+		if (!seeded && initialGross > 0) {
 			grossMonthly = initialGross;
+			seeded = true;
 		}
 	});
 	let terCategory = $state<'A' | 'B' | 'C'>('A');
