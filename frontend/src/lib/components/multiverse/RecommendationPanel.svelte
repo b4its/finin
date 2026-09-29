@@ -34,10 +34,10 @@
 	async function submitPost(v: number) {
 		fscPost = v;
 		try {
+			// fsc_pre sudah dicatat sekali saat simulasi dibuat (routes/start).
+			// Di sini cukup catat fsc_post agar fsc_pre tidak terhitung ganda
+			// setiap kali skala pasca diubah.
 			await api.recordEvent(simulationId, 'fsc_post', v);
-			if (fscPre !== null && fscPre > 0) {
-				await api.recordEvent(simulationId, 'fsc_pre', fscPre);
-			}
 			submittedPost = true;
 		} catch {
 			submittedPost = true;
