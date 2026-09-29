@@ -37,7 +37,12 @@
 			return;
 		}
 		if ((e.target as Element).closest('a, [data-dropdown-item]')) {
-			queueMicrotask(close);
+			// Tutup pada macrotask berikutnya, BUKAN microtask: `pointerdown`
+			// mendahului rangkaian pointerup/click, dan microtask terkuras lebih
+			// dulu sehingga elemen <a> terlepas dari DOM sebelum `click` dikirim —
+			// tautan unduh (CSV/JSON) jadi tak pernah terpicu. setTimeout(…, 0)
+			// memberi kesempatan event click selesai dulu.
+			setTimeout(close, 0);
 		}
 	}
 
