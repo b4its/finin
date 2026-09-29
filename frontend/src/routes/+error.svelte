@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { page } from '$app/state';
 
-	let { error } = $props<{ error?: { message?: string; status?: number } }>();
-	const status = $derived(error?.status ?? 500);
-	const isNotFound = $derived(status === 404);
+	// SvelteKit mengirim status HTTP di `page.status`, bukan pada `error`
+	// (yang hanya berisi `{ message }`). Membaca `error.status` selalu
+	// `undefined` sehingga halaman 404 tak pernah dikenali dengan benar.
+	let { error } = $props<{ error?: { message?: string } }>();
+	const isNotFound = $derived(page.status === 404);
 	const currentPath = $derived(page.url.pathname);
 </script>
 
