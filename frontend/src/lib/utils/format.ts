@@ -9,6 +9,7 @@ export function rupiah(x: number): string {
 
 /** Rp12,4 jt / Rp1,2 M / Rp350 rb */
 export function rupiahBrief(x: number): string {
+	if (!isFinite(x)) return 'Rp0';
 	const sign = x < 0 ? '-' : '';
 	const ax = Math.abs(x);
 	if (ax >= 1e12) return `${sign}Rp${(ax / 1e12).toFixed(1).replace('.', ',')} T`;
@@ -20,6 +21,7 @@ export function rupiahBrief(x: number): string {
 
 /** 12,4% */
 export function percent(x: number, digits = 1): string {
+	if (!isFinite(x)) return '—';
 	return `${(x * 100).toFixed(digits).replace('.', ',')}%`;
 }
 
