@@ -94,9 +94,17 @@
 	 */
 	let { preselect = '' }: { preselect?: string } = $props();
 
+	// Terapkan template yang diminta katalog hanya SEKALI per nilai `preselect`.
+	// Tanpa penjagaan ini, $effect akan berjalan ulang setiap `decisions` berubah
+	// dan menambahkan kembali template yang barusan di-deselect pengguna —
+	// membuatnya mustahil dihapus selama halaman ini terbuka.
+	let appliedPreselect = $state<string | null>(null);
+
 	$effect(() => {
 		const type = preselect;
 		if (!type) return;
+		if (appliedPreselect === type) return;
+		appliedPreselect = type;
 		if (!TEMPLATES.some((t) => t.type === type)) return;
 		if (sim.input.decisions.some((d) => d.type === type)) return;
 		if (sim.input.decisions.length >= 2) return;
