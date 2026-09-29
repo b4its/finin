@@ -9,7 +9,13 @@ from app.engine.runner import FullSimulation
 
 
 def cfg_to_dict(cfg) -> dict:  # noqa: ANN001
-    """Konfigurasi twin untuk disimpan (termasuk warna/ikon)."""
+    """Konfigurasi twin untuk disimpan (termasuk warna/ikon).
+
+    Menyertakan aset riil (nilai & penyusutan properti/kendaraan) agar UI
+    (mis. Radar Alokasi Aset) dapat menghitung porsi aset fisik. Sebelumnya
+    field ini tidak diserialisasi sehingga porsi aset riil selalu 0 di UI,
+    padahal engine memakainya saat simulasi.
+    """
     return {
         "code": cfg.code,
         "label": cfg.label,
@@ -24,6 +30,11 @@ def cfg_to_dict(cfg) -> dict:  # noqa: ANN001
         "instrument": cfg.instrument,
         "loan_kind": cfg.loan.kind if cfg.loan else None,
         "loan_principal": cfg.loan.principal if cfg.loan else 0,
+        # Aset riil (dipakai UI alokasi aset; sebelumnya hilang dari snapshot).
+        "property_initial_value": cfg.property_initial_value,
+        "property_appreciation_annual": cfg.property_appreciation_annual,
+        "vehicle_initial_value": cfg.vehicle_initial_value,
+        "vehicle_depreciation_annual": cfg.vehicle_depreciation_annual,
         "meta": cfg.meta,
     }
 
