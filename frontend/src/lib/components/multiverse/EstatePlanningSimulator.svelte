@@ -94,35 +94,63 @@
 			return list;
 		}
 
-		// KHI (Kompilasi Hukum Islam / Faraidh)
-		// Istri 1/8 (jika ada anak) atau 1/4 (jika tidak ada anak)
-		// Suami 1/4 (jika ada anak) atau 1/2 (jika tidak ada anak)
+		// KHI (Kompilasi Hukum Islam / Faraidh).
+		// Dengan anak:
+		//   Istri 1/8, Suami 1/4, Ayah 1/6, Ibu 1/6, sisa = asabah anak (2:1).
+		// Tanpa anak:
+		//   Istri 1/4, Suami 1/2, Ibu 1/3 dari SISA setelah pasangan, dan Ayah
+		//   mengambil sisa sebagai asabah. Sebelumnya Ayah dan Ibu masing-masing
+		//   diberi 1/3 sehingga total hanya 91,67% dan sisa 1/12 hilang.
+		const hasChildren = totalChildren > 0;
+
 		let spousePct = 0;
 		let spouseFraction = '0';
 		if (hasSpouse) {
 			if (spouseGender === 'wife') {
-				spousePct = totalChildren > 0 ? 1 / 8 : 1 / 4;
-				spouseFraction = totalChildren > 0 ? '1/8 (12,5%)' : '1/4 (25%)';
+				spousePct = hasChildren ? 1 / 8 : 1 / 4;
+				spouseFraction = hasChildren ? '1/8 (12,5%)' : '1/4 (25%)';
 			} else {
-				spousePct = totalChildren > 0 ? 1 / 4 : 1 / 2;
-				spouseFraction = totalChildren > 0 ? '1/4 (25%)' : '1/2 (50%)';
+				spousePct = hasChildren ? 1 / 4 : 1 / 2;
+				spouseFraction = hasChildren ? '1/4 (25%)' : '1/2 (50%)';
 			}
 		}
 
-		// Ayah & Ibu masing-masing 1/6 (jika ada anak)
-		let fatherPct = hasLivingFather ? (totalChildren > 0 ? 1 / 6 : 1 / 3) : 0;
-		let motherPct = hasLivingMother ? (totalChildren > 0 ? 1 / 6 : 1 / 3) : 0;
-
-		const fixedShares = spousePct + fatherPct + motherPct;
-		const remainingAsabah = Math.max(0, 1.0 - fixedShares);
-
-		// Pembagian sisa (Asabah) untuk anak: laki-laki mendapat 2 bagian, perempuan 1 bagian (rasio 2:1)
-		const childUnits = sonsCount * 2 + daughtersCount * 1;
+		let fatherPct = 0;
+		let motherPct = 0;
 		let sonShareTotal = 0;
 		let daughterShareTotal = 0;
-		if (childUnits > 0) {
-			sonShareTotal = (remainingAsabah * (sonsCount * 2)) / childUnits;
-			daughterShareTotal = (remainingAsabah * (daughtersCount * 1)) / childUnits;
+		let fatherAsabah = false;
+
+		if (hasChildren) {
+			// Ayah & Ibu masing-masing 1/6 (karena ada anak).
+			fatherPct = hasLivingFather ? 1 / 6 : 0;
+			motherPct = hasLivingMother ? 1 / 6 : 0;
+
+			const remainingAsabah = Math.max(0, 1.0 - spousePct - fatherPct - motherPct);
+			// Asabah anak: laki-laki 2 bagian, perempuan 1 bagian (rasio 2:1).
+			const childUnits = sonsCount * 2 + daughtersCount * 1;
+			if (childUnits > 0) {
+				sonShareTotal = (remainingAsabah * (sonsCount * 2)) / childUnits;
+				daughterShareTotal = (remainingAsabah * (daughtersCount * 1)) / childUnits;
+			} else if (hasLivingFather) {
+				// Tak ada anak: sisa jatuh ke ayah sebagai asabah.
+				fatherPct += remainingAsabah;
+				fatherAsabah = true;
+			}
+		} else {
+			// Tanpa anak: Ibu 1/3 dari sisa (setelah bagian pasangan),
+			// Ayah mengambil sisanya sebagai asabah — total selalu 100%.
+			const afterSpouse = Math.max(0, 1.0 - spousePct);
+			if (hasLivingMother && hasLivingFather) {
+				motherPct = afterSpouse / 3;
+				fatherPct = afterSpouse - motherPct;
+				fatherAsabah = true;
+			} else if (hasLivingMother) {
+				motherPct = afterSpouse / 3;
+			} else if (hasLivingFather) {
+				fatherPct = afterSpouse;
+				fatherAsabah = true;
+			}
 		}
 
 		const list: HeirShare[] = [];
@@ -136,21 +164,21 @@
 				nominalPerPerson: nw * spousePct
 			});
 		}
-		if (hasLivingFather) {
+		if (hasLivingFather && fatherPct > 0) {
 			list.push({
 				role: 'Ayah Kandung',
 				count: 1,
-				portionFraction: totalChildren > 0 ? '1/6 (16,7%)' : '1/3',
+				portionFraction: fatherAsabah ? `Asabah (${percent(fatherPct, 1)})` : '1/6 (16,7%)',
 				portionPercent: fatherPct,
 				nominal: nw * fatherPct,
 				nominalPerPerson: nw * fatherPct
 			});
 		}
-		if (hasLivingMother) {
+		if (hasLivingMother && motherPct > 0) {
 			list.push({
 				role: 'Ibu Kandung',
 				count: 1,
-				portionFraction: totalChildren > 0 ? '1/6 (16,7%)' : '1/3',
+				portionFraction: hasChildren ? '1/6 (16,7%)' : `1/3 sisa (${percent(motherPct, 1)})`,
 				portionPercent: motherPct,
 				nominal: nw * motherPct,
 				nominalPerPerson: nw * motherPct
@@ -175,6 +203,25 @@
 				nominal: nw * daughterShareTotal,
 				nominalPerPerson: daughterShareTotal > 0 ? (nw * daughterShareTotal) / daughtersCount : 0
 			});
+		}
+
+		// Radd: bila masih ada sisa setelah bagian tetap dan TIDAK ada asabah
+		// (mis. hanya istri + ibu tanpa ayah/anak), kembalikan sisa secara
+		// proporsional agar total selalu 100%. Tanpa ini warisan bisa hanya
+		// terbagi 50% dan sisanya "hilang".
+		const allocated = list.reduce((s, h) => s + h.portionPercent, 0);
+		const leftover = 1.0 - allocated;
+		if (leftover > 1e-9 && list.length > 0) {
+			// Utamakan penerima non-pasangan (sesuai kaidah radd klasik).
+			const nonSpouse = list.filter((h) => h.role !== 'Istri' && h.role !== 'Suami');
+			const pool = nonSpouse.length ? nonSpouse : list;
+			const base = pool.reduce((s, h) => s + h.portionPercent, 0);
+			for (const h of pool) {
+				const add = base > 0 ? (h.portionPercent / base) * leftover : leftover / pool.length;
+				h.portionPercent += add;
+				h.nominal = nw * h.portionPercent;
+				h.nominalPerPerson = h.count > 0 ? h.nominal / h.count : h.nominal;
+			}
 		}
 		return list;
 	});
