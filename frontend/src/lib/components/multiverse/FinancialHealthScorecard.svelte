@@ -143,7 +143,7 @@
 						></div>
 					</div>
 
-					<!-- Detail 4 Pilar -->
+					<!-- Detail 5 Pilar (termasuk Regulasi OJK yang berbobot 10% di skor) -->
 					<div class="mt-3 space-y-1.5 text-[11px]">
 						<div class="flex justify-between text-[var(--color-ink-dim)]">
 							<span>🛡️ Dana Darurat & Kas</span>
@@ -160,6 +160,10 @@
 						<div class="flex justify-between text-[var(--color-ink-dim)]">
 							<span>📈 Akumulasi Riil</span>
 							<span class="num font-semibold text-[var(--color-ink)]">{hs.wealthGrowth}%</span>
+						</div>
+						<div class="flex justify-between text-[var(--color-ink-dim)]">
+							<span>🚩 Regulasi & SLIK OJK</span>
+							<span class="num font-semibold text-[var(--color-ink)]">{hs.regulatory}%</span>
 						</div>
 					</div>
 				</div>
