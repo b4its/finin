@@ -81,13 +81,18 @@ def _loan_dsr_flag(
 
 
 def _annuity_loan(principal: float, tenor_months: float, annual_rate: float, ruleset: dict, kind: str = "annuity"):
-    """Buat objek Loan annuity untuk pengecekan DSR (import lokal agar ringan)."""
+    """Buat objek Loan annuity untuk pengecekan DSR (import lokal agar ringan).
+
+    ``tenor_months`` datang sebagai float dari perhitungan (mis. ``tenor_years * 12``);
+    tenor adalah satuan bulan bulat, jadi dibulatkan ke int terdekat agar konsisten
+    dengan tipe ``Loan.tenor_months``.
+    """
     from app.engine.loans import Loan
 
     return Loan(
         kind=kind,
         principal=principal,
-        tenor_months=tenor_months,
+        tenor_months=round(tenor_months),
         annual_rate=annual_rate,
         ruleset=ruleset,
     )

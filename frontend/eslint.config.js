@@ -25,6 +25,13 @@ export default ts.config(
 		}
 	},
 	{
-		ignores: ['.svelte-kit/', 'build/', 'node_modules/', 'test-results/', 'playwright-report/']
+		ignores: [
+			'.svelte-kit/',
+			'build/',
+			'node_modules/',
+			'test-results/',
+			'playwright-report/',
+			'*.timestamp-*.mjs'
+		]
 	}
 );

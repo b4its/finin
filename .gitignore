@@ -30,6 +30,7 @@ backups/
 *.log
 playwright-report/
 test-results/
+*.timestamp-*.mjs
 
 # tooling
 .opencode/

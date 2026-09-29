@@ -7,3 +7,5 @@ src/app.html
 test-results
 playwright-report
 tests
+*.timestamp-*.mjs
+coverage
