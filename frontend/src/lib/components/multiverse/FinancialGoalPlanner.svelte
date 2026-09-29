@@ -376,7 +376,7 @@
 						{:else}
 							<div
 								class="h-full rounded-full opacity-40 transition-all duration-500"
-								style="width: {Math.min(100, (ta.progressPct / 100) * 50)}%; background: #64748B;"
+								style="width: {Math.min(100, Math.max(0, ta.progressPct))}%; background: #64748B;"
 							></div>
 						{/if}
 					</div>
