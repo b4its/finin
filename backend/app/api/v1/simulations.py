@@ -185,6 +185,10 @@ async def recompute(
     result = await session.execute(select(Twin).where(Twin.simulation_id == sim.id))
     for old in result.scalars().all():
         await session.delete(old)
+    # Simpan input EFEKTIF (preset + override baru). Tanpa ini `sim.input` tetap
+    # berisi preset/override lama, sehingga ekspor CSV/JSON menghitung ulang dari
+    # keadaan usang dan bertentangan dengan hasil yang ditampilkan.
+    sim.input = new_req.model_dump(mode="json")
     sim.preset = new_req.preset
     sim.assumptions_snapshot = enriched_snapshot(a, full)
     sim.robust = full.robust
